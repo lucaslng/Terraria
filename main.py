@@ -4,6 +4,7 @@ from pygame.locals import *
 import math
 import random
 from enum import Enum
+import pickle # use pickle to store save
 
 pg.init()
 WIDTH = 1000
