@@ -21,8 +21,11 @@ clock = pg.time.Clock()
 
 def pixelToCoord(x:int, y:int):
   coord = (x + player.camera.left) // 20, (y + player.camera.top) // 20
-  print(coord)
+  # print(coord)
   return coord
+
+def relativeRect(rect:pg.rect.Rect): # on screen rect relative to the camera
+  return pg.rect.Rect(rect.x - player.camera.x, rect.y - player.camera.y, rect.width, rect.height)
 
 class Entity:
   
@@ -35,6 +38,7 @@ class Entity:
     this.rect = pg.rect.Rect(x, y, width, height)
     this.texture = texture
     this.reversedTexture = pg.transform.flip(texture, True, False)
+    this.mask = pg.mask.from_surface(texture)
     
   def moveLeft(this):
     if this.hvelo > -5: this.hvelo -= 2
@@ -56,30 +60,65 @@ class Entity:
     
     this.vvelo += min(0.5, abs(this.vvelo)) # reduce vertical velocity constantly to 0
     
-    print(this.hvelo, this.vvelo)
+    # print(this.hvelo, this.vvelo)
     
-    if world[(this.rect.bottom//20)][((this.rect.centerx+this.hvelo)//20)].name == "Air" and world[(this.rect.top//20)][((this.rect.centerx+this.hvelo)//20)].name == "Air":
-      this.rect.x += this.hvelo
-    if world[int((this.rect.bottom+this.vvelo)/20)+1][(this.rect.centerx//20)].name == "Air":
-      this.rect.y += this.vvelo
+    newrect = this.rect.copy()
+    newrect.x += this.hvelo
+    newrect.y += this.vvelo
+    # print(newrect.right, newrect.top)
+    blockTop = world.blockAt(newrect.right//20, newrect.top//20-1)
+    blockTopRight = world.blockAt(newrect.right//20+1, newrect.top//20-1)
+    blockTopLeft = world.blockAt(newrect.left//20, newrect.top//20-1)
+    blockRightTop = world.blockAt(newrect.right//20+1, newrect.top//20)
+    blockRightBot = world.blockAt(newrect.right//20+1, newrect.centery//20)
+    blockBotRight = world.blockAt(newrect.right//20+1, newrect.bottom//20)
+    blockBot = world.blockAt(newrect.right//20, newrect.bottom//20)
+    blockBotLeft = world.blockAt(newrect.left//20, newrect.bottom//20)
+    blockLeftBot = world.blockAt(newrect.left//20, newrect.centery//20)
+    blockLeftTop = world.blockAt(newrect.left//20, newrect.top//20)
+    pg.draw.rect(SURF, (0,0,0), relativeRect(newrect), width=3)
+    if blockLeftBot.collides(*newrect.topleft):
+      print("collides lbot")
+    else: print("no")
+    # pg.draw.rect(SURF, (0,0,0),relativeRect(blockTop.rect),3)
+    # pg.draw.rect(SURF, (255,0,0),relativeRect(blockTopRight.rect),3)
+    # pg.draw.rect(SURF, (0,255,0),relativeRect(blockTopLeft.rect),3)
+    # pg.draw.rect(SURF, (0,0,255),relativeRect(blockRightTop.rect),3)
+    # pg.draw.rect(SURF, (255,0,255),relativeRect(blockRightBot.rect),3)
+    # pg.draw.rect(SURF, (255,255,0),relativeRect(blockBotRight.rect),3)
+    # pg.draw.rect(SURF, (0,255,255),relativeRect(blockBot.rect),3)
+    # pg.draw.rect(SURF, (128,255,128),relativeRect(blockBotLeft.rect),3)
+    # pg.draw.rect(SURF, (255,128,128),relativeRect(blockLeftBot.rect),3)
+    # pg.draw.rect(SURF, (128,128,255),relativeRect(blockLeftTop.rect),3)
+    # if blockTop.mask.overlap(this.mask, blockTop.offset(*newrect.topleft)):
+    #   print("yes")
+    # else:
+    #   print("no")
+      
+    this.rect.x += this.hvelo
     
     this.rect.y += this.gravityvelo # gravity drop
     this.gravity() # update gravityvelo
   
   def isOnBlock(this):
-    return not world[(this.rect.bottom//20) + 1][this.rect.centerx//20].isAir
+    return not world[(this.rect.bottom//20)][this.rect.centerx//20].isAir
   
   def draw(this):
+    pass
     if this.hvelo < 0:
-      SURF.blit(this.reversedTexture, FRAME.center)
+      SURF.blit(this.reversedTexture, relativeRect(this.rect).topleft)
+      this.mask = pg.mask.from_surface(this.reversedTexture)
       this.previousDirection = 0
     elif this.hvelo > 0:
-      SURF.blit(this.texture, FRAME.center)
+      SURF.blit(this.texture, relativeRect(this.rect).topleft)
+      this.mask = pg.mask.from_surface(this.texture)
       this.previousDirection = 1
     elif this.previousDirection:
-      SURF.blit(this.texture, FRAME.center)
+      SURF.blit(this.texture, relativeRect(this.rect).topleft)
+      this.mask = pg.mask.from_surface(this.texture)
     else:
-      SURF.blit(this.reversedTexture,FRAME.center)
+      SURF.blit(this.reversedTexture,relativeRect(this.rect).topleft)
+      this.mask = pg.mask.from_surface(this.reversedTexture)
 
 class Player(Entity):
   camera = FRAME.copy()
@@ -90,6 +129,9 @@ class Player(Entity):
   
   def __init__(this):
     super().__init__(this.camera.centerx-BLOCK_SIZE//2, this.camera.centery-BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*2, this.texture)
+    this.rect.center = this.camera.center
+    this.centerRect = this.rect.copy()
+    this.centerRect.center = FRAME.center
   
   def move(this):
     super().move()
@@ -117,21 +159,33 @@ class Block(Item):
     super().__init__(name, itemTexture, stackSize)
     this.blockTexture = blockTexture
     this.rect = pg.rect.Rect(x*20, y*20, this.SIZE, this.SIZE)
+    this.mask = pg.mask.from_surface(blockTexture)
     this.x = x
     this.y = y
     this.isAir = isAir
   
   def drawBlock(this):
-    SURF.blit(this.blockTexture, this.__relativeRect())
+    SURF.blit(this.blockTexture, relativeRect(this.rect))
+  
+  def offset(this, x:int, y:int) -> tuple[int, int]:
+    return x - this.rect.x, y - this.rect.y
+  
+  def collides(this, x:int, y:int) -> bool:
+    pg.draw.rect(SURF, (0,0,0), relativeRect(this.rect))
+    # print(x,y,this.rect.x,this.rect.y)
+    # print(this.mask.get_size(), player.mask.get_size())
+    if this.mask.overlap(player.mask, this.offset(x, y)):
+      pg.draw.rect(SURF, (255,0,0), relativeRect(this.rect),width=3)
+      return True
+    else:
+      return False
   
   def isInCamera(this):
     return this.rect.colliderect(player.camera)
   
-  def __relativeRect(this): # on screen rect relative to the camera
-    return pg.rect.Rect(this.rect.x - player.camera.x, this.rect.y - player.camera.y, this.SIZE, this.SIZE)
-
 class Air(Block):
-  texture = pg.transform.scale(pg.image.load("air.jpg"), (BLOCK_SIZE, BLOCK_SIZE))
+  texture = pg.surface.Surface((20,20))
+  texture.fill((0,0,0,0))
   def __init__(this, x, y):
     super().__init__("Air", this.texture, this.texture, 0, x, y, isAir = True)
 
@@ -144,7 +198,6 @@ class World:
   def __init__(this):
     this.array = [[Air(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
     this.__generateAllDirt()
-    
   
   # https://gpfault.net/posts/perlin-noise.txt.html
   # not currently using perlin noise tho
@@ -169,7 +222,8 @@ class World:
   def draw(this):
     for y in range(player.camera.top//20, (player.camera.bottom//20)+1):
       for x in range(player.camera.left//20, (player.camera.right//20) + 1):
-        this[y][x].drawBlock()
+        if not this[y][x].isAir:
+          this[y][x].drawBlock()
   
   def __repr__(this):
     out = ""
@@ -183,7 +237,7 @@ class World:
     return out
 
 world = World()
-print(world)
+# print(world)
 while True:
   SURF.fill((255, 255, 255))
   keys = pg.key.get_pressed()
