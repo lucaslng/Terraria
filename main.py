@@ -33,7 +33,7 @@ class Player:
   
   def move(this):
     print(this.hvelo, this.vvelo)
-    if world[(this.rect.bottom//20) + 1][(this.rect.centerx+this.hvelo)//20].name == "Air":
+    if world[(this.rect.bottom//20) + 1][((this.rect.centerx+this.hvelo)//20)].name == "Air":
       this.rect.x += this.hvelo
     if world[int((this.rect.bottom+this.vvelo)/20)+1][(this.rect.centerx//20)].name == "Air":
       this.rect.y += this.vvelo
@@ -42,7 +42,7 @@ class Player:
     this.gravity()
     if this.hvelo < 0: this.hvelo += min(1, abs(this.hvelo))
     elif this.hvelo > 0: this.hvelo -= min(1, this.hvelo)
-    this.vvelo += min(1, abs(this.vvelo))
+    this.vvelo += min(0.5, abs(this.vvelo))
     
     this.camera.center = this.rect.center
   
@@ -51,7 +51,7 @@ class Player:
   def moveRight(this):
     if this.hvelo < 5: this.hvelo += 2
   def jump(this):
-    if this.onBlock(): this.vvelo -= 5
+    if this.onBlock(): this.vvelo -= 7
   def gravity(this):
     if not this.onBlock():
       if this.gravityvelo < 5: this.gravityvelo += GRAVITY
