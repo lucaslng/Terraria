@@ -14,6 +14,7 @@ FRAME = SURF.get_rect()
 BLOCK_SIZE = 20
 WORLD_HEIGHT = 100
 WORLD_WIDTH = 100
+GRAVITY = 0.1
 pg.display.set_caption("Terraria")
 clock = pg.time.Clock()
 
@@ -21,11 +22,32 @@ class Player:
   camera = FRAME.copy()
   camera.center = (BLOCK_SIZE * (WORLD_WIDTH // 2), BLOCK_SIZE * round(WORLD_HEIGHT * 0.6))
   SPEED = BLOCK_SIZE // 4
+  JUMP_HEIGHT = BLOCK_SIZE * 3
+  texture = pg.transform.scale(pg.image.load("player.png"), (BLOCK_SIZE, BLOCK_SIZE*2))
+  rect = pg.rect.Rect(camera.centerx-BLOCK_SIZE//2, camera.centery-BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*2)
+  dropSpeed = 0
   
+  def updateRect(this):
+    this.rect = pg.rect.Rect(this.camera.centerx-BLOCK_SIZE//2, this.camera.centery-BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*2)
   def moveLeft(this):
-    this.camera.center = (this.camera.center[0] - this.SPEED, this.camera.center[1])
+    this.camera.center = (this.camera.centerx - this.SPEED, this.camera.centery)
+    this.updateRect()
   def moveRight(this):
-    this.camera.center = (this.camera.center[0] + this.SPEED, this.camera.center[1])
+    this.camera.center = (this.camera.centerx + this.SPEED, this.camera.centery)
+    this.updateRect()
+  def jump(this):
+    this.camera.center = (this.camera.centerx, this.camera.centery - this.JUMP_HEIGHT)
+    this.updateRect()
+  def drop(this):
+    this.camera.center = (this.camera.centerx, this.camera.centery + this.dropSpeed)
+    this.updateRect()
+  def gravity(this):
+    this.dropSpeed += GRAVITY
+    if this.onBlock(): this.dropSpeed = 0
+  def onBlock(this):
+    if world[(this.rect.bottom//20) - 1][this.rect.centerx//20].name != "Air":
+      return True
+    else: return False
   
   
 player = Player()
@@ -109,11 +131,15 @@ while True:
   SURF.fill((255, 255, 255))
   keys = pg.key.get_pressed()
   world.draw()
+  player.drop()
+  player.gravity()
   
   if keys[pg.K_a]: player.moveLeft()
   if keys[pg.K_d]: player.moveRight()
   
+  
   for event in pg.event.get():
+    if keys[pg.K_SPACE]: player.jump()
     if event.type == QUIT:
       pg.quit()
       sys.exit()
