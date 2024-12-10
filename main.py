@@ -26,6 +26,8 @@ class Player:
   texture = pg.transform.scale(pg.image.load("player.png"), (BLOCK_SIZE, BLOCK_SIZE*2))
   rect = pg.rect.Rect(camera.centerx-BLOCK_SIZE//2, camera.centery-BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*2)
   dropSpeed = 0
+  hvelo = 0 # horizontal and vertical velocity
+  vvelo = 0
   
   def updateRect(this):
     this.rect = pg.rect.Rect(this.camera.centerx-BLOCK_SIZE//2, this.camera.centery-BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*2)
@@ -45,9 +47,12 @@ class Player:
     this.dropSpeed += GRAVITY
     if this.onBlock(): this.dropSpeed = 0
   def onBlock(this):
-    if world[(this.rect.bottom//20) - 1][this.rect.centerx//20].name != "Air":
+    if world[(this.rect.bottom//20) + 1][this.rect.centerx//20].name != "Air":
       return True
     else: return False
+  
+  def draw(this):
+    SURF.blit(this.texture, FRAME.center)
   
   
 player = Player()
@@ -130,7 +135,9 @@ print(world)
 while True:
   SURF.fill((255, 255, 255))
   keys = pg.key.get_pressed()
+  
   world.draw()
+  player.draw()
   player.drop()
   player.gravity()
   
