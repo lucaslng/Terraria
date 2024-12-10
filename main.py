@@ -69,8 +69,8 @@ class Player:
       return True
     else: return False
   
-  def mine(this, x, y):
-    world[y][x] = Air(x, y)
+  def mine(this, block):
+    world[block.y][block.x] = Air(block.x, block.y)
   
   def draw(this):
     if this.hvelo < 0:
@@ -144,7 +144,8 @@ class World:
   
   def hoveredBlock(this) -> Block:
     mousepos = pg.mouse.get_pos()
-    return pixelToCoord(*mousepos)
+    x, y = pixelToCoord(*mousepos)
+    return this[y][x]
   
   def __getitem__(this, x:int):
     return this.array[x]
@@ -181,7 +182,7 @@ while True:
   
   for event in pg.event.get():
     if pg.mouse.get_pressed()[0]:
-      player.mine(*pixelToCoord(*pg.mouse.get_pos()))
+      player.mine(world.hoveredBlock())
     if event.type == QUIT:
       pg.quit()
       sys.exit()
