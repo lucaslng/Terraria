@@ -14,39 +14,51 @@ SURF = pg.display.set_mode((WIDTH, HEIGHT))
 FRAME = SURF.get_rect()
 BLOCK_SIZE = 20
 WORLD_HEIGHT = 100
-WORLD_WIDTH = 100
-GRAVITY = 0.1
+WORLD_WIDTH = 1000
+GRAVITY = 0.05
 pg.display.set_caption("Terraria")
 clock = pg.time.Clock()
 
 class Player:
   camera = FRAME.copy()
-  camera.center = (BLOCK_SIZE * (WORLD_WIDTH // 2), BLOCK_SIZE * round(WORLD_HEIGHT * 0.6))
+  camera.center = (BLOCK_SIZE * (WORLD_WIDTH // 2), BLOCK_SIZE * round(WORLD_HEIGHT * 0.55))
   SPEED = BLOCK_SIZE // 4
   JUMP_HEIGHT = BLOCK_SIZE * 3
   texture = pg.transform.scale(pg.image.load("player.png"), (BLOCK_SIZE, BLOCK_SIZE*2))
   rect = pg.rect.Rect(camera.centerx-BLOCK_SIZE//2, camera.centery-BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*2)
-  dropSpeed = 0
   hvelo = 0 # horizontal and vertical velocity
   vvelo = 0
+  gravityvelo = 0
   
-  def updateRect(this):
-    this.rect = pg.rect.Rect(this.camera.centerx-BLOCK_SIZE//2, this.camera.centery-BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*2)
+  
+  def move(this):
+    print(this.hvelo, this.vvelo)
+    if world[(this.rect.bottom//20) + 1][(this.rect.centerx+this.hvelo)//20].name == "Air":
+      this.rect.x += this.hvelo
+    if world[int((this.rect.bottom+this.vvelo)/20)+1][(this.rect.centerx//20)].name == "Air":
+      this.rect.y += this.vvelo
+    
+    this.rect.y += this.gravityvelo
+    this.gravity()
+    if this.hvelo < 0: this.hvelo += min(1, abs(this.hvelo))
+    elif this.hvelo > 0: this.hvelo -= min(1, this.hvelo)
+    this.vvelo += min(1, abs(this.vvelo))
+    
+    this.camera.center = this.rect.center
+  
   def moveLeft(this):
-    this.camera.center = (this.camera.centerx - this.SPEED, this.camera.centery)
-    this.updateRect()
+    if this.hvelo > -5: this.hvelo -= 2
   def moveRight(this):
-    this.camera.center = (this.camera.centerx + this.SPEED, this.camera.centery)
-    this.updateRect()
+    if this.hvelo < 5: this.hvelo += 2
   def jump(this):
-    this.camera.center = (this.camera.centerx, this.camera.centery - this.JUMP_HEIGHT)
-    this.updateRect()
-  def drop(this):
-    this.camera.center = (this.camera.centerx, this.camera.centery + this.dropSpeed)
-    this.updateRect()
+    if this.onBlock(): this.vvelo -= 5
   def gravity(this):
-    this.dropSpeed += GRAVITY
-    if this.onBlock(): this.dropSpeed = 0
+    if not this.onBlock():
+      if this.gravityvelo < 5: this.gravityvelo += GRAVITY
+    else:
+      this.gravityvelo = 0
+    
+    
   def onBlock(this):
     if world[(this.rect.bottom//20) + 1][this.rect.centerx//20].name != "Air":
       return True
@@ -139,8 +151,7 @@ while True:
   
   world.draw()
   player.draw()
-  player.drop()
-  player.gravity()
+  player.move()
   
   if keys[pg.K_a]: player.moveLeft()
   if keys[pg.K_d]: player.moveRight()
