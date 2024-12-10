@@ -24,24 +24,27 @@ class Player:
   camera.center = (BLOCK_SIZE * (WORLD_WIDTH // 2), BLOCK_SIZE * round(WORLD_HEIGHT * 0.55))
   SPEED = BLOCK_SIZE // 4
   texture = pg.transform.scale(pg.image.load("player.png"), (BLOCK_SIZE, BLOCK_SIZE*2))
+  reversedTexture = pg.transform.flip(texture, True, False)
   rect = pg.rect.Rect(camera.centerx-BLOCK_SIZE//2, camera.centery-BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*2)
   hvelo = 0 # horizontal and vertical velocity
   vvelo = 0
   gravityvelo = 0
+  previousDirection = True # true for right, false for left
   
   
   def move(this):
-    print(this.hvelo, this.vvelo)
-    if world[(this.rect.bottom//20) + 1][((this.rect.centerx+this.hvelo)//20)].name == "Air":
-      this.rect.x += this.hvelo
-    if world[int((this.rect.bottom+this.vvelo)/20)+1][(this.rect.centerx//20)].name == "Air":
-      this.rect.y += this.vvelo
-    
     this.rect.y += this.gravityvelo
     this.gravity()
     if this.hvelo < 0: this.hvelo += min(1, abs(this.hvelo))
     elif this.hvelo > 0: this.hvelo -= min(1, this.hvelo)
     this.vvelo += min(0.5, abs(this.vvelo))
+    print(this.hvelo, this.vvelo)
+    if world[(this.rect.bottom//20)][((this.rect.centerx+this.hvelo)//20)].name == "Air" and world[(this.rect.top//20)][((this.rect.centerx+this.hvelo)//20)].name == "Air":
+      this.rect.x += this.hvelo
+    if world[int((this.rect.bottom+this.vvelo)/20)+1][(this.rect.centerx//20)].name == "Air":
+      this.rect.y += this.vvelo
+    
+    
     
     this.camera.center = this.rect.center
   
@@ -64,13 +67,20 @@ class Player:
     else: return False
   
   def draw(this):
-    SURF.blit(this.texture, FRAME.center)
+    if this.hvelo < 0:
+      SURF.blit(this.reversedTexture, FRAME.center)
+      this.previousDirection = 0
+    elif this.hvelo > 0:
+      SURF.blit(this.texture, FRAME.center)
+      this.previousDirection = 1
+    elif this.previousDirection:
+      SURF.blit(this.texture, FRAME.center)
+    else:
+      SURF.blit(this.reversedTexture,FRAME.center)
   
   
 player = Player()
 
-airTexture = pg.transform.scale(pg.image.load("air.jpg"), (BLOCK_SIZE, BLOCK_SIZE))
-dirtTexture = pg.transform.scale(pg.image.load("dirt.png"), (BLOCK_SIZE, BLOCK_SIZE))
 class Item:
   ITEM_SIZE = 20
   def __init__(this, name:str, itemTexture, stackSize:int):
@@ -100,12 +110,14 @@ class Block(Item):
     return pg.rect.Rect(this.rect.x - player.camera.x, this.rect.y - player.camera.y, this.SIZE, this.SIZE)
 
 class Air(Block):
+  texture = pg.transform.scale(pg.image.load("air.jpg"), (BLOCK_SIZE, BLOCK_SIZE))
   def __init__(this, x, y):
-    super().__init__("Air", airTexture, airTexture, 0, x, y)
+    super().__init__("Air", this.texture, this.texture, 0, x, y)
 
 class Dirt(Block):
+  texture = pg.transform.scale(pg.image.load("dirt.png"), (BLOCK_SIZE, BLOCK_SIZE))
   def __init__(this, x, y):
-    super().__init__("Dirt", dirtTexture, dirtTexture, 64, x, y)
+    super().__init__("Dirt", this.texture, this.texture, 64, x, y)
 
 class World:
   def __init__(this):
