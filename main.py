@@ -77,6 +77,9 @@ class Entity:
     blockLeftBot = world.blockAt(newrect.left//20, newrect.centery//20)
     blockLeftTop = world.blockAt(newrect.left//20, newrect.top//20)
     pg.draw.rect(SURF, (0,0,0), relativeRect(newrect), width=3)
+    if blockRightBot.collides(*newrect.topleft):
+      print("collides rbot")
+    else: print("no")
     if blockLeftBot.collides(*newrect.topleft):
       print("collides lbot")
     else: print("no")
@@ -171,9 +174,6 @@ class Block(Item):
     return x - this.rect.x, y - this.rect.y
   
   def collides(this, x:int, y:int) -> bool:
-    pg.draw.rect(SURF, (0,0,0), relativeRect(this.rect))
-    # print(x,y,this.rect.x,this.rect.y)
-    # print(this.mask.get_size(), player.mask.get_size())
     if this.mask.overlap(player.mask, this.offset(x, y)):
       pg.draw.rect(SURF, (255,0,0), relativeRect(this.rect),width=3)
       return True
