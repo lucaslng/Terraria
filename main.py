@@ -127,9 +127,9 @@ class World:
     return this.array[x]
   
   def draw(this):
-    for row in this.array:
-      for block in row:
-        if block.isInCamera(): block.drawBlock()
+    for y in range(player.camera.top//20, (player.camera.bottom//20)+1):
+      for x in range(player.camera.left//20, (player.camera.right//20) + 1):
+        this[y][x].drawBlock()
   
   def __repr__(this):
     out = ""
