@@ -49,9 +49,6 @@ class Player:
       this.rect.x += this.hvelo
     if world[int((this.rect.bottom+this.vvelo)/20)+1][(this.rect.centerx//20)].name == "Air":
       this.rect.y += this.vvelo
-    
-    
-    
     this.camera.center = this.rect.center
   
   def moveLeft(this):
@@ -144,6 +141,10 @@ class World:
     for x in range(0, WORLD_WIDTH):
       for y in range(WORLD_HEIGHT-1, round(WORLD_HEIGHT*0.6) + this.__generateDirtHeight(x), -1):
         this.array[y][x] = Dirt(x, y)
+  
+  def hoveredBlock(this) -> Block:
+    mousepos = pg.mouse.get_pos()
+    return pixelToCoord(*mousepos)
   
   def __getitem__(this, x:int):
     return this.array[x]
