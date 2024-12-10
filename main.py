@@ -19,6 +19,11 @@ GRAVITY = 0.05
 pg.display.set_caption("Terraria")
 clock = pg.time.Clock()
 
+def pixelToCoord(x:int, y:int):
+  coord = (x + player.camera.left) // 20, (y + player.camera.top) // 20
+  print(coord)
+  return coord
+
 class Player:
   camera = FRAME.copy()
   camera.center = (BLOCK_SIZE * (WORLD_WIDTH // 2), BLOCK_SIZE * round(WORLD_HEIGHT * 0.55))
@@ -33,6 +38,7 @@ class Player:
   
   
   def move(this):
+    print(this.rect.centerx//20, this.rect.centery//20)
     this.rect.y += this.gravityvelo
     this.gravity()
     if this.hvelo < 0: this.hvelo += min(1, abs(this.hvelo))
@@ -66,6 +72,9 @@ class Player:
       return True
     else: return False
   
+  def mine(this, x, y):
+    world[y][x] = Air(x, y)
+  
   def draw(this):
     if this.hvelo < 0:
       SURF.blit(this.reversedTexture, FRAME.center)
@@ -77,6 +86,7 @@ class Player:
       SURF.blit(this.texture, FRAME.center)
     else:
       SURF.blit(this.reversedTexture,FRAME.center)
+
   
   
 player = Player()
@@ -169,6 +179,8 @@ while True:
   if keys[pg.K_SPACE]: player.jump()
   
   for event in pg.event.get():
+    if pg.mouse.get_pressed()[0]:
+      player.mine(*pixelToCoord(*pg.mouse.get_pos()))
     if event.type == QUIT:
       pg.quit()
       sys.exit()
