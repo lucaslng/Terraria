@@ -25,27 +25,31 @@ def pixelToCoord(x:int, y:int):
   return coord
 
 class Entity:
-  def __init__(this, x:float, y:float, width:float, height:float):
-    this.rect = pg.rect.Rect(x, y, width, height)
-
-class Player:
-  camera = FRAME.copy()
-  camera.center = (BLOCK_SIZE * (WORLD_WIDTH // 2), BLOCK_SIZE * round(WORLD_HEIGHT * 0.55))
-  SPEED = BLOCK_SIZE // 4
-  texture = pg.transform.scale(pg.image.load("player.png"), (BLOCK_SIZE, BLOCK_SIZE*2))
-  reversedTexture = pg.transform.flip(texture, True, False)
-  rect = pg.rect.Rect(camera.centerx-BLOCK_SIZE//2, camera.centery-BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*2)
-  hvelo = 0 # horizontal and vertical velocity
+  
+  hvelo = 0
   vvelo = 0
   gravityvelo = 0
-  previousDirection = True # true for right, false for left
+  previousDirection = True
   
+  def __init__(this, x:float, y:float, width:float, height:float, texture:pg.surface.Surface):
+    this.rect = pg.rect.Rect(x, y, width, height)
+    this.texture = texture
+    this.reversedTexture = pg.transform.flip(texture, True, False)
+    
+  def moveLeft(this):
+    if this.hvelo > -5: this.hvelo -= 2
+  def moveRight(this):
+    if this.hvelo < 5: this.hvelo += 2
+  def jump(this):
+    if this.isOnBlock(): this.vvelo -= 7
+  def gravity(this):
+    if not this.isOnBlock():
+      if this.gravityvelo < 5: this.gravityvelo += GRAVITY
+    else:
+      this.gravityvelo = 0
   
   def move(this):
     # print(this.rect.centerx//20, this.rect.centery//20)
-    
-    this.rect.y += this.gravityvelo # gravity drop
-    this.gravity() # update gravityvelo
     
     if this.hvelo < 0: this.hvelo += min(1, abs(this.hvelo)) # reduce horizontal velocity constantly to 0
     elif this.hvelo > 0: this.hvelo -= min(1, this.hvelo)
@@ -58,27 +62,12 @@ class Player:
       this.rect.x += this.hvelo
     if world[int((this.rect.bottom+this.vvelo)/20)+1][(this.rect.centerx//20)].name == "Air":
       this.rect.y += this.vvelo
-    this.camera.center = this.rect.center
-  
-  def moveLeft(this):
-    if this.hvelo > -5: this.hvelo -= 2
-  def moveRight(this):
-    if this.hvelo < 5: this.hvelo += 2
-  def jump(this):
-    if this.isOnBlock(): this.vvelo -= 7
-  def gravity(this):
-    if not this.isOnBlock():
-      if this.gravityvelo < 5: this.gravityvelo += GRAVITY
-    else:
-      this.gravityvelo = 0
     
-  def isOnBlock(this):
-    if world[(this.rect.bottom//20) + 1][this.rect.centerx//20].name != "Air":
-      return True
-    else: return False
+    this.rect.y += this.gravityvelo # gravity drop
+    this.gravity() # update gravityvelo
   
-  def mine(this, block):
-    world[block.y][block.x] = Air(block.x, block.y)
+  def isOnBlock(this):
+    return not world[(this.rect.bottom//20) + 1][this.rect.centerx//20].isAir
   
   def draw(this):
     if this.hvelo < 0:
@@ -91,7 +80,25 @@ class Player:
       SURF.blit(this.texture, FRAME.center)
     else:
       SURF.blit(this.reversedTexture,FRAME.center)
+
+class Player(Entity):
+  camera = FRAME.copy()
+  camera.center = (BLOCK_SIZE * (WORLD_WIDTH // 2), BLOCK_SIZE * round(WORLD_HEIGHT * 0.55))
+  SPEED = BLOCK_SIZE // 4
+  texture = pg.transform.scale(pg.image.load("player.png"), (BLOCK_SIZE, BLOCK_SIZE*2))
+  reversedTexture = pg.transform.flip(texture, True, False)
   
+  def __init__(this):
+    super().__init__(this.camera.centerx-BLOCK_SIZE//2, this.camera.centery-BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*2, this.texture)
+  
+  def move(this):
+    super().move()
+    this.camera.center = this.rect.center
+  
+  def mine(this, block):
+    world[block.y][block.x] = Air(block.x, block.y)
+  
+
 player = Player()
 
 class Item:
@@ -112,6 +119,7 @@ class Block(Item):
     this.rect = pg.rect.Rect(x*20, y*20, this.SIZE, this.SIZE)
     this.x = x
     this.y = y
+    this.isAir = isAir
   
   def drawBlock(this):
     SURF.blit(this.blockTexture, this.__relativeRect())
