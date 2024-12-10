@@ -23,7 +23,6 @@ class Player:
   camera = FRAME.copy()
   camera.center = (BLOCK_SIZE * (WORLD_WIDTH // 2), BLOCK_SIZE * round(WORLD_HEIGHT * 0.55))
   SPEED = BLOCK_SIZE // 4
-  JUMP_HEIGHT = BLOCK_SIZE * 3
   texture = pg.transform.scale(pg.image.load("player.png"), (BLOCK_SIZE, BLOCK_SIZE*2))
   rect = pg.rect.Rect(camera.centerx-BLOCK_SIZE//2, camera.centery-BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*2)
   hvelo = 0 # horizontal and vertical velocity
@@ -155,10 +154,9 @@ while True:
   
   if keys[pg.K_a]: player.moveLeft()
   if keys[pg.K_d]: player.moveRight()
-  
+  if keys[pg.K_SPACE]: player.jump()
   
   for event in pg.event.get():
-    if keys[pg.K_SPACE]: player.jump()
     if event.type == QUIT:
       pg.quit()
       sys.exit()
