@@ -222,7 +222,7 @@ class Player(Entity, HasInventory):
   camera.center = (BLOCK_SIZE * (WORLD_WIDTH // 2), BLOCK_SIZE * round(WORLD_HEIGHT * 0.55))
   texture = pg.transform.scale(pg.image.load("player.png"), (BLOCK_SIZE, BLOCK_SIZE*2))
   reversedTexture = pg.transform.flip(texture, True, False)
-  
+  viewDistance = 4 * BLOCK_SIZE
   full_heart_texture = pg.transform.scale(pg.image.load("full_heart.png"), (20, 20))
   half_heart_texture = pg.transform.scale(pg.image.load("half_heart.png"), (20, 20))
   empty_heart_texture = pg.transform.scale(pg.image.load("empty_heart.png"), (20, 20))
@@ -379,11 +379,15 @@ class World:
         block = this[y][x]
         if not block.isAir:
           blockRelativeRect = relativeRect(block.rect)
-          vertices.append((blockRelativeRect.topleft,math.atan2(blockRelativeRect.top-FRAME.centery, blockRelativeRect.left-FRAME.centerx)))
-          vertices.append((blockRelativeRect.topright,math.atan2(blockRelativeRect.top-FRAME.centery,blockRelativeRect.right-FRAME.centerx)))
-          vertices.append((blockRelativeRect.bottomleft,math.atan2(blockRelativeRect.bottom-FRAME.centery,blockRelativeRect.left-FRAME.centerx)))
-          vertices.append((blockRelativeRect.bottomright,math.atan2(blockRelativeRect.bottom-FRAME.centery,blockRelativeRect.right-FRAME.centerx)))
-          this[y][x].drawBlock()
+          if distance(*blockRelativeRect.topleft, *FRAME.center) <= player.viewDistance:
+            vertices.append((blockRelativeRect.topleft,math.atan2(blockRelativeRect.top-FRAME.centery, blockRelativeRect.left-FRAME.centerx)))
+          if distance(*blockRelativeRect.topright, *FRAME.center) <= player.viewDistance:
+            vertices.append((blockRelativeRect.topright,math.atan2(blockRelativeRect.top-FRAME.centery,blockRelativeRect.right-FRAME.centerx)))
+          if distance(*blockRelativeRect.bottomleft, *FRAME.center) <= player.viewDistance:
+            vertices.append((blockRelativeRect.bottomleft,math.atan2(blockRelativeRect.bottom-FRAME.centery,blockRelativeRect.left-FRAME.centerx)))
+          if distance(*blockRelativeRect.bottomright, *FRAME.center) <= player.viewDistance:
+            vertices.append((blockRelativeRect.bottomright,math.atan2(blockRelativeRect.bottom-FRAME.centery,blockRelativeRect.right-FRAME.centerx)))
+          block.drawBlock()
   
   def __repr__(this):
     out = ""
