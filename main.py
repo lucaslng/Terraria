@@ -67,7 +67,7 @@ class Inventory:
     return out
 
   def addItem(this, item:Item):
-    r,c=0,0
+    r = c = 0
     for r in range(this.rows):
       for c in range(this.cols):
         if item == this.inventory[r][c].item:
