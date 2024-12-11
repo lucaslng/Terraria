@@ -45,12 +45,7 @@ class Entity:
   def moveRight(this):
     if this.hvelo < 5: this.hvelo += 2
   def jump(this):
-    if this.isOnBlock(): this.vvelo -= 7
-  def gravity(this):
-    if not this.isOnBlock():
-      if this.gravityvelo < 5: this.gravityvelo += GRAVITY
-    else:
-      this.gravityvelo = 0
+    if this.isOnBlock(): this.vvelo -= 18
   
   def checkCollisionH(this) -> int:
     newrect = this.rect.copy()
@@ -98,15 +93,16 @@ class Entity:
     if this.hvelo < 0: this.hvelo += min(1, abs(this.hvelo)) # reduce horizontal velocity constantly to 0
     elif this.hvelo > 0: this.hvelo -= min(1, this.hvelo)
     
-    this.vvelo += min(0.5, abs(this.vvelo)) # reduce vertical velocity constantly to 0
+    if this.isOnBlock and this.vvelo < 5: this.vvelo += 1
     
-    # print(this.hvelo, this.vvelo)
+    
+    print(this.hvelo, this.vvelo)
       
     this.rect.x += this.checkCollisionH()
     this.rect.y += this.checkCollisionV()
     
-    this.rect.y += this.gravityvelo # gravity drop
-    this.gravity() # update gravityvelo
+    # this.rect.y += this.gravityvelo # gravity drop
+    # this.gravity() # update gravityvelo
   
   def isOnBlock(this):
     return not world[(this.rect.bottom//20)][this.rect.centerx//20].isAir
