@@ -27,6 +27,27 @@ def pixelToCoord(x:int, y:int):
 def relativeRect(rect:pg.rect.Rect): # on screen rect relative to the camera
   return pg.rect.Rect(rect.x - player.camera.x, rect.y - player.camera.y, rect.width, rect.height)
 
+class Item:
+  ITEM_SIZE = BLOCK_SIZE
+  def __init__(this, name:str, itemTexture, stackSize:int):
+    this.itemTexture = itemTexture
+    this.stackSize = stackSize
+    this.name = name
+    # print(this.itemTextureFile)
+  def drawItem(this, x:int, y:int):
+    SURF.blit(this.itemTexture, (x, y))
+
+class Inventory:
+  def __init__(this, rows:int, cols:int):
+    this.inventory = [[Item for _ in range(cols)] for _ in range(rows)]
+  
+  def __getitem__(this, row:int):
+    return this.inventory[row]
+
+class HasInventory:
+  def __init__(this, rows:int, cols:int):
+    this.inventory = Inventory(rows, cols)
+
 class Entity:
   
   hvelo = 0
@@ -120,17 +141,22 @@ class Entity:
       SURF.blit(this.reversedTexture,relativeRect(this.rect).topleft)
       this.mask = pg.mask.from_surface(this.reversedTexture)
 
-class Player(Entity):
+class Player(Entity, HasInventory):
   camera = FRAME.copy()
   camera.center = (BLOCK_SIZE * (WORLD_WIDTH // 2), BLOCK_SIZE * round(WORLD_HEIGHT * 0.55))
   texture = pg.transform.scale(pg.image.load("player.png"), (BLOCK_SIZE, BLOCK_SIZE*2))
   reversedTexture = pg.transform.flip(texture, True, False)
   
   def __init__(this):
-    super().__init__(this.camera.centerx-BLOCK_SIZE//2, this.camera.centery-BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*2, this.texture, 10)
+    Entity.__init__(this, this.camera.centerx-BLOCK_SIZE//2, this.camera.centery-BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*2, this.texture, 10,)
+    HasInventory.__init__(this, 4, 10)
     this.rect.center = this.camera.center
     this.centerRect = this.rect.copy()
     this.centerRect.center = FRAME.center
+    # print(this.inventory[0][0])
+  
+  def hotbar(this) -> list[Item]:
+    return this.inventory[0]
   
   def move(this):
     super().move()
@@ -143,19 +169,9 @@ class Player(Entity):
 
 player = Player()
 
-class Item:
-  ITEM_SIZE = BLOCK_SIZE
-  def __init__(this, name:str, itemTexture, stackSize:int):
-    this.itemTexture = itemTexture
-    this.stackSize = stackSize
-    this.name = name
-    # print(this.itemTextureFile)
-  def drawItem(this, x:int, y:int):
-    SURF.blit(this.itemTexture, (x, y))
-
 class Block(Item):
   SIZE = BLOCK_SIZE
-  def __init__(this, name:str, itemTexture, blockTexture, stackSize:int, x:int, y:int, isAir=False):
+  def __init__(this, name:str, itemTexture, blockTexture, stackSize:int, x, y, isAir=False):
     super().__init__(name, itemTexture, stackSize)
     this.blockTexture = blockTexture
     this.rect = pg.rect.Rect(x*BLOCK_SIZE, y*BLOCK_SIZE, this.SIZE, this.SIZE)
@@ -189,12 +205,12 @@ class Block(Item):
 class Air(Block):
   texture = pg.surface.Surface((BLOCK_SIZE,BLOCK_SIZE))
   texture.fill((0,0,0,0))
-  def __init__(this, x, y):
+  def __init__(this, x=-1, y=-1):
     super().__init__("Air", this.texture, this.texture, 0, x, y, isAir = True)
 
 class Dirt(Block):
   texture = pg.transform.scale(pg.image.load("dirt.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  def __init__(this, x, y):
+  def __init__(this, x=-1, y=-1):
     super().__init__("Dirt", this.texture, this.texture, 64, x, y)
 
 class World:
@@ -241,6 +257,9 @@ class World:
 
 world = World()
 # print(world)
+
+player.inventory[0][0] = Dirt()
+print(player.inventory[0][0].name)
 while True:
   SURF.fill((255, 255, 255))
   keys = pg.key.get_pressed()
