@@ -216,7 +216,7 @@ class Entity:
       SURF.blit(this.reversedTexture,relativeRect(this.rect).topleft)
       this.mask = pg.mask.from_surface(this.reversedTexture)
 
-vertices = []
+vertices = set()
 class Player(Entity, HasInventory):
   camera = FRAME.copy()
   camera.center = (BLOCK_SIZE * (WORLD_WIDTH // 2), BLOCK_SIZE * round(WORLD_HEIGHT * 0.55))
@@ -380,13 +380,13 @@ class World:
         if not block.isAir:
           blockRelativeRect = relativeRect(block.rect)
           if distance(*blockRelativeRect.topleft, *FRAME.center) <= player.viewDistance:
-            vertices.append((blockRelativeRect.topleft,math.atan2(blockRelativeRect.top-FRAME.centery, blockRelativeRect.left-FRAME.centerx)))
+            vertices.add((blockRelativeRect.topleft,math.atan2(blockRelativeRect.top-FRAME.centery, blockRelativeRect.left-FRAME.centerx)))
           if distance(*blockRelativeRect.topright, *FRAME.center) <= player.viewDistance:
-            vertices.append((blockRelativeRect.topright,math.atan2(blockRelativeRect.top-FRAME.centery,blockRelativeRect.right-FRAME.centerx)))
+            vertices.add((blockRelativeRect.topright,math.atan2(blockRelativeRect.top-FRAME.centery,blockRelativeRect.right-FRAME.centerx)))
           if distance(*blockRelativeRect.bottomleft, *FRAME.center) <= player.viewDistance:
-            vertices.append((blockRelativeRect.bottomleft,math.atan2(blockRelativeRect.bottom-FRAME.centery,blockRelativeRect.left-FRAME.centerx)))
+            vertices.add((blockRelativeRect.bottomleft,math.atan2(blockRelativeRect.bottom-FRAME.centery,blockRelativeRect.left-FRAME.centerx)))
           if distance(*blockRelativeRect.bottomright, *FRAME.center) <= player.viewDistance:
-            vertices.append((blockRelativeRect.bottomright,math.atan2(blockRelativeRect.bottom-FRAME.centery,blockRelativeRect.right-FRAME.centerx)))
+            vertices.add((blockRelativeRect.bottomright,math.atan2(blockRelativeRect.bottom-FRAME.centery,blockRelativeRect.right-FRAME.centerx)))
           block.drawBlock()
   
   def __repr__(this):
