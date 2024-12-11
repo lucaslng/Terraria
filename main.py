@@ -1,7 +1,7 @@
 import sys
 import pygame as pg
 from pygame.locals import *
-import math
+import math 
 import random
 from enum import Enum
 import pickle # use pickle to store save
@@ -55,7 +55,7 @@ class Inventory:
   def __init__(this, rows:int, cols:int):
     this.rows = rows
     this.cols = cols
-    this.inventory = [[this.Slot for _ in range(cols)] for _ in range(rows)]
+    this.inventory = [[this.Slot() for _ in range(cols)] for _ in range(rows)]
   
   def __repr__(this):
     out = ""
@@ -66,22 +66,54 @@ class Inventory:
     print(out)
     return out
 
-  def addItem(this, item:Item):
-    r = c = 0
+  def addItem(this, item: Item):
     for r in range(this.rows):
-      for c in range(this.cols):
-        if item == this.inventory[r][c].item:
-          this.inventory[r][c].count += 1
-          break
-      else:
-        continue
-      break
-    else:
-      this.inventory[r][c].item = item
-      this.inventory[r][c].count = 1
+        for c in range(this.cols):
+            slot = this.inventory[r][c]
+            # If item already exists in slot, increment count
+            if slot.item and slot.item == item:
+                if slot.count < slot.item.stackSize:  # Check stack size limit
+                    slot.count += 1
+                    return
+            # If slot is empty, add the item
+            elif slot.item is None:
+                slot.item = item
+                slot.count = 1
+                return
+    print("Inventory full!")  # Handle full inventory
   
   def __getitem__(this, row:int):
     return this.inventory[row]
+  
+  def drawHotbar(this):
+      """Draws the first row of the inventory on the screen"""
+      SLOT_SIZE = 40  #size of each slot
+      HOTBAR_X = (WIDTH - (this.cols * SLOT_SIZE)) // 2
+      HOTBAR_Y = HEIGHT - SLOT_SIZE - 10
+      FONT = pg.font.Font(None, 20)
+      
+      for col in range(this.cols):
+          slot_x = HOTBAR_X + col * SLOT_SIZE
+          slot_y = HOTBAR_Y
+          
+          #draws the slots
+          pg.draw.rect(SURF, (200, 200, 200), (slot_x, slot_y, SLOT_SIZE, SLOT_SIZE))
+          pg.draw.rect(SURF, (0, 0, 0), (slot_x, slot_y, SLOT_SIZE, SLOT_SIZE), 2)
+          
+          slot = this.inventory[0][col]
+          if slot.item is not None:
+            item_texture = slot.item.itemTexture
+            scaled_texture = pg.transform.scale(item_texture, (SLOT_SIZE - 6, SLOT_SIZE - 6))
+            #center texture in the slot
+            texture_rect = scaled_texture.get_rect(center=(slot_x + SLOT_SIZE // 2, slot_y + SLOT_SIZE // 2))
+            SURF.blit(scaled_texture, texture_rect.topleft)
+
+            if slot.count > 0:
+                count_text = FONT.render(str(slot.count), True, (255, 255, 255))
+                #item counter is in the bottom right of the slot
+                text_rect = count_text.get_rect(bottomright=(slot_x + SLOT_SIZE - 5, slot_y + SLOT_SIZE - 5))
+                SURF.blit(count_text, text_rect.topleft)
+           
 
 class HasInventory:
   '''Parent class for classes than have an inventory'''
@@ -165,7 +197,6 @@ class Entity:
     if this.vvelo < 5: this.vvelo += gravity
   
   def draw(this):
-    pass
     if this.hvelo < 0:
       SURF.blit(this.reversedTexture, relativeRect(this.rect).topleft)
       this.mask = pg.mask.from_surface(this.reversedTexture)
@@ -204,10 +235,9 @@ class Player(Entity, HasInventory):
   
   def mine(this, block):
     if not block.isAir:
-      print("mined", block.name)
-      world[block.y][block.x] = Air(block.x, block.y)
-      this.inventory.addItem(block)
-  
+        print("mined", block.name)
+        world[block.y][block.x] = Air(block.x, block.y)
+        this.inventory.addItem(block)
 
 player = Player()
 
@@ -253,8 +283,9 @@ class Air(Block):
 
 class Dirt(Block):
   texture = pg.transform.scale(pg.image.load("dirt.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  itemTexture = pg.transform.scale(texture, (15, 15))
   def __init__(this, x=-1, y=-1):
-    super().__init__("Dirt", this.texture, this.texture, 64, x, y)
+    super().__init__("Dirt", this.itemTexture, this.texture, 64, x, y)
 
 class World:
   def __init__(this):
@@ -299,10 +330,8 @@ class World:
     return out
 
 world = World()
-# print(world)
 
-player.inventory.addItem(Dirt())
-print(player.inventory[0][0].item.name)
+
 while True:
   SURF.fill((255, 255, 255))
   keys = pg.key.get_pressed()
@@ -310,6 +339,7 @@ while True:
   world.draw()
   player.draw()
   player.move()
+  player.inventory.drawHotbar()
   print(player.inventory.inventory[0][0].count)
   
   if keys[pg.K_a]: player.moveLeft()
