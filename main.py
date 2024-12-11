@@ -15,12 +15,12 @@ FRAME = SURF.get_rect()
 BLOCK_SIZE = 20
 WORLD_HEIGHT = 100
 WORLD_WIDTH = 1000
-GRAVITY = 0.05
+gravity = 1
 pg.display.set_caption("Terraria")
 clock = pg.time.Clock()
 
 def pixelToCoord(x:int, y:int):
-  coord = (x + player.camera.left) // 20, (y + player.camera.top) // 20
+  coord = (x + player.camera.left) // BLOCK_SIZE, (y + player.camera.top) // BLOCK_SIZE
   # print(coord)
   return coord
 
@@ -35,11 +35,12 @@ class Entity:
   previousDirection = True
   isOnBlock = False
   
-  def __init__(this, x:float, y:float, width:float, height:float, texture:pg.surface.Surface):
+  def __init__(this, x:float, y:float, width:float, height:float, texture:pg.surface.Surface, health:float):
     this.rect = pg.rect.Rect(x, y, width, height)
     this.texture = texture
     this.reversedTexture = pg.transform.flip(texture, True, False)
     this.mask = pg.mask.from_surface(texture)
+    this.health = health
     
   def moveLeft(this):
     if this.hvelo > -5: this.hvelo -= 2
@@ -51,10 +52,10 @@ class Entity:
   def checkCollisionH(this) -> int:
     newrect = this.rect.copy()
     newrect.x += this.hvelo - 1
-    blockRightTop = world.blockAt(newrect.right//20, (newrect.top+10)//20)
-    blockRightBot = world.blockAt(newrect.right//20, (newrect.centery+10)//20)
-    blockLeftBot = world.blockAt(newrect.left//20, (newrect.centery+10)//20)
-    blockLeftTop = world.blockAt(newrect.left//20, (newrect.top+10)//20)
+    blockRightTop = world.blockAt(newrect.right//BLOCK_SIZE, (newrect.top+10)//BLOCK_SIZE)
+    blockRightBot = world.blockAt(newrect.right//BLOCK_SIZE, (newrect.centery+10)//BLOCK_SIZE)
+    blockLeftBot = world.blockAt(newrect.left//BLOCK_SIZE, (newrect.centery+10)//BLOCK_SIZE)
+    blockLeftTop = world.blockAt(newrect.left//BLOCK_SIZE, (newrect.top+10)//BLOCK_SIZE)
     # pg.draw.rect(SURF, (0,0,255),relativeRect(blockRightTop.rect),3)
     # pg.draw.rect(SURF, (255,0,255),relativeRect(blockRightBot.rect),3)
     # pg.draw.rect(SURF, (255,128,128),relativeRect(blockLeftBot.rect),3)
@@ -68,10 +69,10 @@ class Entity:
   def checkCollisionV(this) -> int:
     newrect = this.rect.copy()
     newrect.y += this.vvelo
-    blockTopRight = world.blockAt((newrect.right - 8)//20, newrect.top//20)
-    blockTopLeft = world.blockAt(newrect.left//20, newrect.top//20)
-    blockBotRight = world.blockAt((newrect.right- 8)//20, (newrect.bottom+10)//20)
-    blockBotLeft = world.blockAt(newrect.left//20, (newrect.bottom+10)//20)
+    blockTopRight = world.blockAt((newrect.right - 8)//BLOCK_SIZE, newrect.top//BLOCK_SIZE)
+    blockTopLeft = world.blockAt(newrect.left//BLOCK_SIZE, newrect.top//BLOCK_SIZE)
+    blockBotRight = world.blockAt((newrect.right- 8)//BLOCK_SIZE, (newrect.bottom+10)//BLOCK_SIZE)
+    blockBotLeft = world.blockAt(newrect.left//BLOCK_SIZE, (newrect.bottom+10)//BLOCK_SIZE)
     # blockTopRight.drawBlockOutline((0,255,0))
     # blockTopLeft.drawBlockOutline((0,255,255))
     # pg.draw.rect(SURF, (0,0,0), relativeRect(newrect), 2)
@@ -100,7 +101,7 @@ class Entity:
     this.rect.x += this.checkCollisionH()
     this.rect.y += this.checkCollisionV()
     # 
-    if this.vvelo < 5: this.vvelo += 1
+    if this.vvelo < 5: this.vvelo += gravity
   
   def draw(this):
     pass
@@ -122,12 +123,11 @@ class Entity:
 class Player(Entity):
   camera = FRAME.copy()
   camera.center = (BLOCK_SIZE * (WORLD_WIDTH // 2), BLOCK_SIZE * round(WORLD_HEIGHT * 0.55))
-  SPEED = BLOCK_SIZE // 4
   texture = pg.transform.scale(pg.image.load("player.png"), (BLOCK_SIZE, BLOCK_SIZE*2))
   reversedTexture = pg.transform.flip(texture, True, False)
   
   def __init__(this):
-    super().__init__(this.camera.centerx-BLOCK_SIZE//2, this.camera.centery-BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*2, this.texture)
+    super().__init__(this.camera.centerx-BLOCK_SIZE//2, this.camera.centery-BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*2, this.texture, 10)
     this.rect.center = this.camera.center
     this.centerRect = this.rect.copy()
     this.centerRect.center = FRAME.center
@@ -144,7 +144,7 @@ class Player(Entity):
 player = Player()
 
 class Item:
-  ITEM_SIZE = 20
+  ITEM_SIZE = BLOCK_SIZE
   def __init__(this, name:str, itemTexture, stackSize:int):
     this.itemTexture = itemTexture
     this.stackSize = stackSize
@@ -158,7 +158,7 @@ class Block(Item):
   def __init__(this, name:str, itemTexture, blockTexture, stackSize:int, x:int, y:int, isAir=False):
     super().__init__(name, itemTexture, stackSize)
     this.blockTexture = blockTexture
-    this.rect = pg.rect.Rect(x*20, y*20, this.SIZE, this.SIZE)
+    this.rect = pg.rect.Rect(x*BLOCK_SIZE, y*BLOCK_SIZE, this.SIZE, this.SIZE)
     this.mask = pg.mask.from_surface(blockTexture)
     this.x = x
     this.y = y
@@ -182,9 +182,12 @@ class Block(Item):
   
   def isInCamera(this):
     return this.rect.colliderect(player.camera)
+
+  def __repr__(this):
+    return this.name
   
 class Air(Block):
-  texture = pg.surface.Surface((20,20))
+  texture = pg.surface.Surface((BLOCK_SIZE,BLOCK_SIZE))
   texture.fill((0,0,0,0))
   def __init__(this, x, y):
     super().__init__("Air", this.texture, this.texture, 0, x, y, isAir = True)
@@ -220,8 +223,8 @@ class World:
     return this.array[x]
   
   def draw(this):
-    for y in range(player.camera.top//20, (player.camera.bottom//20)+1):
-      for x in range(player.camera.left//20, (player.camera.right//20) + 1):
+    for y in range(player.camera.top//BLOCK_SIZE, (player.camera.bottom//BLOCK_SIZE)+1):
+      for x in range(player.camera.left//BLOCK_SIZE, (player.camera.right//BLOCK_SIZE) + 1):
         if not this[y][x].isAir:
           this[y][x].drawBlock()
   
