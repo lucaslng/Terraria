@@ -232,6 +232,7 @@ class Block(Item):
     return x - this.rect.x, y - this.rect.y
   
   def collides(this, x:int, y:int) -> bool:
+    if this.isAir: return False
     if this.mask.overlap(player.mask, this.offset(x, y)):
       pg.draw.rect(SURF, (255,0,0), relativeRect(this.rect),width=3)
       return True
