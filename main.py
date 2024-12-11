@@ -68,9 +68,9 @@ class Entity:
   def checkCollisionV(this) -> int:
     newrect = this.rect.copy()
     newrect.y += this.vvelo
-    blockTopRight = world.blockAt((newrect.right - 10)//20, newrect.top//20)
+    blockTopRight = world.blockAt((newrect.right - 8)//20, newrect.top//20)
     blockTopLeft = world.blockAt(newrect.left//20, newrect.top//20)
-    blockBotRight = world.blockAt((newrect.right-10)//20, (newrect.bottom+10)//20)
+    blockBotRight = world.blockAt((newrect.right- 8)//20, (newrect.bottom+10)//20)
     blockBotLeft = world.blockAt(newrect.left//20, (newrect.bottom+10)//20)
     # blockTopRight.drawBlockOutline((0,255,0))
     # blockTopLeft.drawBlockOutline((0,255,255))
