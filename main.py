@@ -365,6 +365,7 @@ class Block(Item):
     super().__init__(name, itemTexture, stackSize)
     this.blockTexture = blockTexture
     this.rect = pg.rect.Rect(x*BLOCK_SIZE, y*BLOCK_SIZE, this.SIZE, this.SIZE)
+    this.vertices = (this.rect.topleft,this.rect.topright,this.rect.bottomleft,this.rect.bottomright)
     this.mask = pg.mask.from_surface(blockTexture)
     this.x = x
     this.y = y
