@@ -43,7 +43,8 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery) -> set[tuple[float]]:
     d = (2 * dy) - dx
     y = y0
     for x in range (x0, x1+1):
-      blocksTouched.add(world.blockAt(*pixelToCoord(x,y)))
+      blockTouched = world.blockAt(*pixelToCoord(x,y))
+      if not blockTouched.isAir: blocksTouched.add(blockTouched)
       if d > 0:
         y += yi
         d += (2 * (dy - dx))
@@ -59,7 +60,8 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery) -> set[tuple[float]]:
     d = (2 * dx) - dy
     x = x0
     for y in range(y0, y1+1):
-      blocksTouched.add(world.blockAt(*pixelToCoord(x,y)))
+      blockTouched = world.blockAt(*pixelToCoord(x,y))
+      if not blockTouched.isAir: blocksTouched.add(blockTouched)
       if d > 0:
         x += xi
         d += (2 * (dx - dy))
@@ -346,7 +348,7 @@ class Player(Entity, HasInventory):
     mousepos = pg.mouse.get_pos()
     blocksTouched = bresenham(*mousepos)
     for block in blocksTouched:
-      if not block.isAir: block.drawBlockOutline((255,0,0))
+      block.drawBlockOutline((255,0,0))
     pg.draw.line(SURF, (0,0,0), FRAME.center, mousepos)
     
   
