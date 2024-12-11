@@ -2,6 +2,7 @@ import sys
 import pygame as pg
 from pygame.locals import *
 import math
+from math import radians, hypot
 import random
 from enum import Enum
 import pickle # use pickle to store save
@@ -27,6 +28,9 @@ def pixelToCoord(x:int, y:int):
 def relativeRect(rect:pg.rect.Rect):
   '''Returns on screen rect relative to the camera'''
   return pg.rect.Rect(rect.x - player.camera.x, rect.y - player.camera.y, rect.width, rect.height)
+
+def distance(x1, y1, x2, y2):
+  return hypot(x1-x2, y1-y2)
 
 class Item:
   '''Base item class'''
@@ -181,6 +185,7 @@ class Entity:
       SURF.blit(this.reversedTexture,relativeRect(this.rect).topleft)
       this.mask = pg.mask.from_surface(this.reversedTexture)
 
+vertices = []
 class Player(Entity, HasInventory):
   camera = FRAME.copy()
   camera.center = (BLOCK_SIZE * (WORLD_WIDTH // 2), BLOCK_SIZE * round(WORLD_HEIGHT * 0.55))
@@ -208,7 +213,17 @@ class Player(Entity, HasInventory):
       world[block.y][block.x] = Air(block.x, block.y)
       this.inventory.addItem(block)
   
-
+  def drawCircle(this):
+    pg.draw.circle(ASURF, (0,0,0,120),FRAME.center,BLOCK_SIZE*4)
+    
+  
+  def sweep(this):
+    # https://www.redblobgames.com/articles/visibility/
+    endpoints = []
+    
+  
+ASURF = pg.surface.Surface((WIDTH,HEIGHT),pg.SRCALPHA)
+ASURF.fill((0,0,0,0))
 player = Player()
 
 class Block(Item):
@@ -284,7 +299,13 @@ class World:
   def draw(this):
     for y in range(player.camera.top//BLOCK_SIZE, (player.camera.bottom//BLOCK_SIZE)+1):
       for x in range(player.camera.left//BLOCK_SIZE, (player.camera.right//BLOCK_SIZE) + 1):
-        if not this[y][x].isAir:
+        block = this[y][x]
+        if not block.isAir:
+          blockRelativeRect = relativeRect(block.rect)
+          vertices.append((blockRelativeRect.topleft,math.atan2(blockRelativeRect.top-FRAME.centery, blockRelativeRect.left-FRAME.centerx)))
+          vertices.append((blockRelativeRect.topright,math.atan2(blockRelativeRect.top-FRAME.centery,blockRelativeRect.right-FRAME.centerx)))
+          vertices.append((blockRelativeRect.bottomleft,math.atan2(blockRelativeRect.bottom-FRAME.centery,blockRelativeRect.left-FRAME.centerx)))
+          vertices.append((blockRelativeRect.bottomright,math.atan2(blockRelativeRect.bottom-FRAME.centery,blockRelativeRect.right-FRAME.centerx)))
           this[y][x].drawBlock()
   
   def __repr__(this):
@@ -305,12 +326,19 @@ player.inventory.addItem(Dirt())
 print(player.inventory[0][0].item.name)
 while True:
   SURF.fill((255, 255, 255))
+  ASURF.fill((0,0,0,0))
   keys = pg.key.get_pressed()
-  
+  vertices.clear()
   world.draw()
   player.draw()
   player.move()
   print(player.inventory.inventory[0][0].count)
+  player.drawCircle()
+  for vertice in vertices:
+    pg.draw.circle(ASURF,(0,255,0,120),vertice[0],3)
+    # if distance(*FRAME.center, *vertice[0]) <= 5:
+    pg.draw.line(ASURF,(0,0,0,40),FRAME.center,vertice[0])
+  SURF.blit(ASURF,(0,0))
   
   if keys[pg.K_a]: player.moveLeft()
   if keys[pg.K_d]: player.moveRight()
