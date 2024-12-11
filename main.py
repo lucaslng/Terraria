@@ -50,42 +50,45 @@ class Entity:
   def checkCollisionH(this) -> int:
     newrect = this.rect.copy()
     newrect.x += this.hvelo
-    blockTopRight = world.blockAt(newrect.right//20, newrect.top//20-1)
-    blockTopLeft = world.blockAt(newrect.left//20, newrect.top//20-1)
     blockRightTop = world.blockAt(newrect.right//20, newrect.top//20)
     blockRightBot = world.blockAt(newrect.right//20, newrect.centery//20)
-    blockBotRight = world.blockAt(newrect.right//20, newrect.bottom//20)
-    blockBotLeft = world.blockAt(newrect.left//20, newrect.bottom//20)
     blockLeftBot = world.blockAt(newrect.left//20, newrect.centery//20)
     blockLeftTop = world.blockAt(newrect.left//20, newrect.top//20)
-    # pg.draw.rect(SURF, (0,0,0), relativeRect(newrect), width=3)
     if blockRightBot.collides(*newrect.topleft) or blockRightTop.collides(*newrect.topleft) or blockLeftBot.collides(*newrect.topleft) or blockLeftTop.collides(*newrect.topleft):
       return 0
     else:
       return this.hvelo
     # if blockLeftBot.collides(*newrect.topleft):
     #   print("collides lbot")
-    # else: print("no")
-    pg.draw.rect(SURF, (255,0,0),relativeRect(blockTopRight.rect),3)
-    pg.draw.rect(SURF, (0,255,0),relativeRect(blockTopLeft.rect),3)
-    pg.draw.rect(SURF, (0,0,255),relativeRect(blockRightTop.rect),3)
-    pg.draw.rect(SURF, (255,0,255),relativeRect(blockRightBot.rect),3)
-    pg.draw.rect(SURF, (255,255,0),relativeRect(blockBotRight.rect),3)
-    pg.draw.rect(SURF, (128,255,128),relativeRect(blockBotLeft.rect),3)
-    pg.draw.rect(SURF, (255,128,128),relativeRect(blockLeftBot.rect),3)
-    pg.draw.rect(SURF, (128,128,255),relativeRect(blockLeftTop.rect),3)
+    # # else: print("no")
+    # pg.draw.rect(SURF, (255,0,0),relativeRect(blockTopRight.rect),3)
+    # pg.draw.rect(SURF, (0,255,0),relativeRect(blockTopLeft.rect),3)
+    # pg.draw.rect(SURF, (0,0,255),relativeRect(blockRightTop.rect),3)
+    # pg.draw.rect(SURF, (255,0,255),relativeRect(blockRightBot.rect),3)
+    # pg.draw.rect(SURF, (255,255,0),relativeRect(blockBotRight.rect),3)
+    # pg.draw.rect(SURF, (128,255,128),relativeRect(blockBotLeft.rect),3)
+    # pg.draw.rect(SURF, (255,128,128),relativeRect(blockLeftBot.rect),3)
+    
   
   def checkCollisionV(this) -> int:
     newrect = this.rect.copy()
     newrect.y += this.vvelo
     blockTopRight = world.blockAt(newrect.right//20, newrect.top//20-1)
     blockTopLeft = world.blockAt(newrect.left//20, newrect.top//20-1)
-    blockBotRight = world.blockAt(newrect.right//20, newrect.bottom//20)
-    blockBotLeft = world.blockAt(newrect.left//20, newrect.bottom//20)
-    if blockTopRight.collides(*newrect.topleft) or blockTopLeft.collides(*newrect.topleft) or blockBotRight.collides(*newrect.topleft) or blockBotLeft.collides(*newrect.topleft):
-      return 0
+    blockBotRight = world.blockAt(newrect.right//20, (newrect.bottom+10)//20)
+    blockBotLeft = world.blockAt(newrect.left//20, (newrect.bottom+10)//20)
+    if this.vvelo < 0:
+      if blockTopRight.collides(*newrect.topleft) or blockTopLeft.collides(*newrect.topleft):
+        return 0
+      else:
+        return this.vvelo
+    elif this.vvelo > 0:
+      if blockBotRight.collides(*newrect.topleft) or blockBotLeft.collides(*newrect.topleft):
+        return 0
+      else:
+        return this.vvelo
     else:
-      return this.vvelo
+      return 0
   
   def move(this):
     # print(this.rect.centerx//20, this.rect.centery//20)
@@ -93,19 +96,21 @@ class Entity:
     if this.hvelo < 0: this.hvelo += min(1, abs(this.hvelo)) # reduce horizontal velocity constantly to 0
     elif this.hvelo > 0: this.hvelo -= min(1, this.hvelo)
     
-    if this.isOnBlock and this.vvelo < 5: this.vvelo += 1
-    
+    isOnBlock = this.isOnBlock()
+    print("isonblock", isOnBlock)
+    if not isOnBlock and this.vvelo < 5: this.vvelo += 1
     
     print(this.hvelo, this.vvelo)
       
     this.rect.x += this.checkCollisionH()
     this.rect.y += this.checkCollisionV()
-    
-    # this.rect.y += this.gravityvelo # gravity drop
-    # this.gravity() # update gravityvelo
   
   def isOnBlock(this):
-    return not world[(this.rect.bottom//20)][this.rect.centerx//20].isAir
+    blockBotRight = world.blockAt(this.rect.right//20, (this.rect.bottom+10)//20)
+    blockBotLeft = world.blockAt(this.rect.left//20, (this.rect.bottom+10)//20)
+    # pg.draw.rect(SURF,(0,0,255),relativeRect(blockBotRight.rect),3)
+    # pg.draw.rect(SURF,(0,0,255),relativeRect(blockBotLeft.rect),3)
+    return not blockBotRight.isAir or not blockBotLeft.isAir
   
   def draw(this):
     pass
