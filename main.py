@@ -20,36 +20,76 @@ pg.display.set_caption("Terraria")
 clock = pg.time.Clock()
 
 def pixelToCoord(x:int, y:int):
+  '''Returns coordinate based on pixel location'''
   coord = (x + player.camera.left) // BLOCK_SIZE, (y + player.camera.top) // BLOCK_SIZE
-  # print(coord)
   return coord
 
-def relativeRect(rect:pg.rect.Rect): # on screen rect relative to the camera
+def relativeRect(rect:pg.rect.Rect):
+  '''Returns on screen rect relative to the camera'''
   return pg.rect.Rect(rect.x - player.camera.x, rect.y - player.camera.y, rect.width, rect.height)
 
 class Item:
+  '''Base item class'''
   ITEM_SIZE = BLOCK_SIZE
   def __init__(this, name:str, itemTexture, stackSize:int):
     this.itemTexture = itemTexture
     this.stackSize = stackSize
     this.name = name
-    # print(this.itemTextureFile)
   def drawItem(this, x:int, y:int):
     SURF.blit(this.itemTexture, (x, y))
+  def __eq__(this, other) -> bool:
+    if other == None: return False
+    return this.name == other.name
 
 class Inventory:
+  '''Inventory class'''
+  class Slot:
+    '''Inventory slot class'''
+    item:Item = None
+    count:int = 0
+    def __repr__(this):
+      return this.item.name + "x" + str(this.count)
+    def __str__(this):
+      return this.item.name+"x"+str(this.count)
+  
   def __init__(this, rows:int, cols:int):
-    this.inventory = [[Item for _ in range(cols)] for _ in range(rows)]
+    this.rows = rows
+    this.cols = cols
+    this.inventory = [[this.Slot for _ in range(cols)] for _ in range(rows)]
+  
+  def __repr__(this):
+    out = ""
+    for r in this.inventory:
+      for slot in r:
+        out += str(slot)
+      out += "\n"
+    print(out)
+    return out
+
+  def addItem(this, item:Item):
+    r,c=0,0
+    for r in range(this.rows):
+      for c in range(this.cols):
+        if item == this.inventory[r][c].item:
+          this.inventory[r][c].count += 1
+          break
+      else:
+        continue
+      break
+    else:
+      this.inventory[r][c].item = item
+      this.inventory[r][c].count = 1
   
   def __getitem__(this, row:int):
     return this.inventory[row]
 
 class HasInventory:
+  '''Parent class for classes than have an inventory'''
   def __init__(this, rows:int, cols:int):
     this.inventory = Inventory(rows, cols)
 
 class Entity:
-  
+  '''Base entity class. Contains methods for moving, drawing, and gravity'''
   hvelo = 0
   vvelo = 0
   gravityvelo = 0
@@ -163,8 +203,10 @@ class Player(Entity, HasInventory):
     this.camera.center = this.rect.center
   
   def mine(this, block):
-    print("mined", block.name)
-    world[block.y][block.x] = Air(block.x, block.y)
+    if not block.isAir:
+      print("mined", block.name)
+      world[block.y][block.x] = Air(block.x, block.y)
+      this.inventory.addItem(block)
   
 
 player = Player()
@@ -258,8 +300,8 @@ class World:
 world = World()
 # print(world)
 
-player.inventory[0][0] = Dirt()
-print(player.inventory[0][0].name)
+player.inventory.addItem(Dirt())
+print(player.inventory[0][0].item.name)
 while True:
   SURF.fill((255, 255, 255))
   keys = pg.key.get_pressed()
@@ -267,6 +309,7 @@ while True:
   world.draw()
   player.draw()
   player.move()
+  print(player.inventory.inventory[0][0].count)
   
   if keys[pg.K_a]: player.moveLeft()
   if keys[pg.K_d]: player.moveRight()
