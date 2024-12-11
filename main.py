@@ -20,16 +20,66 @@ gravity = 1
 pg.display.set_caption("Terraria")
 clock = pg.time.Clock()
 
-def pixelToCoord(x:int, y:int):
+def pixelToCoord(x:float, y:float) -> tuple[int,int]:
   '''Returns coordinate based on pixel location'''
-  coord = (x + player.camera.left) // BLOCK_SIZE, (y + player.camera.top) // BLOCK_SIZE
+  coord = int((x + player.camera.left) // BLOCK_SIZE), int((y + player.camera.top) // BLOCK_SIZE)
   return coord
 
 def relativeRect(rect:pg.rect.Rect):
   '''Returns on screen rect relative to the camera'''
   return pg.rect.Rect(rect.x - player.camera.x, rect.y - player.camera.y, rect.width, rect.height)
 
-def distance(x1, y1, x2, y2):
+def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery) -> set[tuple[float]]:
+  '''Bresenham's algorithm to detect points on a line.'''
+  blocksTouched = set()
+  # pg.draw.line(ASURF,(255,0,0,200),(x0,y0),(x1,y1))
+  def plotLineLow(x0, y0, x1, y1):
+    dx = x1 - x0
+    dy = y1 - y0
+    yi = 1
+    if dy < 0:
+      yi = -1
+      dy = -dy
+    d = (2 * dy) - dx
+    y = y0
+    for x in range (x0, x1+1):
+      blocksTouched.add(world.blockAt(*pixelToCoord(x,y)))
+      if d > 0:
+        y += yi
+        d += (2 * (dy - dx))
+      else:
+          d += 2*dy
+  def plotLineHigh(x0, y0, x1, y1):
+    dx = x1 - x0
+    dy = y1 - y0
+    xi = 1
+    if dx < 0:
+      xi = -1
+      dx = -dx
+    d = (2 * dx) - dy
+    x = x0
+    for y in range(y0, y1+1):
+      blocksTouched.add(world.blockAt(*pixelToCoord(x,y)))
+      if d > 0:
+        x += xi
+        d += (2 * (dx - dy))
+      else:
+        d += 2*dx
+  
+  if abs(y1 - y0) < abs(x1 - x0):
+    if x0 > x1:
+      plotLineLow(x1, y1, x0, y0)
+    else:
+      plotLineLow(x0, y0, x1, y1)
+  else:
+    if y0 > y1:
+      plotLineHigh(x1, y1, x0, y0)
+    else:
+      plotLineHigh(x0, y0, x1, y1)
+  
+  return blocksTouched
+
+def distance(x1, y1, x2=FRAME.centerx, y2=FRAME.centery):
   return hypot(x1-x2, y1-y2)
 
 class Item:
@@ -291,6 +341,13 @@ class Player(Entity, HasInventory):
   
   def drawCircle(this):
     pg.draw.circle(ASURF, (0,0,0,120),FRAME.center,BLOCK_SIZE*4)
+  
+  def drawLine(this):
+    mousepos = pg.mouse.get_pos()
+    blocksTouched = bresenham(*mousepos)
+    for block in blocksTouched:
+      if not block.isAir: block.drawBlockOutline((255,0,0))
+    pg.draw.line(SURF, (0,0,0), FRAME.center, mousepos)
     
   
   def sweep(this):
@@ -336,6 +393,9 @@ class Block(Item):
   def __repr__(this):
     return this.name
   
+  def __hash__(this):
+    return hash((this.x,this.y))
+  
 class Air(Block):
   texture = pg.surface.Surface((BLOCK_SIZE,BLOCK_SIZE))
   texture.fill((0,0,0,0))
@@ -378,15 +438,25 @@ class World:
       for x in range(player.camera.left//BLOCK_SIZE, (player.camera.right//BLOCK_SIZE) + 1):
         block = this[y][x]
         if not block.isAir:
-          blockRelativeRect = relativeRect(block.rect)
-          if distance(*blockRelativeRect.topleft, *FRAME.center) <= player.viewDistance:
-            vertices.add((blockRelativeRect.topleft,math.atan2(blockRelativeRect.top-FRAME.centery, blockRelativeRect.left-FRAME.centerx)))
-          if distance(*blockRelativeRect.topright, *FRAME.center) <= player.viewDistance:
-            vertices.add((blockRelativeRect.topright,math.atan2(blockRelativeRect.top-FRAME.centery,blockRelativeRect.right-FRAME.centerx)))
-          if distance(*blockRelativeRect.bottomleft, *FRAME.center) <= player.viewDistance:
-            vertices.add((blockRelativeRect.bottomleft,math.atan2(blockRelativeRect.bottom-FRAME.centery,blockRelativeRect.left-FRAME.centerx)))
-          if distance(*blockRelativeRect.bottomright, *FRAME.center) <= player.viewDistance:
-            vertices.add((blockRelativeRect.bottomright,math.atan2(blockRelativeRect.bottom-FRAME.centery,blockRelativeRect.right-FRAME.centerx)))
+          # blockRelativeRect = relativeRect(block.rect)
+          # if distance(*blockRelativeRect.topleft) <= player.viewDistance:
+          #   blocksTouchedCoord = bresenham(blockRelativeRect.top-1,blockRelativeRect.left-1)
+          #   blocksTouched = set()
+          #   pg.draw.line(SURF,(0,0,0),blockRelativeRect.topleft,FRAME.center)
+          #   for coord in blocksTouchedCoord:
+          #     blockTouched = this.blockAt(*pixelToCoord(*coord))
+          #     if not blockTouched.isAir:
+          #       blocksTouched.add(blockTouched)
+          #       blockTouched.drawBlockOutline((0,0,0))
+          #   if len(blocksTouched) < 2:
+          #     # pg.draw.line(SURF,(0,255,0),blockRelativeRect.topleft,FRAME.center)
+          #     vertices.add((blockRelativeRect.topleft,math.atan2(blockRelativeRect.top-FRAME.centery, blockRelativeRect.left-FRAME.centerx)))
+          # if distance(*blockRelativeRect.topright, *FRAME.center) <= player.viewDistance:
+          #   vertices.add((blockRelativeRect.topright,math.atan2(blockRelativeRect.top-FRAME.centery,blockRelativeRect.right-FRAME.centerx)))
+          # if distance(*blockRelativeRect.bottomleft, *FRAME.center) <= player.viewDistance:
+          #   vertices.add((blockRelativeRect.bottomleft,math.atan2(blockRelativeRect.bottom-FRAME.centery,blockRelativeRect.left-FRAME.centerx)))
+          # if distance(*blockRelativeRect.bottomright, *FRAME.center) <= player.viewDistance:
+          #   vertices.add((blockRelativeRect.bottomright,math.atan2(blockRelativeRect.bottom-FRAME.centery,blockRelativeRect.right-FRAME.centerx)))
           block.drawBlock()
   
   def __repr__(this):
@@ -412,18 +482,18 @@ while True:
   player.draw()
   player.move()
   player.inventory.drawHotbar()
-  print(player.inventory.inventory[0][0].count)
+  # print(player.inventory.inventory[0][0].count)
   player.drawCircle()
   for vertice in vertices:
-    pg.draw.circle(ASURF,(0,255,0,120),vertice[0],3)
+    pg.draw.circle(ASURF,(0,255,0,40),vertice[0],3)
     # if distance(*FRAME.center, *vertice[0]) <= 5:
-    pg.draw.line(ASURF,(0,0,0,40),FRAME.center,vertice[0])
+    # pg.draw.line(ASURF,(0,0,0,40),FRAME.center,vertice[0])
   SURF.blit(ASURF,(0,0))
   
   if keys[pg.K_a]: player.moveLeft()
   if keys[pg.K_d]: player.moveRight()
   if keys[pg.K_SPACE]: player.jump()
-  
+  if keys[pg.K_l]: player.drawLine()
   for event in pg.event.get():
     if pg.mouse.get_pressed()[0]:
       player.mine(world.hoveredBlock())
