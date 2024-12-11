@@ -33,6 +33,7 @@ class Entity:
   vvelo = 0
   gravityvelo = 0
   previousDirection = True
+  isOnBlock = False
   
   def __init__(this, x:float, y:float, width:float, height:float, texture:pg.surface.Surface):
     this.rect = pg.rect.Rect(x, y, width, height)
@@ -45,7 +46,7 @@ class Entity:
   def moveRight(this):
     if this.hvelo < 5: this.hvelo += 2
   def jump(this):
-    if this.isOnBlock() and this.vvelo > 0: this.vvelo -= 18
+    if this.vvelo > 4 and this.isOnBlock: this.vvelo -= 18
   
   def checkCollisionH(this) -> int:
     newrect = this.rect.copy()
@@ -54,10 +55,10 @@ class Entity:
     blockRightBot = world.blockAt(newrect.right//20, (newrect.centery+10)//20)
     blockLeftBot = world.blockAt(newrect.left//20, (newrect.centery+10)//20)
     blockLeftTop = world.blockAt(newrect.left//20, (newrect.top+10)//20)
-    pg.draw.rect(SURF, (0,0,255),relativeRect(blockRightTop.rect),3)
-    pg.draw.rect(SURF, (255,0,255),relativeRect(blockRightBot.rect),3)
-    pg.draw.rect(SURF, (255,128,128),relativeRect(blockLeftBot.rect),3)
-    pg.draw.rect(SURF, (255,0,0),relativeRect(blockLeftTop.rect),3)
+    # pg.draw.rect(SURF, (0,0,255),relativeRect(blockRightTop.rect),3)
+    # pg.draw.rect(SURF, (255,0,255),relativeRect(blockRightBot.rect),3)
+    # pg.draw.rect(SURF, (255,128,128),relativeRect(blockLeftBot.rect),3)
+    # pg.draw.rect(SURF, (255,0,0),relativeRect(blockLeftTop.rect),3)
     if blockRightBot.collides(*newrect.topleft) or blockRightTop.collides(*newrect.topleft) or blockLeftBot.collides(*newrect.topleft) or blockLeftTop.collides(*newrect.topleft):
       # print("side collides! not moving!")
       return 0
@@ -67,49 +68,39 @@ class Entity:
   def checkCollisionV(this) -> int:
     newrect = this.rect.copy()
     newrect.y += this.vvelo
-    blockTopRight = world.blockAt(newrect.right//20, newrect.top//20-1)
-    blockTopLeft = world.blockAt(newrect.left//20, newrect.top//20-1)
-    blockBotRight = world.blockAt(newrect.right//20, (newrect.bottom+10)//20)
+    blockTopRight = world.blockAt((newrect.right - 10)//20, newrect.top//20)
+    blockTopLeft = world.blockAt(newrect.left//20, newrect.top//20)
+    blockBotRight = world.blockAt((newrect.right-10)//20, (newrect.bottom+10)//20)
     blockBotLeft = world.blockAt(newrect.left//20, (newrect.bottom+10)//20)
+    # blockTopRight.drawBlockOutline((0,255,0))
+    # blockTopLeft.drawBlockOutline((0,255,255))
+    # pg.draw.rect(SURF, (0,0,0), relativeRect(newrect), 2)
     if this.vvelo < 0:
+      # print("attepmting to move up!")
       if blockTopRight.collides(*newrect.topleft) or blockTopLeft.collides(*newrect.topleft):
         # print("top collides! not moving!")
+        this.vvelo = 0
         return 0
       else:
         return this.vvelo
     elif this.vvelo > 0:
       if blockBotRight.collides(*newrect.topleft) or blockBotLeft.collides(*newrect.topleft):
         # print("bot collides! not moving!")
+        this.isOnBlock = True
         return 0
       else:
+        this.isOnBlock = False
         return this.vvelo
     else:
       return 0
   
   def move(this):
-    # print(this.rect.centerx//20, this.rect.centery//20)
-    
     if this.hvelo < 0: this.hvelo += min(1, abs(this.hvelo)) # reduce horizontal velocity constantly to 0
     elif this.hvelo > 0: this.hvelo -= min(1, this.hvelo)
     this.rect.x += this.checkCollisionH()
     this.rect.y += this.checkCollisionV()
-    
-    print(this.rect.x,this.rect.y,this.hvelo,this.vvelo)
-    
-    isOnBlock = this.isOnBlock()
-    # print("isonblock", isOnBlock)
-    if not isOnBlock and this.vvelo < 5: this.vvelo += 1
-    
-    # print(this.hvelo, this.vvelo)
-      
-    
-  
-  def isOnBlock(this):
-    blockBotRight = world.blockAt(this.rect.right//20, (this.rect.bottom+10)//20)
-    blockBotLeft = world.blockAt(this.rect.left//20, (this.rect.bottom+10)//20)
-    # pg.draw.rect(SURF,(0,0,255),relativeRect(blockBotRight.rect),3)
-    # pg.draw.rect(SURF,(0,0,255),relativeRect(blockBotLeft.rect),3)
-    return not blockBotRight.isAir or not blockBotLeft.isAir
+    # 
+    if this.vvelo < 5: this.vvelo += 1
   
   def draw(this):
     pass
@@ -146,6 +137,7 @@ class Player(Entity):
     this.camera.center = this.rect.center
   
   def mine(this, block):
+    print("mined", block.name)
     world[block.y][block.x] = Air(block.x, block.y)
   
 
@@ -171,6 +163,9 @@ class Block(Item):
     this.x = x
     this.y = y
     this.isAir = isAir
+  
+  def drawBlockOutline(this, color:pg.color.Color):
+    pg.draw.rect(SURF, color, relativeRect(this.rect), 3)
   
   def drawBlock(this):
     SURF.blit(this.blockTexture, relativeRect(this.rect))
