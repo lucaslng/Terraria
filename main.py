@@ -65,14 +65,11 @@ class Entity:
     newrect = this.rect.copy()
     newrect.x += this.hvelo
     newrect.y += this.vvelo
-    # print(newrect.right, newrect.top)
-    blockTop = world.blockAt(newrect.right//20, newrect.top//20-1)
-    blockTopRight = world.blockAt(newrect.right//20+1, newrect.top//20-1)
+    blockTopRight = world.blockAt(newrect.right//20, newrect.top//20-1)
     blockTopLeft = world.blockAt(newrect.left//20, newrect.top//20-1)
-    blockRightTop = world.blockAt(newrect.right//20+1, newrect.top//20)
-    blockRightBot = world.blockAt(newrect.right//20+1, newrect.centery//20)
-    blockBotRight = world.blockAt(newrect.right//20+1, newrect.bottom//20)
-    blockBot = world.blockAt(newrect.right//20, newrect.bottom//20)
+    blockRightTop = world.blockAt(newrect.right//20, newrect.top//20)
+    blockRightBot = world.blockAt(newrect.right//20, newrect.centery//20)
+    blockBotRight = world.blockAt(newrect.right//20, newrect.bottom//20)
     blockBotLeft = world.blockAt(newrect.left//20, newrect.bottom//20)
     blockLeftBot = world.blockAt(newrect.left//20, newrect.centery//20)
     blockLeftTop = world.blockAt(newrect.left//20, newrect.top//20)
@@ -80,23 +77,19 @@ class Entity:
     if blockRightBot.collides(*newrect.topleft):
       print("collides rbot")
     else: print("no")
-    if blockLeftBot.collides(*newrect.topleft):
-      print("collides lbot")
-    else: print("no")
+    # if blockLeftBot.collides(*newrect.topleft):
+    #   print("collides lbot")
+    # else: print("no")
     # pg.draw.rect(SURF, (0,0,0),relativeRect(blockTop.rect),3)
-    # pg.draw.rect(SURF, (255,0,0),relativeRect(blockTopRight.rect),3)
-    # pg.draw.rect(SURF, (0,255,0),relativeRect(blockTopLeft.rect),3)
-    # pg.draw.rect(SURF, (0,0,255),relativeRect(blockRightTop.rect),3)
-    # pg.draw.rect(SURF, (255,0,255),relativeRect(blockRightBot.rect),3)
-    # pg.draw.rect(SURF, (255,255,0),relativeRect(blockBotRight.rect),3)
+    pg.draw.rect(SURF, (255,0,0),relativeRect(blockTopRight.rect),3)
+    pg.draw.rect(SURF, (0,255,0),relativeRect(blockTopLeft.rect),3)
+    pg.draw.rect(SURF, (0,0,255),relativeRect(blockRightTop.rect),3)
+    pg.draw.rect(SURF, (255,0,255),relativeRect(blockRightBot.rect),3)
+    pg.draw.rect(SURF, (255,255,0),relativeRect(blockBotRight.rect),3)
     # pg.draw.rect(SURF, (0,255,255),relativeRect(blockBot.rect),3)
-    # pg.draw.rect(SURF, (128,255,128),relativeRect(blockBotLeft.rect),3)
-    # pg.draw.rect(SURF, (255,128,128),relativeRect(blockLeftBot.rect),3)
-    # pg.draw.rect(SURF, (128,128,255),relativeRect(blockLeftTop.rect),3)
-    # if blockTop.mask.overlap(this.mask, blockTop.offset(*newrect.topleft)):
-    #   print("yes")
-    # else:
-    #   print("no")
+    pg.draw.rect(SURF, (128,255,128),relativeRect(blockBotLeft.rect),3)
+    pg.draw.rect(SURF, (255,128,128),relativeRect(blockLeftBot.rect),3)
+    pg.draw.rect(SURF, (128,128,255),relativeRect(blockLeftTop.rect),3)
       
     this.rect.x += this.hvelo
     
