@@ -50,26 +50,19 @@ class Entity:
   def checkCollisionH(this) -> int:
     newrect = this.rect.copy()
     newrect.x += this.hvelo
-    blockRightTop = world.blockAt(newrect.right//20, newrect.top//20)
-    blockRightBot = world.blockAt(newrect.right//20, newrect.centery//20)
-    blockLeftBot = world.blockAt(newrect.left//20, newrect.centery//20)
-    blockLeftTop = world.blockAt(newrect.left//20, newrect.top//20)
+    blockRightTop = world.blockAt(newrect.right//20, (newrect.top+10)//20)
+    blockRightBot = world.blockAt(newrect.right//20, (newrect.centery+10)//20)
+    blockLeftBot = world.blockAt(newrect.left//20, (newrect.centery+10)//20)
+    blockLeftTop = world.blockAt(newrect.left//20, (newrect.top+10)//20)
+    pg.draw.rect(SURF, (0,0,255),relativeRect(blockRightTop.rect),3)
+    pg.draw.rect(SURF, (255,0,255),relativeRect(blockRightBot.rect),3)
+    pg.draw.rect(SURF, (255,128,128),relativeRect(blockLeftBot.rect),3)
+    pg.draw.rect(SURF, (255,0,0),relativeRect(blockLeftTop.rect),3)
     if blockRightBot.collides(*newrect.topleft) or blockRightTop.collides(*newrect.topleft) or blockLeftBot.collides(*newrect.topleft) or blockLeftTop.collides(*newrect.topleft):
       return 0
     else:
       return this.hvelo
-    # if blockLeftBot.collides(*newrect.topleft):
-    #   print("collides lbot")
-    # # else: print("no")
-    # pg.draw.rect(SURF, (255,0,0),relativeRect(blockTopRight.rect),3)
-    # pg.draw.rect(SURF, (0,255,0),relativeRect(blockTopLeft.rect),3)
-    # pg.draw.rect(SURF, (0,0,255),relativeRect(blockRightTop.rect),3)
-    # pg.draw.rect(SURF, (255,0,255),relativeRect(blockRightBot.rect),3)
-    # pg.draw.rect(SURF, (255,255,0),relativeRect(blockBotRight.rect),3)
-    # pg.draw.rect(SURF, (128,255,128),relativeRect(blockBotLeft.rect),3)
-    # pg.draw.rect(SURF, (255,128,128),relativeRect(blockLeftBot.rect),3)
-    
-  
+   
   def checkCollisionV(this) -> int:
     newrect = this.rect.copy()
     newrect.y += this.vvelo
