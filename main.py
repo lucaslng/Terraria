@@ -52,6 +52,46 @@ class Entity:
     else:
       this.gravityvelo = 0
   
+  def checkCollisionH(this) -> int:
+    newrect = this.rect.copy()
+    newrect.x += this.hvelo
+    blockTopRight = world.blockAt(newrect.right//20, newrect.top//20-1)
+    blockTopLeft = world.blockAt(newrect.left//20, newrect.top//20-1)
+    blockRightTop = world.blockAt(newrect.right//20, newrect.top//20)
+    blockRightBot = world.blockAt(newrect.right//20, newrect.centery//20)
+    blockBotRight = world.blockAt(newrect.right//20, newrect.bottom//20)
+    blockBotLeft = world.blockAt(newrect.left//20, newrect.bottom//20)
+    blockLeftBot = world.blockAt(newrect.left//20, newrect.centery//20)
+    blockLeftTop = world.blockAt(newrect.left//20, newrect.top//20)
+    # pg.draw.rect(SURF, (0,0,0), relativeRect(newrect), width=3)
+    if blockRightBot.collides(*newrect.topleft) or blockRightTop.collides(*newrect.topleft) or blockLeftBot.collides(*newrect.topleft) or blockLeftTop.collides(*newrect.topleft):
+      return 0
+    else:
+      return this.hvelo
+    # if blockLeftBot.collides(*newrect.topleft):
+    #   print("collides lbot")
+    # else: print("no")
+    pg.draw.rect(SURF, (255,0,0),relativeRect(blockTopRight.rect),3)
+    pg.draw.rect(SURF, (0,255,0),relativeRect(blockTopLeft.rect),3)
+    pg.draw.rect(SURF, (0,0,255),relativeRect(blockRightTop.rect),3)
+    pg.draw.rect(SURF, (255,0,255),relativeRect(blockRightBot.rect),3)
+    pg.draw.rect(SURF, (255,255,0),relativeRect(blockBotRight.rect),3)
+    pg.draw.rect(SURF, (128,255,128),relativeRect(blockBotLeft.rect),3)
+    pg.draw.rect(SURF, (255,128,128),relativeRect(blockLeftBot.rect),3)
+    pg.draw.rect(SURF, (128,128,255),relativeRect(blockLeftTop.rect),3)
+  
+  def checkCollisionV(this) -> int:
+    newrect = this.rect.copy()
+    newrect.y += this.vvelo
+    blockTopRight = world.blockAt(newrect.right//20, newrect.top//20-1)
+    blockTopLeft = world.blockAt(newrect.left//20, newrect.top//20-1)
+    blockBotRight = world.blockAt(newrect.right//20, newrect.bottom//20)
+    blockBotLeft = world.blockAt(newrect.left//20, newrect.bottom//20)
+    if blockTopRight.collides(*newrect.topleft) or blockTopLeft.collides(*newrect.topleft) or blockBotRight.collides(*newrect.topleft) or blockBotLeft.collides(*newrect.topleft):
+      return 0
+    else:
+      return this.vvelo
+  
   def move(this):
     # print(this.rect.centerx//20, this.rect.centery//20)
     
@@ -61,37 +101,9 @@ class Entity:
     this.vvelo += min(0.5, abs(this.vvelo)) # reduce vertical velocity constantly to 0
     
     # print(this.hvelo, this.vvelo)
-    
-    newrect = this.rect.copy()
-    newrect.x += this.hvelo
-    newrect.y += this.vvelo
-    blockTopRight = world.blockAt(newrect.right//20, newrect.top//20-1)
-    blockTopLeft = world.blockAt(newrect.left//20, newrect.top//20-1)
-    blockRightTop = world.blockAt(newrect.right//20, newrect.top//20)
-    blockRightBot = world.blockAt(newrect.right//20, newrect.centery//20)
-    blockBotRight = world.blockAt(newrect.right//20, newrect.bottom//20)
-    blockBotLeft = world.blockAt(newrect.left//20, newrect.bottom//20)
-    blockLeftBot = world.blockAt(newrect.left//20, newrect.centery//20)
-    blockLeftTop = world.blockAt(newrect.left//20, newrect.top//20)
-    pg.draw.rect(SURF, (0,0,0), relativeRect(newrect), width=3)
-    if blockRightBot.collides(*newrect.topleft):
-      print("collides rbot")
-    else: print("no")
-    # if blockLeftBot.collides(*newrect.topleft):
-    #   print("collides lbot")
-    # else: print("no")
-    # pg.draw.rect(SURF, (0,0,0),relativeRect(blockTop.rect),3)
-    pg.draw.rect(SURF, (255,0,0),relativeRect(blockTopRight.rect),3)
-    pg.draw.rect(SURF, (0,255,0),relativeRect(blockTopLeft.rect),3)
-    pg.draw.rect(SURF, (0,0,255),relativeRect(blockRightTop.rect),3)
-    pg.draw.rect(SURF, (255,0,255),relativeRect(blockRightBot.rect),3)
-    pg.draw.rect(SURF, (255,255,0),relativeRect(blockBotRight.rect),3)
-    # pg.draw.rect(SURF, (0,255,255),relativeRect(blockBot.rect),3)
-    pg.draw.rect(SURF, (128,255,128),relativeRect(blockBotLeft.rect),3)
-    pg.draw.rect(SURF, (255,128,128),relativeRect(blockLeftBot.rect),3)
-    pg.draw.rect(SURF, (128,128,255),relativeRect(blockLeftTop.rect),3)
       
-    this.rect.x += this.hvelo
+    this.rect.x += this.checkCollisionH()
+    this.rect.y += this.checkCollisionV()
     
     this.rect.y += this.gravityvelo # gravity drop
     this.gravity() # update gravityvelo
