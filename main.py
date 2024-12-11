@@ -218,13 +218,58 @@ class Player(Entity, HasInventory):
   texture = pg.transform.scale(pg.image.load("player.png"), (BLOCK_SIZE, BLOCK_SIZE*2))
   reversedTexture = pg.transform.flip(texture, True, False)
   
+  full_heart_texture = pg.transform.scale(pg.image.load("full_heart.png"), (20, 20))
+  half_heart_texture = pg.transform.scale(pg.image.load("half_heart.png"), (20, 20))
+  empty_heart_texture = pg.transform.scale(pg.image.load("empty_heart.png"), (20, 20))
+  
   def __init__(this):
     Entity.__init__(this, this.camera.centerx-BLOCK_SIZE//2, this.camera.centery-BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE*2, this.texture, 10,)
     HasInventory.__init__(this, 4, 10)
     this.rect.center = this.camera.center
     this.centerRect = this.rect.copy()
     this.centerRect.center = FRAME.center
-    # print(this.inventory[0][0])
+    this.max_health = 20
+    this.health = this.max_health
+    
+  def draw_health(this):
+        """Draw player's health as hearts on the screen"""
+        HEART_SPACING = 25
+        HEART_X_START = 10
+        HEART_Y = 10
+
+        full_hearts = this.health // 2
+        half_hearts = this.health % 2
+        empty_hearts = (this.max_health - this.health) // 2
+
+        # Draw full hearts
+        for i in range(full_hearts):
+            SURF.blit(this.full_heart_texture, 
+                      (HEART_X_START + i * HEART_SPACING, HEART_Y))
+        
+        # Draw half heart if needed
+        if half_hearts:
+            SURF.blit(this.half_heart_texture, (HEART_X_START + full_hearts * HEART_SPACING, HEART_Y))
+        
+        # Draw empty hearts
+        for i in range(empty_hearts):
+            SURF.blit(this.empty_heart_texture, 
+                      (HEART_X_START + (full_hearts + half_hearts + i) * HEART_SPACING, HEART_Y))
+
+  def take_damage(this, damage_amount):
+        """Reduce player health when taking damage"""
+        this.health = max(0, this.health - damage_amount)
+        
+        # Optional: Add game over logic if health reaches 0
+        if this.health <= 0:
+            print("Game Over!")
+            # You could add game over logic here, like resetting the game or showing a game over screen
+
+  def draw(this):
+        # Existing draw method remains the same
+        super().draw()
+        
+        # Add health drawing to the draw method
+        this.draw_health()
   
   def hotbar(this) -> list[Item]:
     return this.inventory[0]
