@@ -655,12 +655,16 @@ class Stone(Block):
     super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Stone", this.stoneItemTexture, 64, Stone), 5)
 
 
+ores = []
 class IronOre(Block):
   ironOreTexture = pg.transform.scale(pg.image.load("iron_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
   ironOreItemTexture = pg.transform.scale(ironOreTexture, (15, 15))
+  veinSize = 3
+  rarity = 0.3
   def __init__(this, x, y):
     super().__init__("Iron Ore", this.ironOreTexture, x, y, PlaceableItem("Iron Ore", this.ironOreItemTexture, 64, IronOre), 6)
 
+ores.append(IronOre)
 class World:
   def __init__(this):
     this.array = [
@@ -777,15 +781,18 @@ class World:
   def __generateWorld(this):
     grassHeightNoise = this.SimplexNoise(19, 1, WORLD_WIDTH)
     stoneHeightNoise = this.SimplexNoise(30, 1, WORLD_WIDTH)
-    oreNoise = this.SimplexNoise(3, 2, WORLD_WIDTH, WORLD_HEIGHT)
+    oresNoise = list()
+    for ore in ores:
+      oresNoise.append(this.SimplexNoise(ore.veinSize, 2, WORLD_WIDTH, WORLD_HEIGHT))
     for x in range(0, WORLD_WIDTH):
       grassHeight = round(WORLD_HEIGHT * 0.58 + 9 * grassHeightNoise[x])
       stoneHeight = round(grassHeight + 5 + 5 * stoneHeightNoise[x])
 
       # generate grass on the top layer
       for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
-        if oreNoise[y][x] > 0.3: this.array[y][x] = IronOre(x, y)
-        else: this.array[y][x] = Stone(x, y)
+        for i in range(len(ores)):
+          if oresNoise[i][y][x] > ores[i].rarity: this.array[y][x] = ore(x, y)
+          else: this.array[y][x] = Stone(x, y)
       for y in range(stoneHeight, grassHeight, -1):
         this.array[y][x] = Dirt(x, y)
 
