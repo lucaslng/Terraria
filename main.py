@@ -429,17 +429,27 @@ class Air(Block):
   def __init__(this, x=-1, y=-1):
     super().__init__("Air", this.texture, this.texture, 0, x, y, isAir = True)
 
+class DirtVariant():
+  def __init__(this, name:str, texture, itemTexture):
+    this.name = name
+    this.texture = texture
+    this.itemTexture = itemTexture
+
+class DirtVariantDirt(DirtVariant):
+  dirtTexture = pg.transform.scale(pg.image.load("dirt.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  dirtItemTexture = pg.transform.scale(dirtTexture, (15, 15))
+  def __init__(this):
+    super().__init__("Dirt", this.dirtTexture, this.dirtItemTexture)
+
+class DirtVariantGrass(DirtVariant):
+  grassTexture = pg.transform.scale(pg.image.load("grass_block.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  grassItemTexture = pg.transform.scale(grassTexture, (15, 15))
+  def __init__(this):
+    super().__init__("Grass Block", this.grassTexture, this.grassItemTexture)
+
 class Dirt(Block):
-  texture = pg.transform.scale(pg.image.load("dirt.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  itemTexture = pg.transform.scale(texture, (15, 15))
-  def __init__(this, x=-1, y=-1):
-    super().__init__("Dirt", this.itemTexture, this.texture, 64, x, y)
-    
-class GrassBlock(Dirt):
-    texture = pg.transform.scale(pg.image.load("grass_block.png"), (BLOCK_SIZE, BLOCK_SIZE))
-    itemTexture = pg.transform.scale(texture, (15, 15))
-    def __init__(this, x=-1, y=-1):
-      super().__init__(x, y)
+  def __init__(this, x=-1, y=-1, variant:DirtVariant=DirtVariantDirt()):
+    super().__init__("Dirt", variant.itemTexture, variant.texture, 64, x, y)
 
 class World:
   def __init__(this):
@@ -459,7 +469,7 @@ class World:
         for y in range(WORLD_HEIGHT-1, grass_height, -1):
             this.array[y][x] = Dirt(x, y)
         
-        this.array[grass_height][x] = GrassBlock(x, grass_height)
+        this.array[grass_height][x] = Dirt(x, grass_height, DirtVariantGrass())
   
   def hoveredBlock(this) -> Block:
     mousepos = pg.mouse.get_pos()
