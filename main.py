@@ -409,7 +409,7 @@ class Player(Entity, HasInventory):
     if slot:
       texture = pg.transform.scale_by(slot.item.texture, 0.8)
       SURF.blit(texture, FRAME.center)
-  
+
   def drawHotbar(this):
     """Draws the first row of the inventory on the screen"""
     SLOT_SIZE = 40  # size of each slot
@@ -637,6 +637,7 @@ class Dirt(Block):
 
 
 class World:
+  seed = random.randint(0, sys.maxsize)
   def __init__(this):
     this.array = [
         [Air(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
@@ -644,20 +645,78 @@ class World:
     this.__generateAllDirt()
 
   # https://gpfault.net/posts/perlin-noise.txt.html
-  # not currently using perlin noise tho
-  def __generateDirtHeight(this, x: int) -> int:
-    return round(
-        0.5
-        * (
-            -1.6 * 1.4 * math.sin(0.3 * math.e * x)
-            + 1.6 * math.sin(-0.2 * math.pi * x)
-        )
-    )
+  @staticmethod
+  def __simplexNoise1D(length, scale=1.0, seed=0):
+    """
+    Generate a 1D array of simplex noise.
+
+    Args:
+        length (int): Length of the noise array.
+        scale (float): Scale factor for the noise.
+        seed (int): Seed for reproducibility.
+
+    Returns:
+        list: Array of 1D simplex noise values.
+    """
+    def dot_product(grad, x):
+        """Compute the dot product of the gradient and distance."""
+        return grad * x
+
+    def gradient(h):
+        """Generate gradient based on hash value."""
+        return 1 if h % 2 == 0 else -1
+
+    def fade(t):
+        """Fade function as defined by Ken Perlin. This eases coordinate values."""
+        return t * t * t * (t * (t * 6 - 15) + 10)
+
+    def lerp(a, b, t):
+        """Linear interpolation between a and b using t."""
+        return a + t * (b - a)
+
+    def generate_permutation(seed):
+      """Generate a pseudo-random permutation table."""
+      random.seed(seed)
+      p = list(range(256))
+      random.shuffle(p)
+      return p + p  # Double the permutation table
+    perm = generate_permutation(seed)
+    noise = []
+
+    for i in range(length):
+        # Scaled position
+        x = i / scale
+
+        # Determine lattice points
+        x0 = math.floor(x)  # Left point
+        x1 = x0 + 1         # Right point
+
+        # Relative positions
+        dx0 = x - x0
+        dx1 = x - x1
+
+        # Apply fade function to smooth the interpolation
+        u = fade(dx0)
+
+        # Gradient indices
+        g0 = gradient(perm[x0 % 256])
+        g1 = gradient(perm[x1 % 256])
+
+        # Compute contributions from each gradient
+        n0 = dot_product(g0, dx0)
+        n1 = dot_product(g1, dx1)
+
+        # Interpolate between contributions
+        value = lerp(n0, n1, u)
+        noise.append(value)
+
+    return noise
 
   def __generateAllDirt(this):
+    noise = this.__simplexNoise1D(length=WORLD_WIDTH, scale=12, seed=this.seed)
+    print(noise)
     for x in range(0, WORLD_WIDTH):
-      grass_height = round(WORLD_HEIGHT * 0.6) + \
-          this.__generateDirtHeight(x)
+      grass_height = round(WORLD_HEIGHT * 0.6 + 4 * noise[x])
 
       # generate grass on the top layer
       for y in range(WORLD_HEIGHT - 1, grass_height, -1):
