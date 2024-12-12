@@ -114,6 +114,9 @@ class Item:
       return False
     return this.name == other.name
 
+class PlaceableItem(Item):
+  def __init__(this, name: str, texture, stackSize: int):
+    super().__init__(name, texture, stackSize)
 
 class Inventory:
   """Inventory class"""
@@ -610,7 +613,7 @@ class DirtVariant:
   def __init__(this, name: str, texture):
     this.name = name
     this.texture = texture
-    this.item = Item("Dirt", this.itemTexture, 64)
+    this.item = PlaceableItem("Dirt", this.itemTexture, 64)
 
 
 class DirtVariantDirt(DirtVariant):
