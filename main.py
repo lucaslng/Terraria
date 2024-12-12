@@ -479,9 +479,8 @@ while True:
   if keys[pg.K_a]: player.moveLeft()
   if keys[pg.K_d]: player.moveRight()
   if keys[pg.K_SPACE]: player.jump()
+  if pg.mouse.get_pressed()[0]: player.mine(player.blockFacing())
   for event in pg.event.get():
-    if pg.mouse.get_pressed()[0]:
-      player.mine(player.blockFacing())
     if event.type == QUIT:
       pg.quit()
       sys.exit()
