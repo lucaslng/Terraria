@@ -29,57 +29,53 @@ def relativeRect(rect:pg.rect.Rect):
   '''Returns on screen rect relative to the camera'''
   return pg.rect.Rect(rect.x - player.camera.x, rect.y - player.camera.y, rect.width, rect.height)
 
-def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery) -> set[tuple[float]]:
-  '''Bresenham's algorithm to detect points on a line.'''
-  blocksTouched = set()
-  # pg.draw.line(ASURF,(255,0,0,200),(x0,y0),(x1,y1))
+def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery):
+  '''Bresenham's algorithm to detect first non-air block along a line, starting from end point.'''
   def plotLineLow(x0, y0, x1, y1):
-    dx = x1 - x0
-    dy = y1 - y0
-    yi = 1
-    if dy < 0:
-      yi = -1
-      dy = -dy
+    dx = abs(x1 - x0)
+    dy = abs(y1 - y0)
+    xi = -1 if x0 < x1 else 1
+    yi = -1 if y0 < y1 else 1
     d = (2 * dy) - dx
-    y = y0
-    for x in range (x0, x1+1):
-      blockTouched = world.blockAt(*pixelToCoord(x,y))
-      if not blockTouched.isAir: blocksTouched.add(blockTouched)
+    y = y1
+    x = x1
+    while x != x0 - xi:
+      blockTouched = world.blockAt(*pixelToCoord(x, y))
+      if not blockTouched.isAir:
+        return blockTouched
       if d > 0:
         y += yi
         d += (2 * (dy - dx))
       else:
-          d += 2*dy
+        d += 2 * dy
+      x += xi
+    return None
+
   def plotLineHigh(x0, y0, x1, y1):
-    dx = x1 - x0
-    dy = y1 - y0
-    xi = 1
-    if dx < 0:
-      xi = -1
-      dx = -dx
+    dx = abs(x1 - x0)
+    dy = abs(y1 - y0)
+    xi = -1 if x0 < x1 else 1
+    yi = -1 if y0 < y1 else 1
     d = (2 * dx) - dy
-    x = x0
-    for y in range(y0, y1+1):
-      blockTouched = world.blockAt(*pixelToCoord(x,y))
-      if not blockTouched.isAir: blocksTouched.add(blockTouched)
+    x = x1
+    y = y1
+    while y != y0 - yi:
+      blockTouched = world.blockAt(*pixelToCoord(x, y))
+      if not blockTouched.isAir:
+        return blockTouched
       if d > 0:
         x += xi
         d += (2 * (dx - dy))
       else:
-        d += 2*dx
-  
+        d += 2 * dx
+      y += yi
+    return None
+
   if abs(y1 - y0) < abs(x1 - x0):
-    if x0 > x1:
-      plotLineLow(x1, y1, x0, y0)
-    else:
-      plotLineLow(x0, y0, x1, y1)
+    return plotLineLow(x0, y0, x1, y1)
   else:
-    if y0 > y1:
-      plotLineHigh(x1, y1, x0, y0)
-    else:
-      plotLineHigh(x0, y0, x1, y1)
+    return plotLineHigh(x0, y0, x1, y1)
   
-  return blocksTouched
 
 def distance(x1, y1, x2=FRAME.centerx, y2=FRAME.centery):
   return hypot(x1-x2, y1-y2)
@@ -346,9 +342,8 @@ class Player(Entity, HasInventory):
   
   def drawLine(this):
     mousepos = pg.mouse.get_pos()
-    blocksTouched = bresenham(*mousepos)
-    for block in blocksTouched:
-      block.drawBlockOutline((255,0,0))
+    block = bresenham(*mousepos)
+    if block != None: block.drawBlockOutline((255,0,0))
     pg.draw.line(SURF, (0,0,0), FRAME.center, mousepos)
     
   
