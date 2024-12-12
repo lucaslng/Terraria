@@ -29,6 +29,9 @@ def relativeRect(rect:pg.rect.Rect):
   '''Returns on screen rect relative to the camera'''
   return pg.rect.Rect(rect.x - player.camera.x, rect.y - player.camera.y, rect.width, rect.height)
 
+def relativeCoord(x:float, y:float) -> tuple[int,int]:
+  return x - player.camera.x, y - player.camera.y
+
 def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery):
   '''Bresenham's algorithm to detect first non-air block along a line, starting from end point.'''
   def plotLineLow(x0, y0, x1, y1):
@@ -75,7 +78,6 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery):
     return plotLineLow(x0, y0, x1, y1)
   else:
     return plotLineHigh(x0, y0, x1, y1)
-  
 
 def distance(x1, y1, x2=FRAME.centerx, y2=FRAME.centery):
   return hypot(x1-x2, y1-y2)
@@ -90,7 +92,7 @@ class Item:
   def drawItem(this, x:int, y:int):
     SURF.blit(this.itemTexture, (x, y))
   def __eq__(this, other) -> bool:
-    if other == None: return False
+    if other is None: return False
     return this.name == other.name
 
 class Inventory:
@@ -270,7 +272,7 @@ class Player(Entity, HasInventory):
   camera.center = (BLOCK_SIZE * (WORLD_WIDTH // 2), BLOCK_SIZE * round(WORLD_HEIGHT * 0.55))
   texture = pg.transform.scale(pg.image.load("player.png"), (BLOCK_SIZE, BLOCK_SIZE*2))
   reversedTexture = pg.transform.flip(texture, True, False)
-  viewDistance = 4 * BLOCK_SIZE
+  reach = 4 * BLOCK_SIZE
   full_heart_texture = pg.transform.scale(pg.image.load("full_heart.png"), (20, 20))
   half_heart_texture = pg.transform.scale(pg.image.load("half_heart.png"), (20, 20))
   empty_heart_texture = pg.transform.scale(pg.image.load("empty_heart.png"), (20, 20))
@@ -332,13 +334,24 @@ class Player(Entity, HasInventory):
     this.camera.center = this.rect.center
   
   def mine(this, block):
-    if not block.isAir:
+    if block != None:
       print("mined", block.name)
       world[block.y][block.x] = Air(block.x, block.y)
       this.inventory.addItem(block)
   
   def drawCircle(this):
     pg.draw.circle(ASURF, (0,0,0,120),FRAME.center,BLOCK_SIZE*4)
+  
+  def blockFacing(this):
+    '''Returns the block that the player is facing, if it is in range'''
+    block = bresenham(*pg.mouse.get_pos())
+    if block is None: return None
+    pg.draw.line(SURF, (0,0,0), FRAME.center, pg.mouse.get_pos())
+    for vertex in block.vertices:
+      if distance(*relativeCoord(*vertex)) < this.reach:
+        block.drawBlockOutline((255,0,0))
+        return block
+    return None
   
   def drawLine(this):
     mousepos = pg.mouse.get_pos()
@@ -491,10 +504,9 @@ while True:
   if keys[pg.K_a]: player.moveLeft()
   if keys[pg.K_d]: player.moveRight()
   if keys[pg.K_SPACE]: player.jump()
-  if keys[pg.K_l]: player.drawLine()
   for event in pg.event.get():
     if pg.mouse.get_pressed()[0]:
-      player.mine(world.hoveredBlock())
+      player.mine(player.blockFacing())
     if event.type == QUIT:
       pg.quit()
       sys.exit()
