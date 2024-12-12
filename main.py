@@ -632,12 +632,8 @@ class DirtVariantGrass(DirtVariant):
 
 
 class Dirt(Block):
-  def __init__(this, x=-1, y=-1, variant: DirtVariant = DirtVariantDirt()):
+  def __init__(this, x, y, variant: DirtVariant = DirtVariantDirt()):
     super().__init__(variant.name, variant.texture, x, y, variant.item, 1)
-
-
-def dirtFactory(x, y, variant: DirtVariant = DirtVariantDirt()):
-  return Dirt(x, y, variant)
 
 
 class World:
@@ -665,9 +661,9 @@ class World:
 
       # generate grass on the top layer
       for y in range(WORLD_HEIGHT - 1, grass_height, -1):
-        this.array[y][x] = dirtFactory(x, y)
+        this.array[y][x] = Dirt(x, y)
 
-      this.array[grass_height][x] = dirtFactory(
+      this.array[grass_height][x] = Dirt(
           x, grass_height, DirtVariantGrass()
       )
 
