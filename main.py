@@ -678,33 +678,54 @@ world = World()
 
 
 while True:
-    SURF.fill((255, 255, 255))
-    ASURF.fill((0, 0, 0, 0))
-    keys = pg.key.get_pressed()
-    vertices.clear()
+  SURF.fill((255, 255, 255))
+  ASURF.fill((0, 0, 0, 0))
+  keys = pg.key.get_pressed()
+  vertices.clear()
 
-    world.draw()
-    player.update()
+  world.draw()
+  player.update()
 
-    # temporarily game over logic
-    if player.health <= 0:
-        print("The skbidi has died")
-        pg.quit()
-        sys.exit()
+  # temporarily game over logic
+  if player.health <= 0:
+    print("The skbidi has died")
+    pg.quit()
+    sys.exit()
 
-    if keys[pg.K_a]:
-        player.moveLeft()
-    if keys[pg.K_d]:
-        player.moveRight()
-    if keys[pg.K_SPACE]:
-        player.jump()
-    if pg.mouse.get_pressed()[0]:
-        player.mine()
-    for event in pg.event.get():
-        if event.type == QUIT:
-            pg.quit()
-            sys.exit()
+  if keys[pg.K_a]:
+    player.moveLeft()
+  if keys[pg.K_d]:
+    player.moveRight()
+  if keys[pg.K_SPACE]:
+    player.jump()
+  if keys[pg.K_1]:
+    player.heldSlotIndex = 0
+  if keys[pg.K_2]:
+    player.heldSlotIndex = 1
+  if keys[pg.K_3]:
+    player.heldSlotIndex = 2
+  if keys[pg.K_4]:
+    player.heldSlotIndex = 3
+  if keys[pg.K_5]:
+    player.heldSlotIndex = 4
+  if keys[pg.K_6]:
+    player.heldSlotIndex = 5
+  if keys[pg.K_7]:
+    player.heldSlotIndex = 6
+  if keys[pg.K_8]:
+    player.heldSlotIndex = 7
+  if keys[pg.K_9]:
+    player.heldSlotIndex = 8
+  if keys[pg.K_0]:
+    player.heldSlotIndex = 9
     
-    SURF.blit(ASURF, (0, 0))
-    pg.display.flip()
-    clock.tick(FPS)
+  if pg.mouse.get_pressed()[0]:
+    player.mine()
+  for event in pg.event.get():
+    if event.type == QUIT:
+      pg.quit()
+      sys.exit()
+  
+  SURF.blit(ASURF, (0, 0))
+  pg.display.flip()
+  clock.tick(FPS)
