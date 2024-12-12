@@ -395,10 +395,12 @@ class Player(Entity, HasInventory):
     super().draw()
     this.draw_health()
 
-  def hotbar(this) -> list[Item]:
+  def hotbar(this) -> list[Inventory.Slot]:
+    '''Returns the first row of the player's inventory'''
     return this.inventory[0]
 
   def heldSlot(this) -> Inventory.Slot:
+    '''Returns the held slot, or None if the slot is empty'''
     slot = this.hotbar()[this.heldSlotIndex]
     if slot.item:
       return slot
