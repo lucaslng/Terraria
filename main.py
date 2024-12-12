@@ -450,6 +450,9 @@ class Player(Entity, HasInventory):
 
     def mine(this, block):
         if block != None:
+          if block.amountBroken < block.hardness:
+            block.amountBroken += 1 / FPS
+          else:
             print("mined", block.name, "got", block.item.name)
             world[block.y][block.x] = Air(block.x, block.y)
             this.inventory.addItem(block.item)
@@ -489,7 +492,7 @@ player = Player()
 class Block:
     SIZE = BLOCK_SIZE
 
-    def __init__(this, name: str, texture, x: int, y: int, item: Item, isAir=False):
+    def __init__(this, name: str, texture, x: int, y: int, item: Item, hardness: float, isAir=False):
         this.name = name
         this.texture = texture
         this.rect = pg.rect.Rect(x * BLOCK_SIZE, y * BLOCK_SIZE, this.SIZE, this.SIZE)
@@ -503,13 +506,18 @@ class Block:
         this.x = x
         this.y = y
         this.item = item
+        this.hardness = hardness
         this.isAir = isAir
+        this.amountBroken = 0
 
     def drawBlockOutline(this, color: pg.color.Color):
         pg.draw.rect(SURF, color, relativeRect(this.rect), 3)
 
     def drawBlock(this):
         SURF.blit(this.texture, relativeRect(this.rect))
+        breakingRect = relativeRect(this.rect.copy())
+        breakingRect.scale_by_ip(this.amountBroken / this.hardness, this.amountBroken / this.hardness)
+        pg.draw.rect(ASURF, (0, 0, 0 ,100), breakingRect)
 
     def offset(this, x: int, y: int) -> tuple[int, int]:
         return x - this.rect.x, y - this.rect.y
@@ -542,7 +550,7 @@ class Air(Block):
     item = Item("Air", texture, 0)
 
     def __init__(this, x=-1, y=-1):
-        super().__init__("Air", this.texture, x, y, this.item, isAir=True)
+        super().__init__("Air", this.texture, x, y, this.item, 0, isAir=True)
 
 
 class DirtVariant:
@@ -575,7 +583,7 @@ class DirtVariantGrass(DirtVariant):
 
 class Dirt(Block):
     def __init__(this, x=-1, y=-1, variant: DirtVariant = DirtVariantDirt()):
-        super().__init__(variant.name, variant.texture, x, y, variant.item)
+        super().__init__(variant.name, variant.texture, x, y, variant.item, 1)
 
 
 def dirtFactory(x, y, variant: DirtVariant = DirtVariantDirt()):
