@@ -472,7 +472,7 @@ class Player(Entity, HasInventory):
       if fall_distance > this.fall_damage_threshold:
         # damage based on fall distance
         damage = int(
-            (fall_distance - this.fall_damage_threshold) / BLOCK_SIZE)
+          (fall_distance - this.fall_damage_threshold) / BLOCK_SIZE)
         this.health = max(0, this.health - damage)
 
       this.falling = False
@@ -528,24 +528,24 @@ class Block:
   SIZE = BLOCK_SIZE
 
   def __init__(
-      this,
-      name: str,
-      texture,
-      x: int,
-      y: int,
-      item: Item,
-      hardness: float,
-      isAir=False,
+    this,
+    name: str,
+    texture,
+    x: int,
+    y: int,
+    item: Item,
+    hardness: float,
+    isAir=False,
   ):
     this.name = name
     this.texture = texture
     this.rect = pg.rect.Rect(
-        x * BLOCK_SIZE, y * BLOCK_SIZE, this.SIZE, this.SIZE)
+      x * BLOCK_SIZE, y * BLOCK_SIZE, this.SIZE, this.SIZE)
     this.vertices = (
-        this.rect.topleft,
-        this.rect.topright,
-        this.rect.bottomleft,
-        this.rect.bottomright,
+      this.rect.topleft,
+      this.rect.topright,
+      this.rect.bottomleft,
+      this.rect.bottomright,
     )
     this.mask = pg.mask.from_surface(texture)
     this.x = x
@@ -562,7 +562,7 @@ class Block:
     SURF.blit(this.texture, relativeRect(this.rect))
     breakingRect = relativeRect(this.rect.copy())
     breakingRect.scale_by_ip(
-        this.amountBroken / this.hardness, this.amountBroken / this.hardness
+      this.amountBroken / this.hardness, this.amountBroken / this.hardness
     )
     pg.draw.rect(ASURF, (0, 0, 0, 100), breakingRect)
 
