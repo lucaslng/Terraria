@@ -88,8 +88,8 @@ def distance(x1, y1, x2=FRAME.centerx, y2=FRAME.centery):
 class Item:
   '''Base item class'''
   ITEM_SIZE = BLOCK_SIZE
-  def __init__(this, name:str, itemTexture, stackSize:int):
-    this.itemTexture = itemTexture
+  def __init__(this, name:str, texture, stackSize:int):
+    this.texture = texture
     this.stackSize = stackSize
     this.name = name
   def drawItem(this, x:int, y:int):
@@ -158,7 +158,7 @@ class Inventory:
           
           slot = this.inventory[0][col]
           if slot.item is not None:
-            item_texture = slot.item.itemTexture
+            item_texture = slot.item.texture
             scaled_texture = pg.transform.scale(item_texture, (SLOT_SIZE - 6, SLOT_SIZE - 6))
             #center texture in the slot
             texture_rect = scaled_texture.get_rect(center=(slot_x + SLOT_SIZE // 2, slot_y + SLOT_SIZE // 2))
@@ -351,9 +351,9 @@ class Player(Entity, HasInventory):
   
   def mine(this, block):
     if block != None:
-      print("mined", block.name)
+      print("mined", block.name, "got", block.item.name)
       world[block.y][block.x] = Air(block.x, block.y)
-      this.inventory.addItem(block)
+      this.inventory.addItem(block.item)
   
   def drawCircle(this):
     pg.draw.circle(ASURF, (0,0,0,120),FRAME.center,BLOCK_SIZE*4)
@@ -385,23 +385,24 @@ ASURF = pg.surface.Surface((WIDTH,HEIGHT),pg.SRCALPHA)
 ASURF.fill((0,0,0,0))
 player = Player()
 
-class Block(Item):
+class Block():
   SIZE = BLOCK_SIZE
-  def __init__(this, name:str, itemTexture, blockTexture, stackSize:int, x, y, isAir=False):
-    super().__init__(name, itemTexture, stackSize)
-    this.blockTexture = blockTexture
+  def __init__(this, name:str, texture, x:int, y:int, item:Item, isAir=False):
+    this.name = name
+    this.texture = texture
     this.rect = pg.rect.Rect(x*BLOCK_SIZE, y*BLOCK_SIZE, this.SIZE, this.SIZE)
     this.vertices = (this.rect.topleft,this.rect.topright,this.rect.bottomleft,this.rect.bottomright)
-    this.mask = pg.mask.from_surface(blockTexture)
+    this.mask = pg.mask.from_surface(texture)
     this.x = x
     this.y = y
+    this.item = item
     this.isAir = isAir
   
   def drawBlockOutline(this, color:pg.color.Color):
     pg.draw.rect(SURF, color, relativeRect(this.rect), 3)
   
   def drawBlock(this):
-    SURF.blit(this.blockTexture, relativeRect(this.rect))
+    SURF.blit(this.texture, relativeRect(this.rect))
   
   def offset(this, x:int, y:int) -> tuple[int, int]:
     return x - this.rect.x, y - this.rect.y
@@ -423,34 +424,38 @@ class Block(Item):
   def __hash__(this):
     return hash((this.x,this.y))
   
+  def __eq__(this, other):
+    return hash(this) == hash(other)
+  
 class Air(Block):
   texture = pg.surface.Surface((BLOCK_SIZE,BLOCK_SIZE))
   texture.fill((0,0,0,0))
+  item = Item("Air", texture, 0)
   def __init__(this, x=-1, y=-1):
-    super().__init__("Air", this.texture, this.texture, 0, x, y, isAir = True)
+    super().__init__("Air", this.texture, x, y, this.item, isAir = True)
 
 class DirtVariant():
-  def __init__(this, name:str, texture, itemTexture):
+  itemTexture = pg.transform.scale(pg.image.load("dirt.png"), (15, 15))
+  def __init__(this, name:str, texture):
     this.name = name
     this.texture = texture
-    this.itemTexture = itemTexture
-
+    this.item = Item("Dirt", this.itemTexture, 64)
 class DirtVariantDirt(DirtVariant):
   dirtTexture = pg.transform.scale(pg.image.load("dirt.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  dirtItemTexture = pg.transform.scale(dirtTexture, (15, 15))
   def __init__(this):
-    super().__init__("Dirt", this.dirtTexture, this.dirtItemTexture)
+    super().__init__("Dirt", this.dirtTexture)
 
 class DirtVariantGrass(DirtVariant):
   grassTexture = pg.transform.scale(pg.image.load("grass_block.png"), (BLOCK_SIZE, BLOCK_SIZE))
   grassItemTexture = pg.transform.scale(grassTexture, (15, 15))
   def __init__(this):
-    super().__init__("Grass Block", this.grassTexture, this.grassItemTexture)
-
+    super().__init__("Grass Block", this.grassTexture)
 class Dirt(Block):
   def __init__(this, x=-1, y=-1, variant:DirtVariant=DirtVariantDirt()):
-    super().__init__("Dirt", variant.itemTexture, variant.texture, 64, x, y)
-
+    super().__init__(variant.name, variant.texture, x, y, variant.item)
+    
+def dirtFactory(x, y, variant:DirtVariant=DirtVariantDirt()):
+  return Dirt(x, y, variant)
 class World:
   def __init__(this):
     this.array = [[Air(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
@@ -467,9 +472,9 @@ class World:
         
         #generate grass on the top layer
         for y in range(WORLD_HEIGHT-1, grass_height, -1):
-            this.array[y][x] = Dirt(x, y)
+            this.array[y][x] = dirtFactory(x, y)
         
-        this.array[grass_height][x] = Dirt(x, grass_height, DirtVariantGrass())
+        this.array[grass_height][x] = dirtFactory(x, grass_height, DirtVariantGrass())
   
   def hoveredBlock(this) -> Block:
     mousepos = pg.mouse.get_pos()
