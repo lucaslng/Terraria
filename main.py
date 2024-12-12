@@ -19,6 +19,8 @@ BLOCK_SIZE = 20
 WORLD_HEIGHT = 100
 WORLD_WIDTH = 1000
 gravity = 1
+SEED = 0
+random.seed(SEED)
 
 pg.display.set_caption("Terraria")
 clock = pg.time.Clock()
@@ -658,8 +660,13 @@ class Dirt(Block):
     super().__init__(variant.name, variant.texture, x, y, this.item, 1)
 
 
+class Stone(Block):
+  stoneTexture = pg.transform.scale(pg.image.load("stone.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  stoneItemTexture = pg.transform.scale(stoneTexture, (15, 15))
+  def __init__(this, x, y):
+    super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Stone", this.stoneItemTexture, 64, Stone), 5)
+
 class World:
-  seed = random.randint(0, sys.maxsize)
   def __init__(this):
     this.array = [
         [Air(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
@@ -668,7 +675,7 @@ class World:
 
   # https://gpfault.net/posts/perlin-noise.txt.html
   @staticmethod
-  def __simplexNoise1D(length, scale=1.0, seed=0):
+  def __simplexNoise1D(length, scale=1.0):
     """
     Generate a 1D array of simplex noise.
 
@@ -680,6 +687,7 @@ class World:
     Returns:
         list: Array of 1D simplex noise values.
     """
+    random.seed(random.randint(0, sys.maxsize))
     def dot_product(grad, x):
         """Compute the dot product of the gradient and distance."""
         return grad * x
@@ -696,13 +704,12 @@ class World:
         """Linear interpolation between a and b using t."""
         return a + t * (b - a)
 
-    def generate_permutation(seed):
+    def generate_permutation():
       """Generate a pseudo-random permutation table."""
-      random.seed(seed)
       p = list(range(256))
       random.shuffle(p)
       return p + p  # Double the permutation table
-    perm = generate_permutation(seed)
+    perm = generate_permutation()
     noise = []
 
     for i in range(length):
@@ -731,21 +738,26 @@ class World:
         # Interpolate between contributions
         value = lerp(n0, n1, u)
         noise.append(value)
+        random.seed(SEED)
 
     return noise
 
   def __generateAllDirt(this):
-    noise = this.__simplexNoise1D(length=WORLD_WIDTH, scale=18, seed=this.seed)
-    print(noise)
+    grassHeightNoise = this.__simplexNoise1D(length=WORLD_WIDTH, scale=19)
+    stoneHeightNoise = this.__simplexNoise1D(length=WORLD_WIDTH, scale=30)
+    print(grassHeightNoise)
     for x in range(0, WORLD_WIDTH):
-      grass_height = round(WORLD_HEIGHT * 0.6 + 9 * noise[x])
+      grassHeight = round(WORLD_HEIGHT * 0.58 + 9 * grassHeightNoise[x])
+      stoneHeight = round(grassHeight + 5 + 5 * stoneHeightNoise[x])
 
       # generate grass on the top layer
-      for y in range(WORLD_HEIGHT - 1, grass_height, -1):
+      for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
+        this.array[y][x] = Stone(x, y)
+      for y in range(stoneHeight, grassHeight, -1):
         this.array[y][x] = Dirt(x, y)
 
-      this.array[grass_height][x] = Dirt(
-          x, grass_height, DirtVariantGrass()
+      this.array[grassHeight][x] = Dirt(
+          x, grassHeight, DirtVariantGrass()
       )
 
   def hoveredBlock(this) -> Block:
