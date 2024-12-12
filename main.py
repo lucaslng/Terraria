@@ -654,6 +654,13 @@ class Stone(Block):
   def __init__(this, x, y):
     super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Stone", this.stoneItemTexture, 64, Stone), 5)
 
+
+class IronOre(Block):
+  ironOreTexture = pg.transform.scale(pg.image.load("iron_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  ironOreItemTexture = pg.transform.scale(ironOreTexture, (15, 15))
+  def __init__(this, x, y):
+    super().__init__("Iron Ore", this.ironOreTexture, x, y, PlaceableItem("Iron Ore", this.ironOreItemTexture, 64, IronOre), 6)
+
 class World:
   def __init__(this):
     this.array = [
