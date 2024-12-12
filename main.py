@@ -163,45 +163,6 @@ class Inventory:
   def __getitem__(this, row: int):
     return this.inventory[row]
 
-  def drawHotbar(this):
-    """Draws the first row of the inventory on the screen"""
-    SLOT_SIZE = 40  # size of each slot
-    HOTBAR_X = (WIDTH - (this.cols * SLOT_SIZE)) // 2
-    HOTBAR_Y = HEIGHT - SLOT_SIZE - 10
-    FONT = pg.font.Font(None, 20)
-
-    for col in range(this.cols):
-      slot_x = HOTBAR_X + col * SLOT_SIZE
-      slot_y = HOTBAR_Y
-
-      # draws the slots
-      pg.draw.rect(SURF, (200, 200, 200),
-                   (slot_x, slot_y, SLOT_SIZE, SLOT_SIZE))
-      pg.draw.rect(SURF, (0, 0, 0),
-                   (slot_x, slot_y, SLOT_SIZE, SLOT_SIZE), 2)
-
-      slot = this.inventory[0][col]
-      if slot.item is not None:
-        item_texture = slot.item.texture
-        scaled_texture = pg.transform.scale(
-            item_texture, (SLOT_SIZE - 6, SLOT_SIZE - 6)
-        )
-        # center texture in the slot
-        texture_rect = scaled_texture.get_rect(
-            center=(slot_x + SLOT_SIZE // 2, slot_y + SLOT_SIZE // 2)
-        )
-        SURF.blit(scaled_texture, texture_rect.topleft)
-
-        if slot.count > 0:
-          count_text = FONT.render(
-              str(slot.count), True, (255, 255, 255))
-          # item counter is in the bottom right of the slot
-          text_rect = count_text.get_rect(
-              bottomright=(slot_x + SLOT_SIZE - 5,
-                           slot_y + SLOT_SIZE - 5)
-          )
-          SURF.blit(count_text, text_rect.topleft)
-
 
 class HasInventory:
   """Parent class for classes than have an inventory"""
@@ -448,6 +409,49 @@ class Player(Entity, HasInventory):
     if slot:
       texture = pg.transform.scale_by(slot.item.texture, 0.8)
       SURF.blit(texture, FRAME.center)
+  
+  def drawHotbar(this):
+    """Draws the first row of the inventory on the screen"""
+    SLOT_SIZE = 40  # size of each slot
+    HOTBAR_X = (WIDTH - (this.inventory.cols * SLOT_SIZE)) // 2
+    HOTBAR_Y = HEIGHT - SLOT_SIZE - 10
+    FONT = pg.font.Font(None, 20)
+
+    for col in range(this.inventory.cols):
+      slot_x = HOTBAR_X + col * SLOT_SIZE
+      slot_y = HOTBAR_Y
+
+      # draws the slots
+      pg.draw.rect(SURF, (200, 200, 200),
+                   (slot_x, slot_y, SLOT_SIZE, SLOT_SIZE))
+      if col == this.heldSlotIndex:
+        pg.draw.rect(SURF, (0, 0, 0),
+                   (slot_x, slot_y, SLOT_SIZE, SLOT_SIZE), 2)
+      else:
+        pg.draw.rect(SURF, (90, 90, 90),
+                   (slot_x, slot_y, SLOT_SIZE, SLOT_SIZE), 2)
+
+      slot = this.inventory[0][col]
+      if slot.item is not None:
+        item_texture = slot.item.texture
+        scaled_texture = pg.transform.scale(
+            item_texture, (SLOT_SIZE - 6, SLOT_SIZE - 6)
+        )
+        # center texture in the slot
+        texture_rect = scaled_texture.get_rect(
+            center=(slot_x + SLOT_SIZE // 2, slot_y + SLOT_SIZE // 2)
+        )
+        SURF.blit(scaled_texture, texture_rect.topleft)
+
+        if slot.count > 0:
+          count_text = FONT.render(
+              str(slot.count), True, (255, 255, 255))
+          # item counter is in the bottom right of the slot
+          text_rect = count_text.get_rect(
+              bottomright=(slot_x + SLOT_SIZE - 5,
+                           slot_y + SLOT_SIZE - 5)
+          )
+          SURF.blit(count_text, text_rect.topleft)
 
   def move(this):
     if this.is_initial_spawn:
@@ -515,7 +519,7 @@ class Player(Entity, HasInventory):
     super().update()
     this.blockFacing = this.getBlockFacing()
     this.drawBlockFacing()
-    this.inventory.drawHotbar()
+    this.drawHotbar()
     this.drawHeldItem()
 
 
