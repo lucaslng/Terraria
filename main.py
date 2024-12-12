@@ -136,26 +136,12 @@ class Inventory:
     item: Item = None
     count: int = 0
 
-    def __repr__(this):
-      return this.item.name + "x" + str(this.count)
-
-    def __str__(this):
-      return this.item.name + "x" + str(this.count)
-
   def __init__(this, rows: int, cols: int):
     this.rows = rows
     this.cols = cols
     this.inventory = [[this.Slot() for _ in range(cols)]
                       for _ in range(rows)]
 
-  def __repr__(this):
-    out = ""
-    for r in this.inventory:
-      for slot in r:
-        out += str(slot)
-      out += "\n"
-    print(out)
-    return out
 
   def addItem(this, item: Item):
     for r in range(this.rows):
@@ -782,17 +768,6 @@ class World:
         block = this[y][x]
         if not block.isAir:
           block.drawBlock()
-
-  def __repr__(this):
-    out = ""
-    for row in this.array:
-      for block in row:
-        if block.name == "Air":
-          out += "."
-        elif block.name == "Dirt":
-          out += "X"
-      out += "\n"
-    return out
 
 
 world = World()
