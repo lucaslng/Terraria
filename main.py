@@ -713,10 +713,10 @@ class World:
     return noise
 
   def __generateAllDirt(this):
-    noise = this.__simplexNoise1D(length=WORLD_WIDTH, scale=12, seed=this.seed)
+    noise = this.__simplexNoise1D(length=WORLD_WIDTH, scale=18, seed=this.seed)
     print(noise)
     for x in range(0, WORLD_WIDTH):
-      grass_height = round(WORLD_HEIGHT * 0.6 + 4 * noise[x])
+      grass_height = round(WORLD_HEIGHT * 0.6 + 9 * noise[x])
 
       # generate grass on the top layer
       for y in range(WORLD_HEIGHT - 1, grass_height, -1):
