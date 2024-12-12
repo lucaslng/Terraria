@@ -137,8 +137,6 @@ class Inventory:
                 slot.item = item
                 slot.count = 1
                 return
-              
-    print("Inventory full!")
   
   def __getitem__(this, row:int):
     return this.inventory[row]
@@ -436,6 +434,12 @@ class Dirt(Block):
   itemTexture = pg.transform.scale(texture, (15, 15))
   def __init__(this, x=-1, y=-1):
     super().__init__("Dirt", this.itemTexture, this.texture, 64, x, y)
+    
+class GrassBlock(Block):
+    texture = pg.transform.scale(pg.image.load("grass_block.png"), (BLOCK_SIZE, BLOCK_SIZE))
+    itemTexture = pg.transform.scale(texture, (15, 15))
+    def __init__(this, x=-1, y=-1):
+        super().__init__("Grass", this.itemTexture, this.texture, 64, x, y)
 
 class World:
   def __init__(this):
@@ -449,8 +453,13 @@ class World:
   
   def __generateAllDirt(this):
     for x in range(0, WORLD_WIDTH):
-      for y in range(WORLD_HEIGHT-1, round(WORLD_HEIGHT*0.6) + this.__generateDirtHeight(x), -1):
-        this.array[y][x] = Dirt(x, y)
+        grass_height = round(WORLD_HEIGHT*0.6) + this.__generateDirtHeight(x)
+        
+        #generate grass on the top layer
+        for y in range(WORLD_HEIGHT-1, grass_height, -1):
+            this.array[y][x] = Dirt(x, y)
+        
+        this.array[grass_height][x] = GrassBlock(x, grass_height)
   
   def hoveredBlock(this) -> Block:
     mousepos = pg.mouse.get_pos()
