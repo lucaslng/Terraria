@@ -18,7 +18,7 @@ SURF = pg.display.set_mode((WIDTH, HEIGHT))
 FRAME = SURF.get_rect()
 
 BLOCK_SIZE = 20
-WORLD_HEIGHT = 100
+WORLD_HEIGHT = 256
 WORLD_WIDTH = 1000
 gravity = 1
 SEED = 0
@@ -357,7 +357,7 @@ class Player(Entity, HasInventory):
 
     this.falling = False
     this.fall_start_y = None
-    this.fall_damage_threshold = 4 * BLOCK_SIZE
+    this.fall_damage_threshold = 8 * BLOCK_SIZE
     this.is_initial_spawn = True
     this.spawn_protection_timer = 60
 
@@ -682,26 +682,26 @@ class World:
     this.__generateWorld()
 
   class SimplexNoise:
-    def __init__(this, scale: float, dimension: int, width: int, height: int=1):
+    def __init__(this, scale: float, dimension: int, width: int=WORLD_WIDTH, height: int=WORLD_HEIGHT):
       if dimension == 1:
-        this.noise = this.simplex_noise_1d(width, scale)
+        this.noise = this.__noise1d(width, scale)
       elif dimension == 2:
-        this.noise = this.simplex_noise_2d(width, height, scale)
+        this.noise = this.__noise2d(width, height, scale)
       else: return None
     
     def __getitem__(this, x: int):
       return this.noise[x]
 
     @staticmethod
-    def fade(t):
+    def __fade(t):
       return t * t * t * (t * (t * 6 - 15) + 10)
 
     @staticmethod
-    def lerp(a, b, t):
+    def __lerp(a, b, t):
       return a + t * (b - a)
 
     @staticmethod
-    def generate_permutation():
+    def __generatePermutation():
       random.seed(random.randint(0, sys.maxsize))
       p = list(range(256))
       random.shuffle(p)
@@ -709,17 +709,17 @@ class World:
       return p + p  # Double for wraparound
 
     @staticmethod
-    def gradient_1d(h):
+    def __gradient1d(h):
       return 1 if h % 2 == 0 else -1
 
     @staticmethod
-    def gradient_2d(h):
+    def __gradient2d(h):
       """Compute 2D gradient direction based on hash value."""
       directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
       return directions[h % 4]
     
-    def simplex_noise_1d(this, width, scale=1.0):
-      perm = this.generate_permutation()
+    def __noise1d(this, width, scale=1.0):
+      perm = this.__generatePermutation()
       noise = []
 
       for i in range(width):
@@ -730,21 +730,21 @@ class World:
         dx0 = x - x0
         dx1 = x - x1
 
-        u = this.fade(dx0)
+        u = this.__fade(dx0)
 
-        g0 = this.gradient_1d(perm[x0 % 256])
-        g1 = this.gradient_1d(perm[x1 % 256])
+        g0 = this.__gradient1d(perm[x0 % 256])
+        g1 = this.__gradient1d(perm[x1 % 256])
 
         n0 = g0 * dx0
         n1 = g1 * dx1
 
-        value = this.lerp(n0, n1, u)
+        value = this.__lerp(n0, n1, u)
         noise.append(value)
 
       return noise
     
-    def simplex_noise_2d(this, width, height, scale=1.0):
-      perm = this.generate_permutation()
+    def __noise2d(this, width, height, scale=1.0):
+      perm = this.__generatePermutation()
       noise = []
 
       for y in range(height):
@@ -764,34 +764,35 @@ class World:
           dx1 = sx - x1
           dy1 = sy - y1
 
-          u = this.fade(dx0)
-          v = this.fade(dy0)
+          u = this.__fade(dx0)
+          v = this.__fade(dy0)
 
-          g00 = this.gradient_2d(perm[(x0 + perm[y0 % 256]) % 256])
-          g10 = this.gradient_2d(perm[(x1 + perm[y0 % 256]) % 256])
-          g01 = this.gradient_2d(perm[(x0 + perm[y1 % 256]) % 256])
-          g11 = this.gradient_2d(perm[(x1 + perm[y1 % 256]) % 256])
+          g00 = this.__gradient2d(perm[(x0 + perm[y0 % 256]) % 256])
+          g10 = this.__gradient2d(perm[(x1 + perm[y0 % 256]) % 256])
+          g01 = this.__gradient2d(perm[(x0 + perm[y1 % 256]) % 256])
+          g11 = this.__gradient2d(perm[(x1 + perm[y1 % 256]) % 256])
 
           n00 = g00[0] * dx0 + g00[1] * dy0
           n10 = g10[0] * dx1 + g10[1] * dy0
           n01 = g01[0] * dx0 + g01[1] * dy1
           n11 = g11[0] * dx1 + g11[1] * dy1
 
-          nx0 = this.lerp(n00, n10, u)
-          nx1 = this.lerp(n01, n11, u)
+          nx0 = this.__lerp(n00, n10, u)
+          nx1 = this.__lerp(n01, n11, u)
 
-          value = this.lerp(nx0, nx1, v)
+          value = this.__lerp(nx0, nx1, v)
           row.append(value)
         noise.append(row)
 
       return noise
 
   def __generateWorld(this):
-    grassHeightNoise = this.SimplexNoise(19, 1, WORLD_WIDTH)
-    stoneHeightNoise = this.SimplexNoise(30, 1, WORLD_WIDTH)
+    grassHeightNoise = this.SimplexNoise(19, 1)
+    stoneHeightNoise = this.SimplexNoise(30, 1)
     oresNoise = {}
+    cavesNoise = this.SimplexNoise(10, 2)
     for ore in ores:
-      oresNoise[ore.__name__] = (this.SimplexNoise(ore.veinSize, 2, WORLD_WIDTH, WORLD_HEIGHT), ore)
+      oresNoise[ore.__name__] = (this.SimplexNoise(ore.veinSize, 2), ore)
     for x in range(0, WORLD_WIDTH):
       grassHeight = round(WORLD_HEIGHT * 0.58 + 9 * grassHeightNoise[x])
       stoneHeight = round(grassHeight + 5 + 5 * stoneHeightNoise[x])
@@ -802,6 +803,12 @@ class World:
         for _, v in oresNoise.items():
           oreNoise, ore = v
           if oreNoise[y][x] > ore.rarity: this.array[y][x] = ore(x, y)
+      
+      for y in range(WORLD_HEIGHT -1, stoneHeight, - 1):
+        # print(cavesNoise[y][x])
+        if cavesNoise[y][x] > 0.1:
+          this.array[y][x] = Air(x, y)
+
       for y in range(stoneHeight, grassHeight, -1):
         this.array[y][x] = Dirt(x, y)
 
