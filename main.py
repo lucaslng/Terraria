@@ -103,7 +103,7 @@ class Item:
 
   ITEM_SIZE = BLOCK_SIZE
 
-  def __init__(this, name: str, texture, stackSize: int):
+  def __init__(this, name: str, texture, stackSize: int = 64):
     this.texture = texture
     this.stackSize = stackSize
     this.name = name
@@ -120,7 +120,7 @@ class Item:
     return isinstance(this, PlaceableItem)
 
 class PlaceableItem(Item):
-  def __init__(this, name: str, texture, stackSize: int, block):
+  def __init__(this, name: str, texture, block, stackSize: int = 64):
     super().__init__(name, texture, stackSize)
     this.block = block
   
@@ -644,7 +644,7 @@ class DirtVariantGrass(DirtVariant):
 class Dirt(Block):
   itemTexture = pg.transform.scale(pg.image.load("dirt.png"), (15, 15))
   def __init__(this, x, y, variant: DirtVariant = DirtVariantDirt()):
-    this.item = PlaceableItem("Dirt", this.itemTexture, 64, Dirt)
+    this.item = PlaceableItem("Dirt", this.itemTexture, Dirt)
     super().__init__(variant.name, variant.texture, x, y, this.item, 1)
 
 
@@ -652,19 +652,27 @@ class Stone(Block):
   stoneTexture = pg.transform.scale(pg.image.load("stone.png"), (BLOCK_SIZE, BLOCK_SIZE))
   stoneItemTexture = pg.transform.scale(stoneTexture, (15, 15))
   def __init__(this, x, y):
-    super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Stone", this.stoneItemTexture, 64, Stone), 5)
+    super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Stone", this.stoneItemTexture, Stone), 5)
 
-
-ores = []
 class IronOre(Block):
   ironOreTexture = pg.transform.scale(pg.image.load("iron_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
   ironOreItemTexture = pg.transform.scale(ironOreTexture, (15, 15))
   veinSize = 3
-  rarity = 0.3
+  rarity = 0.4 # lower is more common
+  name = "Iron Ore"
   def __init__(this, x, y):
-    super().__init__("Iron Ore", this.ironOreTexture, x, y, PlaceableItem("Iron Ore", this.ironOreItemTexture, 64, IronOre), 6)
+    super().__init__(this.name, this.ironOreTexture, x, y, PlaceableItem(this.name, this.ironOreItemTexture, IronOre), 6)
 
-ores.append(IronOre)
+class CoalOre(Block):
+  coalOreTexture = pg.transform.scale(pg.image.load("coal_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  coalItemTexture = pg.transform.scale(pg.image.load("coal.png"), (15, 15))
+  veinSize = 4
+  rarity = 0.3 # lower is more common
+  name = "Coal Ore"
+  def __init__(this, x, y):
+    super().__init__(this.name, this.coalOreTexture, x, y, Item("Coal", this.coalItemTexture), 3)
+
+ores = [CoalOre, IronOre]
 class World:
   def __init__(this):
     this.array = [
@@ -781,18 +789,19 @@ class World:
   def __generateWorld(this):
     grassHeightNoise = this.SimplexNoise(19, 1, WORLD_WIDTH)
     stoneHeightNoise = this.SimplexNoise(30, 1, WORLD_WIDTH)
-    oresNoise = list()
+    oresNoise = {}
     for ore in ores:
-      oresNoise.append(this.SimplexNoise(ore.veinSize, 2, WORLD_WIDTH, WORLD_HEIGHT))
+      oresNoise[ore.name] = (this.SimplexNoise(ore.veinSize, 2, WORLD_WIDTH, WORLD_HEIGHT), ore)
     for x in range(0, WORLD_WIDTH):
       grassHeight = round(WORLD_HEIGHT * 0.58 + 9 * grassHeightNoise[x])
       stoneHeight = round(grassHeight + 5 + 5 * stoneHeightNoise[x])
 
-      # generate grass on the top layer
       for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
-        for i in range(len(ores)):
-          if oresNoise[i][y][x] > ores[i].rarity: this.array[y][x] = ore(x, y)
-          else: this.array[y][x] = Stone(x, y)
+        this.array[y][x] = Stone(x, y)
+      for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
+        for _, v in oresNoise.items():
+          oreNoise, ore = v
+          if oreNoise[y][x] > ore.rarity: this.array[y][x] = ore(x, y)
       for y in range(stoneHeight, grassHeight, -1):
         this.array[y][x] = Dirt(x, y)
 
