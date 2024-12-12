@@ -167,6 +167,9 @@ class Inventory:
           slot.count = 1
           return
 
+  def isPlaceable(this) -> bool:
+    return isinstance(this, PlaceableItem)
+
   def __getitem__(this, row: int):
     return this.inventory[row]
 
@@ -502,7 +505,7 @@ class Player(Entity, HasInventory):
         this.inventory.addItem(this.blockFacing.item)
   
   def place(this):
-    if this.heldSlot() and this.heldSlot().count > 0 and isinstance(this.heldSlot().item, PlaceableItem):
+    if this.heldSlot() and this.heldSlot().count > 0 and this.heldSlot().item.isPlaceable():
       x, y = pixelToCoord(*pg.mouse.get_pos())
       if world.blockAt(x, y).isAir:
         this.heldSlot().item.place(x, y)
