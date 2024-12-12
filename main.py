@@ -6,6 +6,8 @@ from math import radians, hypot
 import random
 from enum import Enum
 import pickle  # use pickle to store save
+import time
+start = time.time()
 
 pg.init()
 
@@ -21,6 +23,7 @@ WORLD_WIDTH = 1000
 gravity = 1
 SEED = 0
 random.seed(SEED)
+# random.seed(random.randint(0,sys.maxsize))
 
 pg.display.set_caption("Terraria")
 clock = pg.time.Clock()
@@ -832,7 +835,8 @@ class World:
 
 world = World()
 
-
+end = time.time()
+print("Load time:", end-start, "seconds")
 while True:
   SURF.fill((255, 255, 255))
   ASURF.fill((0, 0, 0, 0))
