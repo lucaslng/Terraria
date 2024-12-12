@@ -196,7 +196,7 @@ class Entity:
   def moveRight(this):
     if this.hvelo < 5: this.hvelo += 2
   def jump(this):
-    if this.vvelo > 4 and this.isOnBlock: this.vvelo -= 18
+    if this.vvelo > 4 and this.isOnBlock: this.vvelo -= 15
   
   def checkCollisionH(this) -> int:
     newrect = this.rect.copy()
@@ -435,11 +435,11 @@ class Dirt(Block):
   def __init__(this, x=-1, y=-1):
     super().__init__("Dirt", this.itemTexture, this.texture, 64, x, y)
     
-class GrassBlock(Block):
+class GrassBlock(Dirt):
     texture = pg.transform.scale(pg.image.load("grass_block.png"), (BLOCK_SIZE, BLOCK_SIZE))
     itemTexture = pg.transform.scale(texture, (15, 15))
     def __init__(this, x=-1, y=-1):
-        super().__init__("Grass", this.itemTexture, this.texture, 64, x, y)
+      super().__init__(x, y)
 
 class World:
   def __init__(this):
