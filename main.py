@@ -339,6 +339,10 @@ class Entity:
         else:
             SURF.blit(this.reversedTexture, relativeRect(this.rect).topleft)
             this.mask = pg.mask.from_surface(this.reversedTexture)
+    
+    def update(this):
+      this.move()
+      this.draw()
 
 
 vertices = set()
@@ -358,6 +362,7 @@ class Player(Entity, HasInventory):
     full_heart_texture = pg.transform.scale(pg.image.load("full_heart.png"), (20, 20))
     half_heart_texture = pg.transform.scale(pg.image.load("half_heart.png"), (20, 20))
     empty_heart_texture = pg.transform.scale(pg.image.load("empty_heart.png"), (20, 20))
+    blockFacing = None
 
     def __init__(this):
         Entity.__init__(
@@ -448,40 +453,40 @@ class Player(Entity, HasInventory):
             this.falling = False
             this.fall_start_y = None
 
-    def mine(this, block):
-        if block != None:
-          if block.amountBroken < block.hardness:
-            block.amountBroken += 1 / FPS
+    def mine(this):
+        if this.blockFacing:
+          if this.blockFacing.amountBroken < this.blockFacing.hardness:
+            this.blockFacing.amountBroken += 1 / FPS
           else:
-            print("mined", block.name, "got", block.item.name)
-            world[block.y][block.x] = Air(block.x, block.y)
-            this.inventory.addItem(block.item)
+            print("mined", this.blockFacing.name, "got", this.blockFacing.item.name)
+            world[this.blockFacing.y][this.blockFacing.x] = Air(this.blockFacing.x, this.blockFacing.y)
+            this.inventory.addItem(this.blockFacing.item)
 
     def drawCircle(this):
         pg.draw.circle(ASURF, (0, 0, 0, 120), FRAME.center, BLOCK_SIZE * 4)
 
-    def blockFacing(this):
+    def getBlockFacing(this):
         """Returns the block that the player is facing, if it is in range"""
         block = bresenham(*pg.mouse.get_pos())
         if block is None:
             return None
-        pg.draw.line(SURF, (0, 0, 0), FRAME.center, pg.mouse.get_pos())
         for vertex in block.vertices:
             if distance(*relativeCoord(*vertex)) < this.reach:
-                block.drawBlockOutline((255, 0, 0))
                 return block
         return None
+    
+    def drawBlockFacing(this):
+      if this.blockFacing: this.blockFacing.drawBlockOutline((0,0,0,200))
 
-    def drawLine(this):
-        mousepos = pg.mouse.get_pos()
-        block = bresenham(*mousepos)
-        if block != None:
-            block.drawBlockOutline((255, 0, 0))
-        pg.draw.line(SURF, (0, 0, 0), FRAME.center, mousepos)
-
-    def sweep(this):
+    # def sweep(this):
         # https://www.redblobgames.com/articles/visibility/
-        endpoints = []
+        # endpoints = []
+    
+    def update(this):
+      super().update()
+      this.blockFacing = this.getBlockFacing()
+      this.drawBlockFacing()
+      this.inventory.drawHotbar()
 
 
 ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
@@ -510,14 +515,14 @@ class Block:
         this.isAir = isAir
         this.amountBroken = 0
 
-    def drawBlockOutline(this, color: pg.color.Color):
-        pg.draw.rect(SURF, color, relativeRect(this.rect), 3)
+    def drawBlockOutline(this, color):
+        pg.draw.rect(ASURF, color, relativeRect(this.rect), 2)
 
     def drawBlock(this):
         SURF.blit(this.texture, relativeRect(this.rect))
         breakingRect = relativeRect(this.rect.copy())
         breakingRect.scale_by_ip(this.amountBroken / this.hardness, this.amountBroken / this.hardness)
-        pg.draw.rect(ASURF, (0, 0, 0 ,100), breakingRect)
+        pg.draw.rect(ASURF, (0, 0, 0, 100), breakingRect)
 
     def offset(this, x: int, y: int) -> tuple[int, int]:
         return x - this.rect.x, y - this.rect.y
@@ -526,7 +531,7 @@ class Block:
         if this.isAir:
             return False
         if this.mask.overlap(player.mask, this.offset(x, y)):
-            pg.draw.rect(SURF, (255, 0, 0), relativeRect(this.rect), width=3)
+            # pg.draw.rect(SURF, (255, 0, 0), relativeRect(this.rect), width=3)
             return True
         else:
             return False
@@ -664,10 +669,7 @@ while True:
     vertices.clear()
 
     world.draw()
-    player.draw()
-    player.move()
-    player.inventory.drawHotbar()
-    SURF.blit(ASURF, (0, 0))
+    player.update()
 
     # temporarily game over logic
     if player.health <= 0:
@@ -682,11 +684,12 @@ while True:
     if keys[pg.K_SPACE]:
         player.jump()
     if pg.mouse.get_pressed()[0]:
-        player.mine(player.blockFacing())
+        player.mine()
     for event in pg.event.get():
         if event.type == QUIT:
             pg.quit()
             sys.exit()
-
+    
+    SURF.blit(ASURF, (0, 0))
     pg.display.flip()
     clock.tick(FPS)
