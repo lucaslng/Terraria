@@ -114,6 +114,9 @@ class Item:
       return False
     return this.name == other.name
 
+  def isPlaceable(this) -> bool:
+    return isinstance(this, PlaceableItem)
+
 class PlaceableItem(Item):
   def __init__(this, name: str, texture, stackSize: int, block):
     super().__init__(name, texture, stackSize)
