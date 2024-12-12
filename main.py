@@ -507,6 +507,8 @@ class Player(Entity, HasInventory):
       if world.blockAt(x, y).isAir:
         this.heldSlot().item.place(x, y)
         this.heldSlot().count -= 1
+        if this.heldSlot().count == 0:
+          this.heldSlot().item = None
       
   def drawCircle(this):
     pg.draw.circle(ASURF, (0, 0, 0, 120), FRAME.center, BLOCK_SIZE * 4)
