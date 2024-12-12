@@ -375,6 +375,7 @@ class Player(Entity, HasInventory):
             10,
         )
         HasInventory.__init__(this, 4, 10)
+        this.heldSlotIndex = 0 # number from 0 to 9
         this.rect.center = this.camera.center
         this.centerRect = this.rect.copy()
         this.centerRect.center = FRAME.center
@@ -424,6 +425,19 @@ class Player(Entity, HasInventory):
 
     def hotbar(this) -> list[Item]:
         return this.inventory[0]
+    
+    def heldSlot(this) -> Inventory.Slot:
+      slot = this.hotbar()[this.heldSlotIndex]
+      if slot.item:
+        return slot
+      else:
+        return None
+    
+    def drawHeldItem(this):
+      slot = this.heldSlot()
+      if slot:
+        texture = pg.transform.scale_by(slot.item.texture, 0.8)
+        SURF.blit(texture, FRAME.center)
 
     def move(this):
         if this.is_initial_spawn:
@@ -487,6 +501,7 @@ class Player(Entity, HasInventory):
       this.blockFacing = this.getBlockFacing()
       this.drawBlockFacing()
       this.inventory.drawHotbar()
+      this.drawHeldItem()
 
 
 ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
