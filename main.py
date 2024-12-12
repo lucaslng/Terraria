@@ -431,7 +431,7 @@ class Player(Entity, HasInventory):
         pg.draw.rect(SURF, (90, 90, 90),
                    (slot_x, slot_y, SLOT_SIZE, SLOT_SIZE), 2)
 
-      slot = this.inventory[0][col]
+      slot = this.hotbar()[col]
       if slot.item is not None:
         item_texture = slot.item.texture
         scaled_texture = pg.transform.scale(
