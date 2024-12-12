@@ -777,14 +777,14 @@ class World:
   def __generateWorld(this):
     grassHeightNoise = this.SimplexNoise(19, 1, WORLD_WIDTH)
     stoneHeightNoise = this.SimplexNoise(30, 1, WORLD_WIDTH)
-    oreNoise = this.SimplexNoise(10, 2, WORLD_WIDTH, WORLD_HEIGHT)
+    oreNoise = this.SimplexNoise(3, 2, WORLD_WIDTH, WORLD_HEIGHT)
     for x in range(0, WORLD_WIDTH):
       grassHeight = round(WORLD_HEIGHT * 0.58 + 9 * grassHeightNoise[x])
       stoneHeight = round(grassHeight + 5 + 5 * stoneHeightNoise[x])
 
       # generate grass on the top layer
       for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
-        if oreNoise[y][x] > 0.4: this.array[y][x] = IronOre(x, y)
+        if oreNoise[y][x] > 0.3: this.array[y][x] = IronOre(x, y)
         else: this.array[y][x] = Stone(x, y)
       for y in range(stoneHeight, grassHeight, -1):
         this.array[y][x] = Dirt(x, y)
