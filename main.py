@@ -644,7 +644,7 @@ class DirtVariantGrass(DirtVariant):
 class Dirt(Block):
   itemTexture = pg.transform.scale(pg.image.load("dirt.png"), (15, 15))
   def __init__(this, x, y, variant: DirtVariant = DirtVariantDirt()):
-    this.item = PlaceableItem("Dirt", this.itemTexture, 64, Dirt)
+    this.item = PlaceableItem("Dirt", this.itemTexture, 64, this)
     super().__init__(variant.name, variant.texture, x, y, this.item, 1)
 
 
@@ -652,14 +652,14 @@ class Stone(Block):
   stoneTexture = pg.transform.scale(pg.image.load("stone.png"), (BLOCK_SIZE, BLOCK_SIZE))
   stoneItemTexture = pg.transform.scale(stoneTexture, (15, 15))
   def __init__(this, x, y):
-    super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Stone", this.stoneItemTexture, 64, Stone), 5)
+    super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Stone", this.stoneItemTexture, 64, this), 5)
 
 
 class IronOre(Block):
   ironOreTexture = pg.transform.scale(pg.image.load("iron_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
   ironOreItemTexture = pg.transform.scale(ironOreTexture, (15, 15))
   def __init__(this, x, y):
-    super().__init__("Iron Ore", this.ironOreTexture, x, y, PlaceableItem("Iron Ore", this.ironOreItemTexture, 64, IronOre), 6)
+    super().__init__("Iron Ore", this.ironOreTexture, x, y, PlaceableItem("Iron Ore", this.ironOreItemTexture, 64, this), 6)
 
 class World:
   def __init__(this):
