@@ -584,7 +584,7 @@ class DirtVariant:
 
 class DirtVariantDirt(DirtVariant):
     dirtTexture = pg.transform.scale(
-        pg.image.load("dirt.png"), (BLOCK_SIZE, BLOCK_SIZE)
+        DirtVariant.itemTexture, (BLOCK_SIZE, BLOCK_SIZE)
     )
 
     def __init__(this):
