@@ -497,6 +497,7 @@ while True:
   ASURF.fill((0,0,0,0))
   keys = pg.key.get_pressed()
   vertices.clear()
+  
   world.draw()
   player.draw()
   player.move()
@@ -519,4 +520,5 @@ while True:
       sys.exit()
   
   pg.display.flip()
+  
   clock.tick(FPS)
