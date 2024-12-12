@@ -115,8 +115,12 @@ class Item:
     return this.name == other.name
 
 class PlaceableItem(Item):
-  def __init__(this, name: str, texture, stackSize: int):
+  def __init__(this, name: str, texture, stackSize: int, block):
     super().__init__(name, texture, stackSize)
+    this.block = block
+  
+  def place(this, x, y):
+    world[y][x] = this.block(x, y)
 
 class Inventory:
   """Inventory class"""
@@ -496,7 +500,14 @@ class Player(Entity, HasInventory):
             this.blockFacing.x, this.blockFacing.y
         )
         this.inventory.addItem(this.blockFacing.item)
-
+  
+  def place(this):
+    if this.heldSlot() and this.heldSlot().count > 0 and isinstance(this.heldSlot().item, PlaceableItem):
+      x, y = pixelToCoord(*pg.mouse.get_pos())
+      if world.blockAt(x, y).isAir:
+        this.heldSlot().item.place(x, y)
+        this.heldSlot().count -= 1
+      
   def drawCircle(this):
     pg.draw.circle(ASURF, (0, 0, 0, 120), FRAME.center, BLOCK_SIZE * 4)
 
@@ -608,17 +619,15 @@ class Air(Block):
 
 
 class DirtVariant:
-  itemTexture = pg.transform.scale(pg.image.load("dirt.png"), (15, 15))
-
   def __init__(this, name: str, texture):
     this.name = name
     this.texture = texture
-    this.item = PlaceableItem("Dirt", this.itemTexture, 64)
+    
 
 
 class DirtVariantDirt(DirtVariant):
   dirtTexture = pg.transform.scale(
-    DirtVariant.itemTexture, (BLOCK_SIZE, BLOCK_SIZE))
+    pg.image.load("dirt.png"), (BLOCK_SIZE, BLOCK_SIZE))
 
   def __init__(this):
     super().__init__("Dirt", this.dirtTexture)
@@ -635,8 +644,10 @@ class DirtVariantGrass(DirtVariant):
 
 
 class Dirt(Block):
+  itemTexture = pg.transform.scale(pg.image.load("dirt.png"), (15, 15))
   def __init__(this, x, y, variant: DirtVariant = DirtVariantDirt()):
-    super().__init__(variant.name, variant.texture, x, y, variant.item, 1)
+    this.item = PlaceableItem("Dirt", this.itemTexture, 64, Dirt)
+    super().__init__(variant.name, variant.texture, x, y, this.item, 1)
 
 
 class World:
@@ -811,6 +822,8 @@ while True:
 
   if pg.mouse.get_pressed()[0]:
     player.mine()
+  if pg.mouse.get_pressed()[2]:
+    player.place()
   for event in pg.event.get():
     if event.type == QUIT:
       pg.quit()
