@@ -8,15 +8,18 @@ from enum import Enum
 import pickle # use pickle to store save
 
 pg.init()
+
 WIDTH = 1000
 HEIGHT = 600
 FPS = 60
 SURF = pg.display.set_mode((WIDTH, HEIGHT))
 FRAME = SURF.get_rect()
+
 BLOCK_SIZE = 20
 WORLD_HEIGHT = 100
 WORLD_WIDTH = 1000
 gravity = 1
+
 pg.display.set_caption("Terraria")
 clock = pg.time.Clock()
 
@@ -124,17 +127,18 @@ class Inventory:
     for r in range(this.rows):
         for c in range(this.cols):
             slot = this.inventory[r][c]
-            # If item already exists in slot, increment count
+            #if item exist increase by one
             if slot.item and slot.item == item:
-                if slot.count < slot.item.stackSize:  # Check stack size limit
+                if slot.count < slot.item.stackSize:  #stack size limit
                     slot.count += 1
                     return
-            # If slot is empty, add the item
+            #if slot empty add the item
             elif slot.item is None:
                 slot.item = item
                 slot.count = 1
                 return
-    print("Inventory full!")  # Handle full inventory
+              
+    print("Inventory full!")
   
   def __getitem__(this, row:int):
     return this.inventory[row]
@@ -247,7 +251,6 @@ class Entity:
     elif this.hvelo > 0: this.hvelo -= min(1, this.hvelo)
     this.rect.x += this.checkCollisionH()
     this.rect.y += this.checkCollisionV()
-    # 
     if this.vvelo < 5: this.vvelo += gravity
   
   def draw(this):
@@ -265,6 +268,7 @@ class Entity:
     else:
       SURF.blit(this.reversedTexture,relativeRect(this.rect).topleft)
       this.mask = pg.mask.from_surface(this.reversedTexture)
+
 
 vertices = set()
 class Player(Entity, HasInventory):
@@ -286,52 +290,66 @@ class Player(Entity, HasInventory):
     this.max_health = 20
     this.health = this.max_health
     
+    this.falling = False
+    this.fall_start_y = None
+    this.fall_damage_threshold = 4 * BLOCK_SIZE
+    this.is_initial_spawn = True
+    this.spawn_protection_timer = 60
+
   def draw_health(this):
-        """Draw player's health as hearts on the screen"""
-        HEART_SPACING = 25
-        HEART_X_START = 10
-        HEART_Y = 10
+    """Draw health as hearts on the screen"""
+    HEART_SPACING = 25
+    HEART_X_START = 10
+    HEART_Y = 10
 
-        full_hearts = this.health // 2
-        half_hearts = this.health % 2
-        empty_hearts = (this.max_health - this.health) // 2
+    full_hearts = this.health // 2
+    half_hearts = this.health % 2
+    empty_hearts = (this.max_health - this.health) // 2
 
-        # Draw full hearts
-        for i in range(full_hearts):
-            SURF.blit(this.full_heart_texture, 
-                      (HEART_X_START + i * HEART_SPACING, HEART_Y))
-        
-        # Draw half heart if needed
-        if half_hearts:
-            SURF.blit(this.half_heart_texture, (HEART_X_START + full_hearts * HEART_SPACING, HEART_Y))
-        
-        # Draw empty hearts
-        for i in range(empty_hearts):
-            SURF.blit(this.empty_heart_texture, 
-                      (HEART_X_START + (full_hearts + half_hearts + i) * HEART_SPACING, HEART_Y))
-
-  def take_damage(this, damage_amount):
-        """Reduce player health when taking damage"""
-        this.health = max(0, this.health - damage_amount)
-        
-        # Optional: Add game over logic if health reaches 0
-        if this.health <= 0:
-            print("Game Over!")
-            # You could add game over logic here, like resetting the game or showing a game over screen
+    #Full hearts
+    for i in range(full_hearts):
+        SURF.blit(this.full_heart_texture, (HEART_X_START + i * HEART_SPACING, HEART_Y))
+    #Draw half heart
+    if half_hearts:
+        SURF.blit(this.half_heart_texture, (HEART_X_START + full_hearts * HEART_SPACING, HEART_Y))   
+    #Draw empty hearts
+    for i in range(empty_hearts):
+        SURF.blit(this.empty_heart_texture, (HEART_X_START + (full_hearts + half_hearts + i) * HEART_SPACING, HEART_Y))
 
   def draw(this):
-        # Existing draw method remains the same
-        super().draw()
-        
-        # Add health drawing to the draw method
-        this.draw_health()
+    super().draw()
+    this.draw_health()
   
   def hotbar(this) -> list[Item]:
     return this.inventory[0]
   
   def move(this):
+    if this.is_initial_spawn:
+        this.falling = False
+        this.fall_start_y = None
+
+        this.spawn_protection_timer -= 1
+        if this.spawn_protection_timer <= 0:
+            this.is_initial_spawn = False
+
+    if this.vvelo > 0:
+        if not this.falling:
+            this.falling = True
+            this.fall_start_y = this.rect.bottom
+
     super().move()
     this.camera.center = this.rect.center
+
+    if this.falling and this.isOnBlock and not this.is_initial_spawn:
+        fall_distance = abs(this.fall_start_y - this.rect.bottom)
+        
+        if fall_distance > this.fall_damage_threshold:
+            #damage based on fall distance
+            damage = int((fall_distance - this.fall_damage_threshold) / BLOCK_SIZE)
+            this.health = max(0, this.health - damage)
+
+        this.falling = False
+        this.fall_start_y = None
   
   def mine(this, block):
     if block != None:
@@ -475,6 +493,12 @@ while True:
   player.move()
   player.inventory.drawHotbar()
   SURF.blit(ASURF,(0,0))
+  
+  #temporarily game over logic
+  if player.health <= 0:
+    print("The skbidi has died")
+    pg.quit()
+    sys.exit()
   
   if keys[pg.K_a]: player.moveLeft()
   if keys[pg.K_d]: player.moveRight()
