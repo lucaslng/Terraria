@@ -672,7 +672,7 @@ class CoalOre(Block):
   def __init__(this, x, y):
     super().__init__(this.name, this.coalOreTexture, x, y, Item("Coal", this.coalItemTexture), 3)
 
-ores = [CoalOre, IronOre]
+ores = {CoalOre, IronOre}
 class World:
   def __init__(this):
     this.array = [
