@@ -657,20 +657,18 @@ class Stone(Block):
 class IronOre(Block):
   ironOreTexture = pg.transform.scale(pg.image.load("iron_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
   ironOreItemTexture = pg.transform.scale(ironOreTexture, (15, 15))
-  veinSize = 3
-  rarity = 0.4 # lower is more common
-  name = "Iron Ore"
+  veinSize = 3.2
+  rarity = 0.38 # lower is more common
   def __init__(this, x, y):
-    super().__init__(this.name, this.ironOreTexture, x, y, PlaceableItem(this.name, this.ironOreItemTexture, IronOre), 6)
+    super().__init__("Iron Ore", this.ironOreTexture, x, y, PlaceableItem("Iron Ore", this.ironOreItemTexture, IronOre), 6)
 
 class CoalOre(Block):
   coalOreTexture = pg.transform.scale(pg.image.load("coal_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
   coalItemTexture = pg.transform.scale(pg.image.load("coal.png"), (15, 15))
-  veinSize = 4
+  veinSize = 3.9
   rarity = 0.3 # lower is more common
-  name = "Coal Ore"
   def __init__(this, x, y):
-    super().__init__(this.name, this.coalOreTexture, x, y, Item("Coal", this.coalItemTexture), 3)
+    super().__init__("Coal Ore", this.coalOreTexture, x, y, Item("Coal", this.coalItemTexture), 3)
 
 ores = {CoalOre, IronOre}
 class World:
@@ -785,13 +783,12 @@ class World:
 
       return noise
 
-
   def __generateWorld(this):
     grassHeightNoise = this.SimplexNoise(19, 1, WORLD_WIDTH)
     stoneHeightNoise = this.SimplexNoise(30, 1, WORLD_WIDTH)
     oresNoise = {}
     for ore in ores:
-      oresNoise[ore.name] = (this.SimplexNoise(ore.veinSize, 2, WORLD_WIDTH, WORLD_HEIGHT), ore)
+      oresNoise[ore.__name__] = (this.SimplexNoise(ore.veinSize, 2, WORLD_WIDTH, WORLD_HEIGHT), ore)
     for x in range(0, WORLD_WIDTH):
       grassHeight = round(WORLD_HEIGHT * 0.58 + 9 * grassHeightNoise[x])
       stoneHeight = round(grassHeight + 5 + 5 * stoneHeightNoise[x])
