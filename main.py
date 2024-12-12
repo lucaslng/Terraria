@@ -659,80 +659,117 @@ class World:
     this.array = [
         [Air(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
     ]
-    this.__generateAllDirt()
+    this.__generateWorld()
 
-  # https://gpfault.net/posts/perlin-noise.txt.html
-  @staticmethod
-  def __simplexNoise1D(length, scale=1.0):
-    """
-    Generate a 1D array of simplex noise.
+  class SimplexNoise:
+    def __init__(this, scale: float, dimension: int, width: int, height: int=1):
+      if dimension == 1:
+        this.noise = this.simplex_noise_1d(width, scale)
+      elif dimension == 2:
+        this.noise = this.simplex_noise_2d(width, height, scale)
+      else: return None
+    
+    def __getitem__(this, x: int):
+      return this.noise[x]
 
-    Args:
-        length (int): Length of the noise array.
-        scale (float): Scale factor for the noise.
-        seed (int): Seed for reproducibility.
-
-    Returns:
-        list: Array of 1D simplex noise values.
-    """
-    random.seed(random.randint(0, sys.maxsize))
-    def dot_product(grad, x):
-        """Compute the dot product of the gradient and distance."""
-        return grad * x
-
-    def gradient(h):
-        """Generate gradient based on hash value."""
-        return 1 if h % 2 == 0 else -1
-
+    @staticmethod
     def fade(t):
-        """Fade function as defined by Ken Perlin. This eases coordinate values."""
-        return t * t * t * (t * (t * 6 - 15) + 10)
+      return t * t * t * (t * (t * 6 - 15) + 10)
 
+    @staticmethod
     def lerp(a, b, t):
-        """Linear interpolation between a and b using t."""
-        return a + t * (b - a)
+      return a + t * (b - a)
 
+    @staticmethod
     def generate_permutation():
-      """Generate a pseudo-random permutation table."""
+      random.seed(random.randint(0, sys.maxsize))
       p = list(range(256))
       random.shuffle(p)
-      return p + p  # Double the permutation table
-    perm = generate_permutation()
-    noise = []
+      random.seed(SEED)
+      return p + p  # Double for wraparound
 
-    for i in range(length):
-        # Scaled position
+    @staticmethod
+    def gradient_1d(h):
+      return 1 if h % 2 == 0 else -1
+
+    @staticmethod
+    def gradient_2d(h):
+      """Compute 2D gradient direction based on hash value."""
+      directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+      return directions[h % 4]
+    
+    def simplex_noise_1d(this, width, scale=1.0):
+      perm = this.generate_permutation()
+      noise = []
+
+      for i in range(width):
         x = i / scale
+        x0 = math.floor(x)
+        x1 = x0 + 1
 
-        # Determine lattice points
-        x0 = math.floor(x)  # Left point
-        x1 = x0 + 1         # Right point
-
-        # Relative positions
         dx0 = x - x0
         dx1 = x - x1
 
-        # Apply fade function to smooth the interpolation
-        u = fade(dx0)
+        u = this.fade(dx0)
 
-        # Gradient indices
-        g0 = gradient(perm[x0 % 256])
-        g1 = gradient(perm[x1 % 256])
+        g0 = this.gradient_1d(perm[x0 % 256])
+        g1 = this.gradient_1d(perm[x1 % 256])
 
-        # Compute contributions from each gradient
-        n0 = dot_product(g0, dx0)
-        n1 = dot_product(g1, dx1)
+        n0 = g0 * dx0
+        n1 = g1 * dx1
 
-        # Interpolate between contributions
-        value = lerp(n0, n1, u)
+        value = this.lerp(n0, n1, u)
         noise.append(value)
-        random.seed(SEED)
 
-    return noise
+      return noise
+    
+    def simplex_noise_2d(this, width, height, scale=1.0):
+      perm = this.generate_permutation()
+      noise = []
 
-  def __generateAllDirt(this):
-    grassHeightNoise = this.__simplexNoise1D(length=WORLD_WIDTH, scale=19)
-    stoneHeightNoise = this.__simplexNoise1D(length=WORLD_WIDTH, scale=30)
+      for y in range(height):
+        row = []
+        for x in range(width):
+          sx = x / scale
+          sy = y / scale
+
+          x0 = math.floor(sx)
+          y0 = math.floor(sy)
+
+          x1 = x0 + 1
+          y1 = y0 + 1
+
+          dx0 = sx - x0
+          dy0 = sy - y0
+          dx1 = sx - x1
+          dy1 = sy - y1
+
+          u = this.fade(dx0)
+          v = this.fade(dy0)
+
+          g00 = this.gradient_2d(perm[(x0 + perm[y0 % 256]) % 256])
+          g10 = this.gradient_2d(perm[(x1 + perm[y0 % 256]) % 256])
+          g01 = this.gradient_2d(perm[(x0 + perm[y1 % 256]) % 256])
+          g11 = this.gradient_2d(perm[(x1 + perm[y1 % 256]) % 256])
+
+          n00 = g00[0] * dx0 + g00[1] * dy0
+          n10 = g10[0] * dx1 + g10[1] * dy0
+          n01 = g01[0] * dx0 + g01[1] * dy1
+          n11 = g11[0] * dx1 + g11[1] * dy1
+
+          nx0 = this.lerp(n00, n10, u)
+          nx1 = this.lerp(n01, n11, u)
+
+          value = this.lerp(nx0, nx1, v)
+          row.append(value)
+        noise.append(row)
+
+      return noise
+
+
+  def __generateWorld(this):
+    grassHeightNoise = this.SimplexNoise(19, 1, WORLD_WIDTH)
+    stoneHeightNoise = this.SimplexNoise(30, 1, WORLD_WIDTH)
     print(grassHeightNoise)
     for x in range(0, WORLD_WIDTH):
       grassHeight = round(WORLD_HEIGHT * 0.58 + 9 * grassHeightNoise[x])
