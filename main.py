@@ -922,7 +922,7 @@ class World:
        coords = bresenham(WORLD_WIDTH*10*math.cos(angle), WORLD_WIDTH*10*math.sin(angle), *sun.rect.center)
        if coords:
         litVertices.append(coords)
-         
+    
     litVertices.extend(((0, 0), (WORLD_WIDTH*20, 0), (0, WORLD_HEIGHT*20), (WORLD_WIDTH*20, WORLD_HEIGHT*20)))
     litVertices.sort(key=lambda a: math.atan2(sun.pos[1]-a[1], sun.pos[0]-a[0]))
     for i in range(1, len(litVertices)):
