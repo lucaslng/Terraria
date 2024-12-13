@@ -885,6 +885,7 @@ class World:
 
   def draw(this):
     litVertices = set()
+    vertices = list()
     for y in range(
         player.camera.top // BLOCK_SIZE, (player.camera.bottom //
                                           BLOCK_SIZE) + 1
@@ -895,12 +896,17 @@ class World:
       ):
         block = this[y][x]
         if not block.isAir:
-          for vertex in block.vertices:
-            if not bresenham(*relativeCoord(*vertex), *sun.rect.center, checkVertices=True):
-              litVertices.add(vertex)
+          vertices.extend(block.vertices)
           block.drawBlock()
+    
+    vertices.sort(key=lambda a: a[1])
+    # print(len(vertices))
+    vertices = vertices[:500]
+    for vertex in vertices:
+      if not bresenham(*relativeCoord(*vertex), *sun.rect.center, checkVertices=True):
+        litVertices.add(vertex)
     listLitVertices = list(litVertices)
-    listLitVertices.sort(key=lambda a: math.atan2(a[1]-sun.rect.centery, a[0]-sun.rect.centerx, ))
+    listLitVertices.sort(key=lambda a: math.atan2(a[1]-sun.rect.centery, a[0]-sun.rect.centerx))
     for i in range(1, len(listLitVertices)):
       pg.draw.polygon(LIGHTSURF, (255,255,255, 0), (sun.rect.center, relativeCoord(*listLitVertices[i]), relativeCoord(*listLitVertices[i-1])))
       # SURF.blit(font.render(str(i), False, (0,0,0)), relativeCoord(*listLitVertices[i]))
