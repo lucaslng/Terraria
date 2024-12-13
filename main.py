@@ -790,7 +790,7 @@ class World:
     grassHeightNoise = this.SimplexNoise(19, 1)
     stoneHeightNoise = this.SimplexNoise(30, 1)
     oresNoise = {}
-    cavesNoise = this.SimplexNoise(10, 2)
+    cavesNoise = this.SimplexNoise(9, 2)
     for ore in ores:
       oresNoise[ore.__name__] = (this.SimplexNoise(ore.veinSize, 2), ore)
     for x in range(0, WORLD_WIDTH):
@@ -803,11 +803,6 @@ class World:
         for _, v in oresNoise.items():
           oreNoise, ore = v
           if oreNoise[y][x] > ore.rarity: this.array[y][x] = ore(x, y)
-      
-      for y in range(WORLD_HEIGHT -1, stoneHeight, - 1):
-        # print(cavesNoise[y][x])
-        if cavesNoise[y][x] > 0.1:
-          this.array[y][x] = Air(x, y)
 
       for y in range(stoneHeight, grassHeight, -1):
         this.array[y][x] = Dirt(x, y)
@@ -815,6 +810,10 @@ class World:
       this.array[grassHeight][x] = Dirt(
           x, grassHeight, DirtVariantGrass()
       )
+      
+      for y in range(WORLD_HEIGHT -1, grassHeight - 1, - 1):
+        if cavesNoise[y][x] > 0.1:
+          this.array[y][x] = Air(x, y)
 
   def hoveredBlock(this) -> Block:
     mousepos = pg.mouse.get_pos()
