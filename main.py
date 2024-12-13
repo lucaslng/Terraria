@@ -22,9 +22,9 @@ BLOCK_SIZE = 20
 WORLD_HEIGHT = 256
 WORLD_WIDTH = 1000
 gravity = 1
-SEED = 0
+SEED = time.time()
 random.seed(SEED)
-# random.seed(random.randint(0,sys.maxsize))
+# random.seed("niggers")
 
 pg.display.set_caption("Terraria")
 clock = pg.time.Clock()
