@@ -921,11 +921,14 @@ class World:
     for vertex in vertices:
       if not bresenham(*relativeCoord(*vertex), *sun.rect.center, checkVertices=True):
         litVertices.add(vertex)
-    listLitVertices = list(litVertices)
-    listLitVertices.sort(key=lambda a: math.atan2(a[1]-sun.rect.centery, a[0]-sun.rect.centerx))
+    listLitVertices = list(map(lambda a: relativeCoord(*a), litVertices))
+    listLitVertices.extend((FRAME.topleft, FRAME.topright))
+    listLitVertices.sort(key=lambda a: math.atan2(sun.rect.centery-a[1], sun.rect.centerx-a[0]))
     for i in range(1, len(listLitVertices)):
-      pg.draw.polygon(LIGHTSURF, (255,255,255, 0), (sun.rect.center, relativeCoord(*listLitVertices[i]), relativeCoord(*listLitVertices[i-1])))
+      # pg.draw.line(SURF, (0,0,0), sun.rect.center, listLitVertices[i])
+      pg.draw.polygon(LIGHTSURF, (255,255,255, 0), (sun.rect.center, listLitVertices[i], listLitVertices[i-1]))
       # SURF.blit(font.render(str(i), False, (0,0,0)), relativeCoord(*listLitVertices[i]))
+    pg.draw.polygon(LIGHTSURF, (255,255,255, 0), (sun.rect.center, listLitVertices[0], listLitVertices[len(listLitVertices)-1]))
     
       
 
