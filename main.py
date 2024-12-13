@@ -3,11 +3,13 @@ import pygame as pg
 from pygame.locals import *
 import math
 from math import radians, hypot
+from collections import deque
 import random
 from enum import Enum
 import pickle  # use pickle to store save
 import time
 start = time.time()
+sys.setrecursionlimit(1000000000)
 
 pg.init()
 
@@ -17,9 +19,12 @@ FPS = 60
 SURF = pg.display.set_mode((WIDTH, HEIGHT), vsync=1)
 FRAME = SURF.get_rect()
 
+LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
+LIGHTSURF.fill((0, 0, 0, 0))
+
 BLOCK_SIZE = 20
-WORLD_HEIGHT = 256
-WORLD_WIDTH = 1000
+WORLD_HEIGHT = 100
+WORLD_WIDTH = 100
 gravity = 1
 SEED = time.time()
 random.seed(SEED)
@@ -734,7 +739,10 @@ class World:
     this.array = [
         [Air(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
     ]
+    this.lightmap = [[200 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
     this.__generateWorld()
+    this.generateLight()
+    # print(this.lightmap)
 
   class SimplexNoise:
     def __init__(this, scale: float, dimension: int, width: int=WORLD_WIDTH, height: int=WORLD_HEIGHT):
@@ -876,6 +884,27 @@ class World:
         if cavesNoise[y][x] > 0.1:
           this.array[y][x] = Air(x, y)
 
+  def __sunlightBfs(this):
+    '''breadth first search algorithm'''
+    lightLevel = 0
+    queue = deque() # use queue as deque
+    start = (0, WORLD_WIDTH//2, 0)
+    queue.append(start)
+    visited = [[False for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
+    visited[0][WORLD_WIDTH//2] = True
+    while queue:
+      cur = queue.popleft()
+      r, c, l = cur
+      if not this[r][c].isAir: continue
+      this.lightmap[r][c] = lightLevel
+      if r-1 >= 0 and not visited[r-1][c]: queue.append((r-1, c, l)); visited[r-1][c] = True
+      if r+1 < WORLD_HEIGHT and not visited[r+1][c]: queue.append((r+1, c, l+1)); visited[r+1][c] = True
+      if c-1 >= 0 and not visited[r][c-1]: queue.append((r, c-1, l+1)); visited[r][c-1] = True
+      if c+1 < WORLD_WIDTH and not visited[r][c+1]: queue.append((r, c+1, l+1)); visited[r][c+1] = True
+
+  def generateLight(this):
+    this.__sunlightBfs()
+
   def hoveredBlock(this) -> Block:
     mousepos = pg.mouse.get_pos()
     return this.blockAt(*pixelToCoord(*mousepos))
@@ -895,6 +924,7 @@ class World:
           player.camera.left // BLOCK_SIZE,
           (player.camera.right // BLOCK_SIZE) + 1,
       ):
+        pg.draw.rect(LIGHTSURF, (0,0,0,this.lightmap[y][x]), relativeRect(this[y][x].rect))
         block = this[y][x]
         if not block.isAir:
           block.drawBlock()
@@ -907,6 +937,7 @@ print("Load time:", end-start, "seconds")
 while True:
   SURF.fill((255, 255, 255))
   ASURF.fill((0, 0, 0, 0))
+  LIGHTSURF.fill((0,0,0,0))
   keys = pg.key.get_pressed()
   vertices.clear()
 
@@ -956,5 +987,6 @@ while True:
       sys.exit()
 
   SURF.blit(ASURF, (0, 0))
+  SURF.blit(LIGHTSURF, (0,0))
   pg.display.flip()
   clock.tick(FPS)
