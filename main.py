@@ -797,20 +797,26 @@ class World:
       grassHeight = round(WORLD_HEIGHT * 0.58 + 9 * grassHeightNoise[x])
       stoneHeight = round(grassHeight + 5 + 5 * stoneHeightNoise[x])
 
+      # Stone pass
       for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
         this.array[y][x] = Stone(x, y)
+        
+      # Ore pass
       for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
         for _, v in oresNoise.items():
           oreNoise, ore = v
           if oreNoise[y][x] > ore.rarity: this.array[y][x] = ore(x, y)
 
+      # Dirt pass
       for y in range(stoneHeight, grassHeight, -1):
         this.array[y][x] = Dirt(x, y)
 
+      # Grass Dirt pass
       this.array[grassHeight][x] = Dirt(
           x, grassHeight, DirtVariantGrass()
       )
       
+      # cave pass
       for y in range(WORLD_HEIGHT -1, grassHeight - 1, - 1):
         if cavesNoise[y][x] > 0.1:
           this.array[y][x] = Air(x, y)
