@@ -560,12 +560,12 @@ class Player(Entity, HasInventory):
 
   def getBlockFacing(this):
     """Returns the block that the player is facing, if it is in range"""
-    block = world.blockAt(*pixelToCoord(*bresenham(*pg.mouse.get_pos())))
-    if block is None:
-      return None
-    for vertex in block.vertices:
-      if distance(*relativeCoord(*vertex)) < this.reach:
-        return block
+    blockPixel = bresenham(*pg.mouse.get_pos())
+    if blockPixel:
+      block = world.blockAt(*pixelToCoord(*bresenham(*pg.mouse.get_pos())))
+      for vertex in block.vertices:
+        if distance(*relativeCoord(*vertex)) < this.reach:
+          return block
     return None
 
   def drawBlockFacing(this):
