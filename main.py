@@ -383,7 +383,7 @@ class Player(Entity, HasInventory):
 
     this.falling = False
     this.fall_start_y = None
-    this.fall_damage_threshold = 8 * BLOCK_SIZE
+    this.fall_damage_threshold = 4 * BLOCK_SIZE
     this.is_initial_spawn = True
     this.spawn_protection_timer = 60
     
@@ -671,9 +671,7 @@ class Air(Block):
 class DirtVariant:
   def __init__(this, name: str, texture):
     this.name = name
-    this.texture = texture
-    
-
+    this.texture = texture  
 
 class DirtVariantDirt(DirtVariant):
   dirtTexture = pg.transform.scale(
@@ -699,12 +697,20 @@ class Dirt(Block):
     this.item = PlaceableItem("Dirt", this.itemTexture, Dirt)
     super().__init__(variant.name, variant.texture, x, y, this.item, 1, BlockType.SHOVEL)
 
+class Cobblestone(Block):
+    cobblestoneTexture = pg.transform.scale(pg.image.load("cobblestone.png"), (BLOCK_SIZE, BLOCK_SIZE))
+    cobblestoneItemTexture = pg.transform.scale(cobblestoneTexture, (15, 15))
+
+    def __init__(this, x, y):
+        super().__init__("Cobblestone", this.cobblestoneTexture, x, y, PlaceableItem("Cobblestone", this.cobblestoneItemTexture, Cobblestone), 2, BlockType.PICKAXE)
 
 class Stone(Block):
   stoneTexture = pg.transform.scale(pg.image.load("stone.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  stoneItemTexture = pg.transform.scale(stoneTexture, (15, 15))
+  cobblestoneItemTexture = pg.transform.scale(pg.image.load("cobblestone.png"), (15, 15))
+  
   def __init__(this, x, y):
-    super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Stone", this.stoneItemTexture, Stone), 5, BlockType.PICKAXE)
+    super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Cobblestone", this.cobblestoneItemTexture, Cobblestone), 5, BlockType.PICKAXE)
+
 
 class IronOre(Block):
   ironOreTexture = pg.transform.scale(pg.image.load("iron_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
