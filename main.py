@@ -62,7 +62,7 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery):
     while x != x0 - xi:
       blockTouched = world.blockAt(*pixelToCoord(x, y))
       if not blockTouched.isAir:
-        return blockTouched
+        return x, y
       if d > 0:
         y += yi
         d += 2 * (dy - dx)
@@ -82,7 +82,7 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery):
     while y != y0 - yi:
       blockTouched = world.blockAt(*pixelToCoord(x, y))
       if not blockTouched.isAir:
-        return blockTouched
+        return x, y
       if d > 0:
         x += xi
         d += 2 * (dx - dy)
@@ -559,12 +559,12 @@ class Player(Entity, HasInventory):
 
   def getBlockFacing(this):
     """Returns the block that the player is facing, if it is in range"""
-    block = bresenham(*pg.mouse.get_pos())
-    if block is None:
-      return None
-    for vertex in block.vertices:
-      if distance(*relativeCoord(*vertex)) < this.reach:
-        return block
+    blockPixel = bresenham(*pg.mouse.get_pos())
+    if blockPixel:
+      block = world.blockAt(*pixelToCoord(*bresenham(*pg.mouse.get_pos())))
+      for vertex in block.vertices:
+        if distance(*relativeCoord(*vertex)) < this.reach:
+          return block
     return None
 
   def drawBlockFacing(this):
