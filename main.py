@@ -178,17 +178,25 @@ class Inventory:
   def __getitem__(this, row: int):
     return this.inventory[row]
 
+class BlockType(Enum):
+  NONE=-1
+  PICKAXE=0
+  AXE=1
+  SHOVEL=2
+  SWORD=3
+  SHEARS=4
 
 class Tool(Item):
-  def __init__(this, name: str, texture: pg.surface.Surface, speed: float):
+  def __init__(this, name: str, texture: pg.surface.Surface, speed: float, type: BlockType):
     super().__init__(name, texture, 1)
     this.speed = speed
+    this.type = type
 
 
 class WoodenPickaxe(Tool):
   woodenPickaxeTexture = pg.transform.scale(pg.image.load("wooden_pickaxe.png"), (15, 15))
   def __init__(this):
-    super().__init__("Wooden Pickaxe", this.woodenPickaxeTexture, 1.5)
+    super().__init__("Wooden Pickaxe", this.woodenPickaxeTexture, 1.5, BlockType.PICKAXE)
 
 class HasInventory:
   """Parent class for classes than have an inventory"""
@@ -377,7 +385,7 @@ class Player(Entity, HasInventory):
 
     this.falling = False
     this.fall_start_y = None
-    this.fall_damage_threshold = 8 * BLOCK_SIZE
+    this.fall_damage_threshold = 4 * BLOCK_SIZE
     this.is_initial_spawn = True
     this.spawn_protection_timer = 60
     
@@ -525,7 +533,7 @@ class Player(Entity, HasInventory):
     if this.blockFacing:
       if this.blockFacing.amountBroken < this.blockFacing.hardness:
         miningSpeed = 1
-        if this.heldSlot() and this.heldSlot().item.isTool():
+        if this.heldSlot() and this.heldSlot().item.isTool() and this.heldSlot().item.type == this.blockFacing.type:
           miningSpeed = this.heldSlot().item.speed
         this.usingItem = True
         this.blockFacing.amountBroken += miningSpeed / FPS
@@ -595,6 +603,7 @@ class Block:
     y: int,
     item: Item,
     hardness: float,
+    type: BlockType,
     isAir=False,
   ):
     this.name = name
@@ -612,6 +621,7 @@ class Block:
     this.y = y
     this.item = item
     this.hardness: float = hardness
+    this.type = type
     this.isAir = isAir
     this.amountBroken: float = 0
 
@@ -657,15 +667,13 @@ class Air(Block):
   item = Item("Air", texture, 0)
 
   def __init__(this, x=-1, y=-1):
-    super().__init__("Air", this.texture, x, y, this.item, 0, isAir=True)
+    super().__init__("Air", this.texture, x, y, this.item, 0, BlockType.NONE, isAir=True)
 
 
 class DirtVariant:
   def __init__(this, name: str, texture):
     this.name = name
-    this.texture = texture
-    
-
+    this.texture = texture  
 
 class DirtVariantDirt(DirtVariant):
   dirtTexture = pg.transform.scale(
@@ -689,14 +697,22 @@ class Dirt(Block):
   itemTexture = pg.transform.scale(pg.image.load("dirt.png"), (15, 15))
   def __init__(this, x, y, variant: DirtVariant = DirtVariantDirt()):
     this.item = PlaceableItem("Dirt", this.itemTexture, Dirt)
-    super().__init__(variant.name, variant.texture, x, y, this.item, 1)
+    super().__init__(variant.name, variant.texture, x, y, this.item, 1, BlockType.SHOVEL)
 
+class Cobblestone(Block):
+    cobblestoneTexture = pg.transform.scale(pg.image.load("cobblestone.png"), (BLOCK_SIZE, BLOCK_SIZE))
+    cobblestoneItemTexture = pg.transform.scale(cobblestoneTexture, (15, 15))
+
+    def __init__(this, x, y):
+        super().__init__("Cobblestone", this.cobblestoneTexture, x, y, PlaceableItem("Cobblestone", this.cobblestoneItemTexture, Cobblestone), 2, BlockType.PICKAXE)
 
 class Stone(Block):
   stoneTexture = pg.transform.scale(pg.image.load("stone.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  stoneItemTexture = pg.transform.scale(stoneTexture, (15, 15))
+  cobblestoneItemTexture = pg.transform.scale(pg.image.load("cobblestone.png"), (15, 15))
+  
   def __init__(this, x, y):
-    super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Stone", this.stoneItemTexture, Stone), 5)
+    super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Cobblestone", this.cobblestoneItemTexture, Cobblestone), 5, BlockType.PICKAXE)
+
 
 class IronOre(Block):
   ironOreTexture = pg.transform.scale(pg.image.load("iron_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
@@ -704,7 +720,7 @@ class IronOre(Block):
   veinSize = 3.2
   rarity = 0.38 # lower is more common
   def __init__(this, x, y):
-    super().__init__("Iron Ore", this.ironOreTexture, x, y, PlaceableItem("Iron Ore", this.ironOreItemTexture, IronOre), 6)
+    super().__init__("Iron Ore", this.ironOreTexture, x, y, PlaceableItem("Iron Ore", this.ironOreItemTexture, IronOre), 6, BlockType.PICKAXE)
 
 class CoalOre(Block):
   coalOreTexture = pg.transform.scale(pg.image.load("coal_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
@@ -712,7 +728,7 @@ class CoalOre(Block):
   veinSize = 3.9
   rarity = 0.3 # lower is more common
   def __init__(this, x, y):
-    super().__init__("Coal Ore", this.coalOreTexture, x, y, Item("Coal", this.coalItemTexture), 3)
+    super().__init__("Coal Ore", this.coalOreTexture, x, y, Item("Coal", this.coalItemTexture), 3, BlockType.PICKAXE)
 
 ores = {CoalOre, IronOre}
 
