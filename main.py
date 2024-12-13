@@ -14,7 +14,7 @@ pg.init()
 WIDTH = 1000
 HEIGHT = 600
 FPS = 60
-SURF = pg.display.set_mode((WIDTH, HEIGHT))
+SURF = pg.display.set_mode((WIDTH, HEIGHT), vsync=1)
 FRAME = SURF.get_rect()
 
 BLOCK_SIZE = 20
