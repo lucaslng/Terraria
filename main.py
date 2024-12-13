@@ -2,6 +2,7 @@ import sys
 import pygame as pg
 from pygame.locals import *
 import math
+import numpy as np
 from math import radians, hypot
 import random
 from enum import Enum
@@ -46,6 +47,12 @@ def relativeRect(rect: pg.rect.Rect):
 
 def relativeCoord(x: float, y: float) -> tuple[int, int]:
   return x - player.camera.x, y - player.camera.y
+
+
+def check_for_interaction():
+    block = world.hoveredBlock()
+    if isinstance(block, Interactable):
+        block.interact()
 
 
 def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery):
@@ -134,7 +141,11 @@ class PlaceableItem(Item):
     this.block = block
   
   def place(this, x, y):
-    world[y][x] = this.block(x, y)
+    if this.block == CraftingTable:
+        world[y][x] = CraftingTable(x, y, SURF, player.inventory)
+    else:
+        world[y][x] = this.block(x, y)
+
 
 class Inventory:
   """Inventory class"""
@@ -373,6 +384,7 @@ class Player(Entity, HasInventory):
         this.texture,
         10,
     )
+    
     HasInventory.__init__(this, 4, 10)
     this.heldSlotIndex = 0  # number from 0 to 9
     this.rect.center = this.camera.center
@@ -389,7 +401,9 @@ class Player(Entity, HasInventory):
     
     this.usingItem = False
     this.placingBlock = False
+   
     this.inventory.addItem(WoodenPickaxe())
+    this.add_crafting_table_later = True
     
     this.animations["usingItem"] = pg.time.get_ticks() + 200 # beginning tick, tick length
     this.animations["placingBlock"] = 250
@@ -589,6 +603,14 @@ ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
 ASURF.fill((0, 0, 0, 0))
 player = Player()
 
+class Interactable:
+    def __init__(self, interact_action):
+        self.interact_action = interact_action
+
+    def interact(self):
+        if self.interact_action:
+            self.interact_action()      
+
 
 class Block:
   SIZE = BLOCK_SIZE
@@ -658,6 +680,100 @@ class Block:
   def __eq__(this, other):
     return hash(this) == hash(other)
 
+ 
+class CraftingGrid:
+  def __init__(self, screen, player_inventory):
+      self.grid = [[None for _ in range(3)] for _ in range(3)]  # 3x3 grid
+      self.screen = screen
+      self.player_inventory = player_inventory
+      
+      self.grid_pos = (200, 100)
+      self.slot_size = 50
+      self.slot_padding = 5
+
+      self.result_slot_pos = (self.grid_pos[0] + 4 * (self.slot_size + self.slot_padding), self.grid_pos[1] + self.slot_size + self.slot_padding)
+      self.result_item = None
+        
+  def draw(self):
+    for row in range(3):
+        for col in range(3):
+            x = self.grid_pos[0] + col * (self.slot_size + self.slot_padding)
+            y = self.grid_pos[1] + row * (self.slot_size + self.slot_padding)
+
+            pg.draw.rect(self.screen, (200, 200, 200), (x, y, self.slot_size, self.slot_size))
+            
+            item = self.grid[row][col]
+            if item:
+                scaled_item = pg.transform.scale(item.texture, (self.slot_size, self.slot_size))
+                self.screen.blit(scaled_item, (x, y))
+
+    pg.draw.rect(self.screen, (150, 150, 150), (*self.result_slot_pos, self.slot_size, self.slot_size))
+    
+    if self.result_item:
+        scaled_result = pg.transform.scale(self.result_item.texture, (self.slot_size, self.slot_size))
+        self.screen.blit(scaled_result, self.result_slot_pos)
+  
+  def place_item(self, item, row, col):
+      if 0 <= row < 3 and 0 <= col < 3:
+          self.grid[row][col] = item
+          self.check_crafting_recipe()
+  
+  def check_crafting_recipe(self):
+      #implement when i feel like it (when i get more chatgpt credits)
+      pass
+  
+  def craft(self):
+    if self.result_item:
+        self.player_inventory.add_item(self.result_item)
+        
+        self.grid = [[None for _ in range(3)] for _ in range(3)]
+        self.result_item = None 
+   
+class CraftingTable(Block, Interactable):
+    craftingTableTexture = pg.transform.scale(pg.image.load("crafting_table.png"), (BLOCK_SIZE, BLOCK_SIZE))
+    craftingTableItemTexture = pg.transform.scale(craftingTableTexture, (15, 15))
+    
+    def __init__(self, x, y, screen, player_inventory):
+        item = PlaceableItem("Crafting Table", self.craftingTableItemTexture, CraftingTable)
+        Block.__init__(self, name="Crafting Table", texture=self.craftingTableTexture, x=x, y=y, item=item, hardness=2.5, type=BlockType.NONE, isAir=False)
+        Interactable.__init__(self, lambda: self.open_crafting_gui(screen, player_inventory))
+    
+    def open_crafting_gui(self, screen, player_inventory):
+      crafting_grid = CraftingGrid(screen, player_inventory)
+      
+      crafting_open = True
+      while crafting_open:
+          for event in pg.event.get():
+              if event.type == pg.QUIT:
+                  crafting_open = False
+                  
+              if event.type == pg.KEYDOWN:
+                  if event.key == pg.K_e:
+                      crafting_open = False
+
+              if event.type == pg.MOUSEBUTTONDOWN:
+                  mouse_pos = pg.mouse.get_pos()
+
+                  for row in range(3):
+                      for col in range(3):
+                          x = crafting_grid.grid_pos[0] + col * (crafting_grid.slot_size + crafting_grid.slot_padding)
+                          y = crafting_grid.grid_pos[1] + row * (crafting_grid.slot_size + crafting_grid.slot_padding)
+                          
+                          slot_rect = pg.Rect(x, y, crafting_grid.slot_size, crafting_grid.slot_size)
+                          if slot_rect.collidepoint(mouse_pos):
+                              selected_item = player_inventory.get_selected_item()
+                              if selected_item:
+                                  crafting_grid.place_item(selected_item, row, col)
+
+                  result_rect = pg.Rect(*crafting_grid.result_slot_pos, crafting_grid.slot_size, crafting_grid.slot_size)
+                  if result_rect.collidepoint(mouse_pos) and crafting_grid.result_item:
+                      crafting_grid.craft()
+
+          world.draw()
+          player.update()
+          
+          crafting_grid.draw()
+          pg.display.flip()
 
 class Air(Block):
   texture = pg.surface.Surface((BLOCK_SIZE, BLOCK_SIZE))
@@ -666,7 +782,6 @@ class Air(Block):
 
   def __init__(this, x=-1, y=-1):
     super().__init__("Air", this.texture, x, y, this.item, 0, BlockType.NONE, isAir=True)
-
 
 class DirtVariant:
   def __init__(this, name: str, texture):
@@ -680,7 +795,6 @@ class DirtVariantDirt(DirtVariant):
   def __init__(this):
     super().__init__("Dirt", this.dirtTexture)
 
-
 class DirtVariantGrass(DirtVariant):
   grassTexture = pg.transform.scale(
     pg.image.load("grass_block.png"), (BLOCK_SIZE, BLOCK_SIZE)
@@ -690,10 +804,10 @@ class DirtVariantGrass(DirtVariant):
   def __init__(this):
     super().__init__("Grass Block", this.grassTexture)
 
-
 class Dirt(Block):
   itemTexture = pg.transform.scale(pg.image.load("dirt.png"), (15, 15))
   def __init__(this, x, y, variant: DirtVariant = DirtVariantDirt()):
+    
     this.item = PlaceableItem("Dirt", this.itemTexture, Dirt)
     super().__init__(variant.name, variant.texture, x, y, this.item, 1, BlockType.SHOVEL)
 
@@ -710,7 +824,6 @@ class Stone(Block):
   
   def __init__(this, x, y):
     super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Cobblestone", this.cobblestoneItemTexture, Cobblestone), 5, BlockType.PICKAXE)
-
 
 class IronOre(Block):
   ironOreTexture = pg.transform.scale(pg.image.load("iron_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
@@ -729,6 +842,7 @@ class CoalOre(Block):
     super().__init__("Coal Ore", this.coalOreTexture, x, y, Item("Coal", this.coalItemTexture), 3, BlockType.PICKAXE)
 
 ores = {CoalOre, IronOre}
+
 class World:
   def __init__(this):
     this.array = [
@@ -875,6 +989,13 @@ class World:
       for y in range(WORLD_HEIGHT -1, grassHeight - 1, - 1):
         if cavesNoise[y][x] > 0.1:
           this.array[y][x] = Air(x, y)
+          
+    # Place crafting table on the ground near spawn
+    spawn_x = WORLD_WIDTH // 2
+    for y in range(WORLD_HEIGHT - 1, -1, -1):
+        if not this.array[y][spawn_x].isAir:  # Ground block found
+            this.array[y - 1][spawn_x] = CraftingTable(spawn_x, y - 1, SURF, player.inventory)
+            break
 
   def hoveredBlock(this) -> Block:
     mousepos = pg.mouse.get_pos()
@@ -902,8 +1023,17 @@ class World:
 
 world = World()
 
+if player.add_crafting_table_later:
+    crafting_table_item = PlaceableItem(
+        "Crafting Table",
+        CraftingTable.craftingTableItemTexture,
+        CraftingTable
+    )
+    player.inventory.addItem(crafting_table_item)
+    player.add_crafting_table_later = False
+
 end = time.time()
-print("Load time:", end-start, "seconds")
+print("Load time:", round(end-start, 3), "seconds")
 while True:
   SURF.fill((255, 255, 255))
   ASURF.fill((0, 0, 0, 0))
@@ -954,6 +1084,9 @@ while True:
     if event.type == QUIT:
       pg.quit()
       sys.exit()
+      
+    elif event.type == KEYDOWN and event.key == pg.K_e:
+        check_for_interaction()
 
   SURF.blit(ASURF, (0, 0))
   pg.display.flip()
