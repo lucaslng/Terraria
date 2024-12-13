@@ -881,7 +881,10 @@ class World:
       ):
         block = this[y][x]
         if not block.isAir:
+          vertices.update(block.vertices)
           block.drawBlock()
+    for vertice in vertices:
+      pg.draw.circle(SURF, (0,255,0), relativeCoord(*vertice), 2)
 
 
 world = World()
