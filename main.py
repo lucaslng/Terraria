@@ -49,9 +49,8 @@ def relativeCoord(x: float, y: float) -> tuple[int, int]:
   return x - player.camera.x, y - player.camera.y
 
 
-def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery, checkVertices=False):
+def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery):
   """Bresenham's algorithm to detect first non-air block along a line, starting from end point."""
-  pointsTouched = {}
   def plotLineLow(x0, y0, x1, y1):
     dx = abs(x1 - x0)
     dy = abs(y1 - y0)
@@ -61,11 +60,11 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery, checkVertices=False):
     y = y1
     x = x1
     while x != x0 - xi:
-      blockTouched = world.blockAt(*pixelToCoord(x, y))
+      try:
+        blockTouched = world.blockAt(*pixelToCoord(x, y))
+      except: return None
       if not blockTouched.isAir:
-        if checkVertices:
-          return True
-        else: return blockTouched
+        return x, y
       if d > 0:
         y += yi
         d += 2 * (dy - dx)
@@ -83,11 +82,11 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery, checkVertices=False):
     x = x1
     y = y1
     while y != y0 - yi:
-      blockTouched = world.blockAt(*pixelToCoord(x, y))
+      try:
+        blockTouched = world.blockAt(*pixelToCoord(x, y))
+      except: return None
       if not blockTouched.isAir:
-        if checkVertices:
-          return True
-        else: return blockTouched
+        return x, y
       if d > 0:
         x += xi
         d += 2 * (dx - dy)
@@ -561,7 +560,7 @@ class Player(Entity, HasInventory):
 
   def getBlockFacing(this):
     """Returns the block that the player is facing, if it is in range"""
-    block = bresenham(*pg.mouse.get_pos())
+    block = world.blockAt(*pixelToCoord(*bresenham(*pg.mouse.get_pos())))
     if block is None:
       return None
     for vertex in block.vertices:
@@ -735,6 +734,7 @@ ores = {CoalOre, IronOre}
 class Sun:
   size = BLOCK_SIZE * 5
   rect = pg.rect.Rect(HEIGHT * 0.1, HEIGHT * 0.1, size, size)
+  pos = (WORLD_WIDTH * 20 / 2, 0)
   sunTexture = pg.transform.scale(pg.image.load("sun.png"), (size, size))
   # pg.transform.threshold(sunTexture, sunTexture, (0,0,0,255), (120,120,120,0), (0,0,0,0), 1, inverse_set=True)
   def draw(this):
@@ -900,7 +900,7 @@ class World:
     return this.array[x]
 
   def draw(this):
-    litVertices = set()
+    litVertices = list()
     vertices = list()
     for y in range(
         player.camera.top // BLOCK_SIZE, (player.camera.bottom //
@@ -918,17 +918,18 @@ class World:
     vertices.sort(key=lambda a: a[1])
     # print(len(vertices))
     vertices = vertices[:500]
-    for vertex in vertices:
-      if not bresenham(*relativeCoord(*vertex), *sun.rect.center, checkVertices=True):
-        litVertices.add(vertex)
-    listLitVertices = list(map(lambda a: relativeCoord(*a), litVertices))
-    listLitVertices.extend((FRAME.topleft, FRAME.topright))
-    listLitVertices.sort(key=lambda a: math.atan2(sun.rect.centery-a[1], sun.rect.centerx-a[0]))
-    for i in range(1, len(listLitVertices)):
+    for angle in range(360):
+       coords = bresenham(WORLD_WIDTH*10*math.cos(angle), WORLD_WIDTH*10*math.sin(angle), *sun.rect.center)
+       if coords:
+        litVertices.append(coords)
+         
+    litVertices.extend(((0, 0), (WORLD_WIDTH*20, 0), (0, WORLD_HEIGHT*20), (WORLD_WIDTH*20, WORLD_HEIGHT*20)))
+    litVertices.sort(key=lambda a: math.atan2(sun.pos[1]-a[1], sun.pos[0]-a[0]))
+    for i in range(1, len(litVertices)):
       # pg.draw.line(SURF, (0,0,0), sun.rect.center, listLitVertices[i])
-      pg.draw.polygon(LIGHTSURF, (255,255,255, 0), (sun.rect.center, listLitVertices[i], listLitVertices[i-1]))
+      pg.draw.polygon(LIGHTSURF, (255,255,255, 0), (sun.pos, litVertices[i], litVertices[i-1]))
       # SURF.blit(font.render(str(i), False, (0,0,0)), relativeCoord(*listLitVertices[i]))
-    pg.draw.polygon(LIGHTSURF, (255,255,255, 0), (sun.rect.center, listLitVertices[0], listLitVertices[len(listLitVertices)-1]))
+    pg.draw.polygon(LIGHTSURF, (255,255,255, 0), (sun.pos, litVertices[0], litVertices[len(litVertices)-1]))
     
       
 
