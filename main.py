@@ -689,12 +689,20 @@ class Dirt(Block):
     this.item = PlaceableItem("Dirt", this.itemTexture, Dirt)
     super().__init__(variant.name, variant.texture, x, y, this.item, 1)
 
+class Cobblestone(Block):
+    cobblestoneTexture = pg.transform.scale(pg.image.load("cobblestone.png"), (BLOCK_SIZE, BLOCK_SIZE))
+    cobblestoneItemTexture = pg.transform.scale(cobblestoneTexture, (15, 15))
+
+    def __init__(this, x, y):
+        super().__init__("Cobblestone", this.cobblestoneTexture, x, y, PlaceableItem("Cobblestone", this.cobblestoneItemTexture, Cobblestone), 2)
 
 class Stone(Block):
   stoneTexture = pg.transform.scale(pg.image.load("stone.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  stoneItemTexture = pg.transform.scale(stoneTexture, (15, 15))
+  cobblestoneItemTexture = pg.transform.scale(pg.image.load("cobblestone.png"), (15, 15))
+  
   def __init__(this, x, y):
-    super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Stone", this.stoneItemTexture, Stone), 5)
+    super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Cobblestone", this.cobblestoneItemTexture, Cobblestone), 5)
+
 
 class IronOre(Block):
   ironOreTexture = pg.transform.scale(pg.image.load("iron_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
