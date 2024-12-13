@@ -15,6 +15,7 @@ WIDTH = 1000
 HEIGHT = 600
 FPS = 60
 SURF = pg.display.set_mode((WIDTH, HEIGHT), vsync=1)
+LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
 FRAME = SURF.get_rect()
 
 BLOCK_SIZE = 20
@@ -48,9 +49,9 @@ def relativeCoord(x: float, y: float) -> tuple[int, int]:
   return x - player.camera.x, y - player.camera.y
 
 
-def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery):
+def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery, checkVertices=False):
   """Bresenham's algorithm to detect first non-air block along a line, starting from end point."""
-
+  pointsTouched = {}
   def plotLineLow(x0, y0, x1, y1):
     dx = abs(x1 - x0)
     dy = abs(y1 - y0)
@@ -62,7 +63,9 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery):
     while x != x0 - xi:
       blockTouched = world.blockAt(*pixelToCoord(x, y))
       if not blockTouched.isAir:
-        return blockTouched
+        if checkVertices:
+          return True
+        else: return blockTouched
       if d > 0:
         y += yi
         d += 2 * (dy - dx)
@@ -82,7 +85,9 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery):
     while y != y0 - yi:
       blockTouched = world.blockAt(*pixelToCoord(x, y))
       if not blockTouched.isAir:
-        return blockTouched
+        if checkVertices:
+          return True
+        else: return blockTouched
       if d > 0:
         x += xi
         d += 2 * (dx - dy)
@@ -331,9 +336,6 @@ class Entity:
   def update(this):
     this.move()
     this.draw()
-
-
-vertices = set()
 
 
 class Player(Entity, HasInventory):
@@ -599,12 +601,12 @@ class Block:
     this.texture = texture
     this.rect = pg.rect.Rect(
       x * BLOCK_SIZE, y * BLOCK_SIZE, this.SIZE, this.SIZE)
-    this.vertices = (
+    this.vertices = {
       this.rect.topleft,
       this.rect.topright,
       this.rect.bottomleft,
       this.rect.bottomright,
-    )
+    }
     this.mask = pg.mask.from_surface(texture)
     this.x = x
     this.y = y
@@ -713,6 +715,17 @@ class CoalOre(Block):
     super().__init__("Coal Ore", this.coalOreTexture, x, y, Item("Coal", this.coalItemTexture), 3)
 
 ores = {CoalOre, IronOre}
+
+class Sun:
+  size = BLOCK_SIZE * 5
+  rect = pg.rect.Rect(HEIGHT * 0.1, HEIGHT * 0.1, size, size)
+  sunTexture = pg.transform.scale(pg.image.load("sun.png"), (size, size))
+  # pg.transform.threshold(sunTexture, sunTexture, (0,0,0,255), (120,120,120,0), (0,0,0,0), 1, inverse_set=True)
+  def draw(this):
+    ASURF.blit(this.sunTexture, this.rect)
+
+sun = Sun()
+
 class World:
   def __init__(this):
     this.array = [
@@ -871,6 +884,7 @@ class World:
     return this.array[x]
 
   def draw(this):
+    litVertices = set()
     for y in range(
         player.camera.top // BLOCK_SIZE, (player.camera.bottom //
                                           BLOCK_SIZE) + 1
@@ -881,21 +895,29 @@ class World:
       ):
         block = this[y][x]
         if not block.isAir:
-          vertices.update(block.vertices)
+          for vertex in block.vertices:
+            if not bresenham(*relativeCoord(*vertex), *sun.rect.center, checkVertices=True):
+              litVertices.add(vertex)
           block.drawBlock()
-    for vertice in vertices:
-      pg.draw.circle(SURF, (0,255,0), relativeCoord(*vertice), 2)
+    listLitVertices = list(litVertices)
+    listLitVertices.sort(key=lambda a: math.atan2(a[1]-sun.rect.centery, a[0]-sun.rect.centerx, ))
+    for i in range(1, len(listLitVertices)):
+      pg.draw.polygon(LIGHTSURF, (255,255,255, 0), (sun.rect.center, relativeCoord(*listLitVertices[i]), relativeCoord(*listLitVertices[i-1])))
+      # SURF.blit(font.render(str(i), False, (0,0,0)), relativeCoord(*listLitVertices[i]))
+    
+      
 
-
+font = pg.font.Font(None, 15)
 world = World()
-
 end = time.time()
 print("Load time:", end-start, "seconds")
 while True:
   SURF.fill((255, 255, 255))
   ASURF.fill((0, 0, 0, 0))
+  LIGHTSURF.fill((0, 0, 0, 230))
   keys = pg.key.get_pressed()
-  vertices.clear()
+  
+  sun.draw()
 
   world.draw()
   player.update()
@@ -943,5 +965,6 @@ while True:
       sys.exit()
 
   SURF.blit(ASURF, (0, 0))
+  SURF.blit(LIGHTSURF, (0, 0))
   pg.display.flip()
   clock.tick(FPS)
