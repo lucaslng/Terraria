@@ -939,7 +939,7 @@ print("Load time:", end-start, "seconds")
 while True:
   SURF.fill((255, 255, 255))
   ASURF.fill((0, 0, 0, 0))
-  LIGHTSURF.fill((0, 0, 0, 230))
+  LIGHTSURF.fill((0, 0, 0, 200))
   keys = pg.key.get_pressed()
   
   sun.draw()
