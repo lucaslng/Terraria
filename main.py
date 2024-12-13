@@ -375,7 +375,7 @@ class Player(Entity, HasInventory):
 
     this.falling = False
     this.fall_start_y = None
-    this.fall_damage_threshold = 8 * BLOCK_SIZE
+    this.fall_damage_threshold = 4 * BLOCK_SIZE
     this.is_initial_spawn = True
     this.spawn_protection_timer = 60
     
@@ -661,9 +661,7 @@ class Air(Block):
 class DirtVariant:
   def __init__(this, name: str, texture):
     this.name = name
-    this.texture = texture
-    
-
+    this.texture = texture  
 
 class DirtVariantDirt(DirtVariant):
   dirtTexture = pg.transform.scale(
