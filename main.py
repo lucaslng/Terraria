@@ -111,6 +111,9 @@ class Item:
     this.stackSize = stackSize
     this.name = name
 
+  def slotTexture(this) -> pg.surface.Surface:
+    return pg.transform.scale_by(this.texture, 0.8)
+  
   def drawItem(this, x: int, y: int):
     SURF.blit(this.itemTexture, (x, y))
 
@@ -197,6 +200,7 @@ class Entity:
   gravityvelo = 0
   previousDirection = True
   isOnBlock = False
+  animations = {}
 
   def __init__(
       this,
@@ -375,7 +379,12 @@ class Player(Entity, HasInventory):
     this.is_initial_spawn = True
     this.spawn_protection_timer = 60
     
+    this.usingItem = False
+    this.placingBlock = False
     this.inventory.addItem(WoodenPickaxe())
+    
+    this.animations["usingItem"] = pg.time.get_ticks() + 200 # beginning tick, tick length
+    this.animations["placingBlock"] = 250
 
   def draw_health(this):
     """Draw health as hearts on the screen"""
@@ -412,7 +421,6 @@ class Player(Entity, HasInventory):
 
   def draw(this):
     super().draw()
-    this.draw_health()
 
   def hotbar(this) -> list[Inventory.Slot]:
     '''Returns the first row of the player's inventory'''
@@ -429,7 +437,14 @@ class Player(Entity, HasInventory):
   def drawHeldItem(this):
     slot = this.heldSlot()
     if slot:
-      texture = pg.transform.scale_by(slot.item.texture, 0.8)
+      texture = slot.item.slotTexture()
+      if this.usingItem and pg.time.get_ticks() % 200 < 100:
+          texture = pg.transform.rotozoom(texture, -35, 1)
+      elif this.animations["placingBlock"] < 100:
+        texture = pg.transform.rotozoom(texture, -this.animations["placingBlock"]/3.8, 1)
+        this.animations["placingBlock"] += 1000/FPS
+        this.placingBlock = False
+      if this.previousDirection == False: texture = pg.transform.flip(texture, True, False)
       SURF.blit(texture, FRAME.center)
 
   def drawHotbar(this):
@@ -510,10 +525,12 @@ class Player(Entity, HasInventory):
         miningSpeed = 1
         if this.heldSlot() and this.heldSlot().item.isTool():
           miningSpeed = this.heldSlot().item.speed
+        this.usingItem = True
         this.blockFacing.amountBroken += miningSpeed / FPS
       else:
         print("mined", this.blockFacing.name,
               "got", this.blockFacing.item.name)
+        
         world[this.blockFacing.y][this.blockFacing.x] = Air(
             this.blockFacing.x, this.blockFacing.y
         )
@@ -523,6 +540,7 @@ class Player(Entity, HasInventory):
     if this.heldSlot() and this.heldSlot().count > 0 and this.heldSlot().item.isPlaceable():
       x, y = pixelToCoord(*pg.mouse.get_pos())
       if world.blockAt(x, y).isAir:
+        this.animations["placingBlock"] = 0
         this.heldSlot().item.place(x, y)
         this.heldSlot().count -= 1
         if this.heldSlot().count == 0:
@@ -555,6 +573,8 @@ class Player(Entity, HasInventory):
     this.drawBlockFacing()
     this.drawHotbar()
     this.drawHeldItem()
+    this.draw_health()
+    if not pg.mouse.get_pressed()[0]: this.usingItem = False
 
 
 ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
