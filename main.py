@@ -106,7 +106,7 @@ class Item:
 
   ITEM_SIZE = BLOCK_SIZE
 
-  def __init__(this, name: str, texture, stackSize: int = 64):
+  def __init__(this, name: str, texture: pg.surface.Surface, stackSize: int = 64):
     this.texture = texture
     this.stackSize = stackSize
     this.name = name
@@ -121,6 +121,9 @@ class Item:
 
   def isPlaceable(this) -> bool:
     return isinstance(this, PlaceableItem)
+  
+  def isTool(this) -> bool:
+    return isinstance(this, Tool)
 
 class PlaceableItem(Item):
   def __init__(this, name: str, texture, block, stackSize: int = 64):
@@ -167,6 +170,17 @@ class Inventory:
   def __getitem__(this, row: int):
     return this.inventory[row]
 
+
+class Tool(Item):
+  def __init__(this, name: str, texture: pg.surface.Surface, speed: float):
+    super().__init__(name, texture, 1)
+    this.speed = speed
+
+
+class WoodenPickaxe(Tool):
+  woodenPickaxeTexture = pg.transform.scale(pg.image.load("wooden_pickaxe.png"), (15, 15))
+  def __init__(this):
+    super().__init__("Wooden Pickaxe", this.woodenPickaxeTexture, 1.5)
 
 class HasInventory:
   """Parent class for classes than have an inventory"""
@@ -360,6 +374,8 @@ class Player(Entity, HasInventory):
     this.fall_damage_threshold = 8 * BLOCK_SIZE
     this.is_initial_spawn = True
     this.spawn_protection_timer = 60
+    
+    this.inventory.addItem(WoodenPickaxe())
 
   def draw_health(this):
     """Draw health as hearts on the screen"""
@@ -491,7 +507,10 @@ class Player(Entity, HasInventory):
   def mine(this):
     if this.blockFacing:
       if this.blockFacing.amountBroken < this.blockFacing.hardness:
-        this.blockFacing.amountBroken += 1 / FPS
+        miningSpeed = 1
+        if this.heldSlot() and this.heldSlot().item.isTool():
+          miningSpeed = this.heldSlot().item.speed
+        this.blockFacing.amountBroken += miningSpeed / FPS
       else:
         print("mined", this.blockFacing.name,
               "got", this.blockFacing.item.name)
@@ -570,9 +589,9 @@ class Block:
     this.x = x
     this.y = y
     this.item = item
-    this.hardness = hardness
+    this.hardness: float = hardness
     this.isAir = isAir
-    this.amountBroken = 0
+    this.amountBroken: float = 0
 
   def drawBlockOutline(this, color):
     pg.draw.rect(ASURF, color, relativeRect(this.rect), 2)
