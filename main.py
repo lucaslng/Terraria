@@ -1132,21 +1132,29 @@ if __name__ == "__main__":
   start = time.time()
   pg.init()
   clock = pg.time.Clock()
+  
   SURF = pg.display.set_mode((WIDTH, HEIGHT), vsync=1)
   pg.display.set_caption("Terraria")
+  
   LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   FRAME = SURF.get_rect()
   ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   ASURF.fill((0, 0, 0, 0))
+  
   defaultItems = [WoodenPickaxe(), CraftingTableItem()]
   player = Player()
   craftingMenu = CraftingMenu()
+  
   font = pg.font.Font(None, 15)
   font20 = pg.font.Font(None, 20)
+  
   world = World()
   sun = Sun()
+  
   end = time.time()
-  print("Load time:", end-start, "seconds")
+  print("Load time:", round(end-start, 2), "seconds")
+  
+  
   while True:
     SURF.fill((255, 255, 255))
     ASURF.fill((0, 0, 0, 0))
@@ -1156,12 +1164,14 @@ if __name__ == "__main__":
     sun.draw()
     world.update()
     player.update()
-    # temporarily game over logic
+    
+    #Temporarily game over logic
     if player.health <= 0:
       print("The skbidi has died")
       pg.quit()
       sys.exit()
 
+    #Player controls
     if keys[pg.K_a]:
       player.moveLeft()
     if keys[pg.K_d]:
@@ -1189,9 +1199,9 @@ if __name__ == "__main__":
     if keys[pg.K_0]:
       player.changeSlot(9)
 
-    if pg.mouse.get_pressed()[0]:
+    if pg.mouse.get_pressed()[0]:   #left click
       player.mine()
-    if pg.mouse.get_pressed()[2]:
+    if pg.mouse.get_pressed()[2]:   #right click
       player.place()
 
     for event in pg.event.get():
