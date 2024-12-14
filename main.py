@@ -1,7 +1,9 @@
 import sys, math, random, pickle, time      #pickle stores game data onto local system
 import pygame as pg
 from pygame.locals import *
-
+from abc import *
+from dataclasses import dataclass
+from typing import Callable
 from enum import Enum
 
 start = time.time()
@@ -107,16 +109,23 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery):
   else:
     return plotLineHigh(x0, y0, x1, y1)
 
+@dataclass
+class Interactable():
+  interact_action: Callable
+  
+  def interact(this):
+    '''To be called when Interactable is interacted with.'''
+    if this.interact_action:
+      this.interact_action()    
 
+@dataclass
 class Item:
   """Base item class"""
 
   ITEM_SIZE = BLOCK_SIZE
-
-  def __init__(this, name: str, texture: pg.surface.Surface, stackSize: int = 64):
-    this.texture = texture
-    this.stackSize = stackSize
-    this.name = name
+  name: str
+  texture: pg.surface.Surface
+  stackSize: int
 
   def slotTexture(this) -> pg.surface.Surface:
     return pg.transform.scale_by(this.texture, 0.8)
@@ -135,17 +144,80 @@ class Item:
   def isTool(this) -> bool:
     return isinstance(this, Tool)
 
+class BlockType(Enum):
+  NONE=-1
+  PICKAXE=0
+  AXE=1
+  SHOVEL=2
+  SWORD=3
+  SHEARS=4
 
+@dataclass
+class Block:
+  SIZE = BLOCK_SIZE
+  amountBroken = float(0)
+  name: str
+  texture: pg.surface.Surface
+  x: int
+  y: int
+  item: Item
+  hardness: float
+  blockType: BlockType
+  isAir: bool = False
+  
+  def __post_init__(this):
+    this.rect = pg.rect.Rect(
+      this.x * BLOCK_SIZE, this.y * BLOCK_SIZE, this.SIZE, this.SIZE)
+    this.vertices = (
+      this.rect.topleft,
+      this.rect.topright,
+      this.rect.bottomleft,
+      this.rect.bottomright,
+    )
+    this.mask = pg.mask.from_surface(this.texture)
+    
+
+  def drawBlockOutline(this, color):
+    pg.draw.rect(ASURF, color, relativeRect(this.rect), 2)
+
+  def drawBlock(this):
+    SURF.blit(this.texture, relativeRect(this.rect))
+    breakingRect = relativeRect(this.rect.copy())
+    breakingRect.scale_by_ip(
+      this.amountBroken / this.hardness, this.amountBroken / this.hardness
+    )
+    pg.draw.rect(ASURF, (0, 0, 0, 100), breakingRect)
+
+  def offset(this, x: int, y: int) -> tuple[int, int]:
+    return x - this.rect.x, y - this.rect.y
+
+  def collides(this, x: int, y: int) -> bool:
+    if this.isAir:
+      return False
+    if this.mask.overlap(player.mask, this.offset(x, y)):
+      # pg.draw.rect(SURF, (255, 0, 0), relativeRect(this.rect), width=3)
+      return True
+    else:
+      return False
+
+  def isInCamera(this):
+    return this.rect.colliderect(player.camera)
+
+  def __repr__(this):
+    return this.name
+
+  def __hash__(this):
+    return hash((this.x, this.y))
+
+  def __eq__(this, other):
+    return hash(this) == hash(other)
+
+@dataclass
 class PlaceableItem(Item):
-  def __init__(this, name: str, texture, block, stackSize: int = 64):
-    super().__init__(name, texture, stackSize)
-    this.block = block
+  block: Block
   
   def place(this, x, y):
-    if this.block == CraftingTable:
-        world[y][x] = CraftingTable(x, y, SURF, player.inventory)
-    else:
-        world[y][x] = this.block(x, y)
+    world[y][x] = this.block(x, y)
 
 
 class Slot:
@@ -219,27 +291,16 @@ class Inventory:
   def __getitem__(this, row: int):
     return this.inventory[row]
 
-
-class BlockType(Enum):
-  NONE=-1
-  PICKAXE=0
-  AXE=1
-  SHOVEL=2
-  SWORD=3
-  SHEARS=4
-
-
+@dataclass
 class Tool(Item):
-  def __init__(this, name: str, texture: pg.surface.Surface, speed: float, type: BlockType):
-    super().__init__(name, texture, 1)
-    this.speed = speed
-    this.type = type
+  speed: float
+  blockType: BlockType
 
 
 class WoodenPickaxe(Tool):
   woodenPickaxeTexture = pg.transform.scale(pg.image.load("wooden_pickaxe.png"), (15, 15))
   def __init__(this):
-    super().__init__("Wooden Pickaxe", this.woodenPickaxeTexture, 1.5, BlockType.PICKAXE)
+    super().__init__("Wooden Pickaxe", this.woodenPickaxeTexture, 1, 1.5, BlockType.PICKAXE)
 
 
 class HasInventory:
@@ -439,7 +500,6 @@ class Player(Entity, HasInventory):
     this.placingBlock = False
    
     this.inventory.addItem(WoodenPickaxe())
-    this.add_crafting_table_later = True
     
     this.animations["usingItem"] = pg.time.get_ticks() + 200 # beginning tick, tick length
     this.animations["placingBlock"] = 250
@@ -554,7 +614,7 @@ class Player(Entity, HasInventory):
     if this.blockFacing:
       if this.blockFacing.amountBroken < this.blockFacing.hardness:
         miningSpeed = 1
-        if this.heldSlot().item and this.heldSlot().item.isTool() and this.heldSlot().item.type == this.blockFacing.type:
+        if this.heldSlot().item and this.heldSlot().item.isTool() and this.heldSlot().item.blockType == this.blockFacing.blockType:
           miningSpeed = this.heldSlot().item.speed
         this.usingItem = True
         this.blockFacing.amountBroken += miningSpeed / FPS
@@ -611,90 +671,9 @@ ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
 ASURF.fill((0, 0, 0, 0))
 player = Player()
 
-
-class Interactable:
-    def __init__(self, interact_action):
-        self.interact_action = interact_action
-
-    def interact(self):
-        if self.interact_action:
-            self.interact_action()      
-
-
-class Block:
-  SIZE = BLOCK_SIZE
-
-  def __init__(
-    this,
-    name: str,
-    texture,
-    x: int,
-    y: int,
-    item: Item,
-    hardness: float,
-    type: BlockType,
-    isAir=False,
-  ):
-    this.name = name
-    this.texture = texture
-    this.rect = pg.rect.Rect(
-      x * BLOCK_SIZE, y * BLOCK_SIZE, this.SIZE, this.SIZE)
-    this.vertices = (
-      this.rect.topleft,
-      this.rect.topright,
-      this.rect.bottomleft,
-      this.rect.bottomright,
-    )
-    this.mask = pg.mask.from_surface(texture)
-    this.x = x
-    this.y = y
-    this.item = item
-    this.hardness: float = hardness
-    this.type = type
-    this.isAir = isAir
-    this.amountBroken: float = 0
-
-  def drawBlockOutline(this, color):
-    pg.draw.rect(ASURF, color, relativeRect(this.rect), 2)
-
-  def drawBlock(this):
-    SURF.blit(this.texture, relativeRect(this.rect))
-    breakingRect = relativeRect(this.rect.copy())
-    breakingRect.scale_by_ip(
-      this.amountBroken / this.hardness, this.amountBroken / this.hardness
-    )
-    pg.draw.rect(ASURF, (0, 0, 0, 100), breakingRect)
-
-  def offset(this, x: int, y: int) -> tuple[int, int]:
-    return x - this.rect.x, y - this.rect.y
-
-  def collides(this, x: int, y: int) -> bool:
-    if this.isAir:
-      return False
-    if this.mask.overlap(player.mask, this.offset(x, y)):
-      # pg.draw.rect(SURF, (255, 0, 0), relativeRect(this.rect), width=3)
-      return True
-    else:
-      return False
-
-  def isInCamera(this):
-    return this.rect.colliderect(player.camera)
-
-  def __repr__(this):
-    return this.name
-
-  def __hash__(this):
-    return hash((this.x, this.y))
-
-  def __eq__(this, other):
-    return hash(this) == hash(other)
-
- 
 class CraftingGrid:
-  def __init__(self, screen, player_inventory):
+  def __init__(self):
       self.grid = [[None for _ in range(3)] for _ in range(3)]  # 3x3 grid
-      self.screen = screen
-      self.player_inventory = player_inventory
       
       self.grid_pos = (200, 100)
       self.slot_size = 50
@@ -709,18 +688,18 @@ class CraftingGrid:
             x = self.grid_pos[0] + col * (self.slot_size + self.slot_padding)
             y = self.grid_pos[1] + row * (self.slot_size + self.slot_padding)
 
-            pg.draw.rect(self.screen, (200, 200, 200), (x, y, self.slot_size, self.slot_size))
+            pg.draw.rect(SURF, (200, 200, 200), (x, y, self.slot_size, self.slot_size))
             
             item = self.grid[row][col]
             if item:
                 scaled_item = pg.transform.scale(item.texture, (self.slot_size, self.slot_size))
-                self.screen.blit(scaled_item, (x, y))
+                SURF.blit(scaled_item, (x, y))
 
-    pg.draw.rect(self.screen, (150, 150, 150), (*self.result_slot_pos, self.slot_size, self.slot_size))
+    pg.draw.rect(SURF, (150, 150, 150), (*self.result_slot_pos, self.slot_size, self.slot_size))
     
     if self.result_item:
         scaled_result = pg.transform.scale(self.result_item.texture, (self.slot_size, self.slot_size))
-        self.screen.blit(scaled_result, self.result_slot_pos)
+        SURF.blit(scaled_result, self.result_slot_pos)
   
   def place_item(self, item, row, col):
       if 0 <= row < 3 and 0 <= col < 3:
@@ -733,7 +712,7 @@ class CraftingGrid:
   
   def craft(self):
     if self.result_item:
-        self.player_inventory.add_item(self.result_item)
+        player.inventory.add_item(self.result_item)
         
         self.grid = [[None for _ in range(3)] for _ in range(3)]
         self.result_item = None 
@@ -743,13 +722,13 @@ class CraftingTable(Block, Interactable):
     craftingTableTexture = pg.transform.scale(pg.image.load("crafting_table.png"), (BLOCK_SIZE, BLOCK_SIZE))
     craftingTableItemTexture = pg.transform.scale(craftingTableTexture, (15, 15))
     
-    def __init__(self, x, y, screen, player_inventory):
-        item = PlaceableItem("Crafting Table", self.craftingTableItemTexture, CraftingTable)
-        Block.__init__(self, name="Crafting Table", texture=self.craftingTableTexture, x=x, y=y, item=item, hardness=2.5, type=BlockType.NONE, isAir=False)
-        Interactable.__init__(self, lambda: self.open_crafting_gui(screen, player_inventory))
+    def __init__(self, x, y):
+        item = PlaceableItem("Crafting Table", self.craftingTableItemTexture, 64, CraftingTable)
+        Block.__init__(self, name="Crafting Table", texture=self.craftingTableTexture, x=x, y=y, item=item, hardness=2.5, blockType=BlockType.NONE, isAir=False)
+        Interactable.__init__(self, lambda: self.open_crafting_gui())
     
-    def open_crafting_gui(self, screen, player_inventory):
-      crafting_grid = CraftingGrid(screen, player_inventory)
+    def open_crafting_gui(self):
+      crafting_grid = CraftingGrid()
       
       crafting_open = True
       while crafting_open:
@@ -771,7 +750,7 @@ class CraftingTable(Block, Interactable):
                           
                           slot_rect = pg.Rect(x, y, crafting_grid.slot_size, crafting_grid.slot_size)
                           if slot_rect.collidepoint(mouse_pos):
-                              selected_item = player_inventory.get_selected_item()
+                              selected_itplayer.inventory.get_selected_item()
                               if selected_item:
                                   crafting_grid.place_item(selected_item, row, col)
 
@@ -823,7 +802,7 @@ class Dirt(Block):
   itemTexture = pg.transform.scale(pg.image.load("dirt.png"), (15, 15))
   def __init__(this, x, y, variant: DirtVariant = DirtVariantDirt()):
     
-    this.item = PlaceableItem("Dirt", this.itemTexture, Dirt)
+    this.item = PlaceableItem("Dirt", this.itemTexture, 64, Dirt)
     super().__init__(variant.name, variant.texture, x, y, this.item, 1, BlockType.SHOVEL)
 
 
@@ -832,7 +811,7 @@ class Cobblestone(Block):
     cobblestoneItemTexture = pg.transform.scale(cobblestoneTexture, (15, 15))
 
     def __init__(this, x, y):
-        super().__init__("Cobblestone", this.cobblestoneTexture, x, y, PlaceableItem("Cobblestone", this.cobblestoneItemTexture, Cobblestone), 2, BlockType.PICKAXE)
+        super().__init__("Cobblestone", this.cobblestoneTexture, x, y, PlaceableItem("Cobblestone", this.cobblestoneItemTexture, 64, Cobblestone), 2, BlockType.PICKAXE)
 
 
 class Stone(Block):
@@ -840,7 +819,7 @@ class Stone(Block):
   cobblestoneItemTexture = pg.transform.scale(pg.image.load("cobblestone.png"), (15, 15))
   
   def __init__(this, x, y):
-    super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Cobblestone", this.cobblestoneItemTexture, Cobblestone), 5, BlockType.PICKAXE)
+    super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Cobblestone", this.cobblestoneItemTexture, 64, Cobblestone), 5, BlockType.PICKAXE)
 
 
 class IronOre(Block):
@@ -849,7 +828,7 @@ class IronOre(Block):
   veinSize = 3.2
   rarity = 0.38 # lower is more common
   def __init__(this, x, y):
-    super().__init__("Iron Ore", this.ironOreTexture, x, y, PlaceableItem("Iron Ore", this.ironOreItemTexture, IronOre), 6, BlockType.PICKAXE)
+    super().__init__("Iron Ore", this.ironOreTexture, x, y, PlaceableItem("Iron Ore", this.ironOreItemTexture, 64, IronOre), 6, BlockType.PICKAXE)
 
 
 class CoalOre(Block):
@@ -858,7 +837,7 @@ class CoalOre(Block):
   veinSize = 3.9
   rarity = 0.3 # lower is more common
   def __init__(this, x, y):
-    super().__init__("Coal Ore", this.coalOreTexture, x, y, Item("Coal", this.coalItemTexture), 3, BlockType.PICKAXE)
+    super().__init__("Coal Ore", this.coalOreTexture, x, y, Item("Coal", this.coalItemTexture, 64), 3, BlockType.PICKAXE)
 
 ores = {CoalOre, IronOre}
 
@@ -1037,19 +1016,9 @@ class World:
 
 world = World()
 
-#add crafting table to player inventory at beginning of game
-#remove later
-if player.add_crafting_table_later:
-    crafting_table_item = PlaceableItem(
-        "Crafting Table",
-        CraftingTable.craftingTableItemTexture,
-        CraftingTable
-    )
-    player.inventory.addItem(crafting_table_item)
-
 end = time.time()
 print("Load time:", round(end-start, 3), "seconds")
-
+player.inventory.addItem(PlaceableItem("Crafting Table", CraftingTable.craftingTableItemTexture, 64, CraftingTable))
 while True:
   SURF.fill((255, 255, 255))
   ASURF.fill((0, 0, 0, 0))
