@@ -28,7 +28,6 @@ SEED = time.time()
 random.seed(SEED)
 FONT = pg.font.Font(None, 20)
 
-
 pg.display.set_caption("Terraria")
 clock = pg.time.Clock()
 
@@ -421,7 +420,7 @@ class Menu:
 
 class CraftingMenu(Menu):
   def __init__(this):
-    super().__init__(Section(3, 3, 200, 100, 50), Section(1, 1, 400, 150))
+    super().__init__(Section(3, 3, WIDTH*0.4, HEIGHT*0.3, 60), Section(1, 1, WIDTH*0.4+240, HEIGHT*0.3+60, 60))
   #   self.grid = [[None for _ in range(3)] for _ in range(3)]  # 3x3 grid
 
   #   self.grid_pos = (200, 100)
@@ -725,7 +724,7 @@ class Player(Entity, HasInventory):
     this.usingItem = False
     this.placingBlock = False
 
-    this.inventory.addItem(WoodenPickaxe())
+    for item in defaultItems: this.inventory.addItem(item) 
 
     # beginning tick, tick length
     this.animations["usingItem"] = pg.time.get_ticks() + 200
@@ -900,6 +899,7 @@ class Player(Entity, HasInventory):
 
 ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
 ASURF.fill((0, 0, 0, 0))
+defaultItems = [WoodenPickaxe(), CraftingTableItem()]
 player = Player()
 
 class World:
@@ -1079,7 +1079,6 @@ world = World()
 
 end = time.time()
 print("Load time:", round(end - start, 3), "seconds")
-player.inventory.addItem(CraftingTableItem())
 while True:
   SURF.fill((255, 255, 255))
   ASURF.fill((0, 0, 0, 0))
