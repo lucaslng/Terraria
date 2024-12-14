@@ -23,10 +23,7 @@ gravity = 1
 SEED = time.time()
 random.seed(SEED)
 FONT = pg.font.Font(None, 20)
-# random.seed("niggers")
-#^
-#|
-#wtf???
+
 
 pg.display.set_caption("Terraria")
 clock = pg.time.Clock()
