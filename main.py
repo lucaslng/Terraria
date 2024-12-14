@@ -1,7 +1,6 @@
 import sys, math, random, pickle, time      #pickle stores game data onto local system
 import pygame as pg
 from pygame.locals import *
-
 from enum import Enum
 
 start = time.time()
@@ -28,7 +27,6 @@ FONT = pg.font.Font(None, 20)
 
 pg.display.set_caption("Terraria")
 clock = pg.time.Clock()
-
 
 def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   """Returns coordinate based on pixel location"""
@@ -177,7 +175,7 @@ class Slot:
         )
         SURF.blit(scaled_texture, texture_rect.topleft)
 
-        if this.count > 0:
+        if this.count > 1:
           count_text = FONT.render(
               str(this.count), True, (255, 255, 255))
           # item counter is in the bottom right of the slot
