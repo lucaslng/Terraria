@@ -24,6 +24,9 @@ gravity = 1
 SEED = time.time()
 random.seed(SEED)
 # random.seed("niggers")
+#^
+#|
+#wtf???
 
 pg.display.set_caption("Terraria")
 clock = pg.time.Clock()
@@ -35,6 +38,10 @@ def pixelToCoord(x: float, y: float) -> tuple[int, int]:
       (y + player.camera.top) // BLOCK_SIZE
   )
   return coord
+
+
+def distance(x1, y1, x2=FRAME.centerx, y2=FRAME.centery):
+  return hypot(x1 - x2, y1 - y2)
 
 
 def relativeRect(rect: pg.rect.Rect):
@@ -49,9 +56,14 @@ def relativeCoord(x: float, y: float) -> tuple[int, int]:
 
 
 def check_for_interaction():
-    block = world.hoveredBlock()
-    if isinstance(block, Interactable):
-        block.interact()
+    for y in range(player.camera.top // BLOCK_SIZE, (player.camera.bottom // BLOCK_SIZE) + 1):
+        for x in range(player.camera.left // BLOCK_SIZE, (player.camera.right // BLOCK_SIZE) + 1):
+            block = world.blockAt(x, y)
+            if isinstance(block, Interactable):
+                dist = distance(player.rect.centerx, player.rect.centery, block.rect.centerx, block.rect.centery)
+                if dist <= 3 * BLOCK_SIZE:
+                    block.interact()
+                    return
 
 
 def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery):
@@ -101,10 +113,6 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery):
     return plotLineLow(x0, y0, x1, y1)
   else:
     return plotLineHigh(x0, y0, x1, y1)
-
-
-def distance(x1, y1, x2=FRAME.centerx, y2=FRAME.centery):
-  return hypot(x1 - x2, y1 - y2)
 
 
 class Item:
