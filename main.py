@@ -1023,6 +1023,7 @@ if __name__ == "__main__":
     SURF.blit(ASURF, (0, 0))
     LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//20, HEIGHT//20))
     LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
+    SURF.blit(LIGHTSURF, ((0,0)))
     pg.display.flip()
     print("fps: ", round(clock.get_fps(), 2))
     clock.tick(FPS)
