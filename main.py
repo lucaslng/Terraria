@@ -2,7 +2,6 @@ import sys
 import pygame as pg
 from pygame.locals import *
 import math
-import numpy as np
 from math import radians, hypot
 import random
 from enum import Enum
@@ -989,13 +988,6 @@ class World:
       for y in range(WORLD_HEIGHT -1, grassHeight - 1, - 1):
         if cavesNoise[y][x] > 0.1:
           this.array[y][x] = Air(x, y)
-          
-    # Place crafting table on the ground near spawn
-    spawn_x = WORLD_WIDTH // 2
-    for y in range(WORLD_HEIGHT - 1, -1, -1):
-        if not this.array[y][spawn_x].isAir:  # Ground block found
-            this.array[y - 1][spawn_x] = CraftingTable(spawn_x, y - 1, SURF, player.inventory)
-            break
 
   def hoveredBlock(this) -> Block:
     mousepos = pg.mouse.get_pos()
@@ -1023,6 +1015,7 @@ class World:
 
 world = World()
 
+#add crafting table
 if player.add_crafting_table_later:
     crafting_table_item = PlaceableItem(
         "Crafting Table",
@@ -1030,7 +1023,6 @@ if player.add_crafting_table_later:
         CraftingTable
     )
     player.inventory.addItem(crafting_table_item)
-    player.add_crafting_table_later = False
 
 end = time.time()
 print("Load time:", round(end-start, 3), "seconds")
