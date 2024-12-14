@@ -12,16 +12,13 @@ from enum import Enum
 import pickle  # use pickle to store save
 import time
 import concurrent.futures
-start = time.time()
 
-pg.init()
+
 
 WIDTH = 1000
 HEIGHT = 600
 FPS = 60
-SURF = pg.display.set_mode((WIDTH, HEIGHT), vsync=1)
-LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
-FRAME = SURF.get_rect()
+
 
 BLOCK_SIZE = 20
 WORLD_HEIGHT = 256
@@ -30,11 +27,8 @@ SHADOW_QUALITY = 6
 gravity = 1
 SEED = time.time()
 random.seed(SEED)
-FONT = pg.font.Font(None, 20)
 
 pg.display.set_caption("Terraria")
-clock = pg.time.Clock()
-
 
 def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   """Returns coordinate based on pixel location"""
@@ -44,7 +38,7 @@ def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   return coord
 
 
-def distance(x1: float, y1: float, x2: float = FRAME.centerx, y2: float = FRAME.centery) -> float:
+def distance(x1: float, y1: float, x2: float, y2: float) -> float:
   return math.hypot(x1 - x2, y1 - y2)
 
 
@@ -73,7 +67,7 @@ def check_for_interaction() -> None:
           return
 
 
-def bresenham(x0: int, y0: int, x1: int = FRAME.centerx, y1: int = FRAME.centery, checkVertices=False, quality: int=1) -> tuple[int, int] | None:
+def bresenham(x0: int, y0: int, x1: int, y1: int, checkVertices=False, quality: int=1) -> tuple[int, int] | None:
   """Bresenham's algorithm to detect first non-air block along a line, starting from end point."""
   pointsTouched = set()
   def plotLineLow(x0, y0, x1, y1):
@@ -413,7 +407,7 @@ class Slot:
       SURF.blit(scaled_texture, texture_rect.topleft)
 
       if this.count > 1:
-        count_text = FONT.render(
+        count_text = font20.render(
             str(this.count), True, (255, 255, 255))
         # item counter is in the bottom right of the slot
         text_rect = count_text.get_rect(
@@ -706,11 +700,6 @@ class Entity:
 
 
 class Player(Entity, HasInventory):
-  camera = FRAME.copy()
-  camera.center = (
-      BLOCK_SIZE * (WORLD_WIDTH // 2),
-      BLOCK_SIZE * round(WORLD_HEIGHT * 0.55),
-  )
   texture = pg.transform.scale(
       pg.image.load("player.png"), (BLOCK_SIZE, BLOCK_SIZE * 2)
   )
@@ -725,6 +714,11 @@ class Player(Entity, HasInventory):
   blockFacing = None
 
   def __init__(this):
+    this.camera = FRAME.copy()
+    this.camera.center = (
+      BLOCK_SIZE * (WORLD_WIDTH // 2),
+      BLOCK_SIZE * round(WORLD_HEIGHT * 0.55),
+    )
     Entity.__init__(
         this,
         this.camera.centerx - BLOCK_SIZE // 2,
@@ -738,6 +732,7 @@ class Player(Entity, HasInventory):
     )
 
     HasInventory.__init__(this, 4, 10)
+    
     this.heldSlotIndex = 0  # number from 0 to 9
     this.rect.center = this.camera.center
     this.centerRect = this.rect.copy()
@@ -900,11 +895,11 @@ class Player(Entity, HasInventory):
 
   def getBlockFacing(this):
     """Returns the block that the player is facing, if it is in range"""
-    blockPixel = bresenham(*pg.mouse.get_pos())
+    blockPixel = bresenham(*pg.mouse.get_pos(), *FRAME.center)
     if blockPixel:
-      block = world.blockAt(*pixelToCoord(*bresenham(*pg.mouse.get_pos())))
+      block = world.blockAt(*pixelToCoord(*bresenham(*pg.mouse.get_pos(), *FRAME.center)))
       for vertex in block.vertices:
-        if distance(*relativeCoord(*vertex)) < this.reach:
+        if distance(*relativeCoord(*vertex), *FRAME.center) < this.reach:
           return block
     return None
 
@@ -927,20 +922,15 @@ class Player(Entity, HasInventory):
       this.usingItem = False
 
 
-ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
-ASURF.fill((0, 0, 0, 0))
-defaultItems = [WoodenPickaxe(), CraftingTableItem()]
-player = Player()
-
 class Sun:
   size = BLOCK_SIZE * 5
-  pos = (FRAME.centerx, 0)
   sunTexture = pg.transform.scale(pg.image.load("sun.png"), (size, size))
   # pg.transform.threshold(sunTexture, sunTexture, (0,0,0,255), (120,120,120,0), (0,0,0,0), 1, inverse_set=True)
+  def __init__(this):
+    this.pos = (FRAME.centerx, 0)
   def draw(this):
     ASURF.blit(this.sunTexture, (HEIGHT * 0.1, HEIGHT * 0.1, this.size, this.size))
 
-sun = Sun()
 
 class World:
   litVertices = list()
@@ -1142,72 +1132,85 @@ class World:
     this.draw()
     this.castRays()
 
-font = pg.font.Font(None, 15)
-world = World()
-end = time.time()
-print("Load time:", end-start, "seconds")
-while True:
-  SURF.fill((255, 255, 255))
+if __name__ == "__main__":
+  start = time.time()
+  pg.init()
+  clock = pg.time.Clock()
+  SURF = pg.display.set_mode((WIDTH, HEIGHT), vsync=1)
+  LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
+  FRAME = SURF.get_rect()
+  ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   ASURF.fill((0, 0, 0, 0))
-  LIGHTSURF.fill((0, 0, 0, 200))
-  keys = pg.key.get_pressed()
-  
-  sun.draw()
-  world.update()
-  player.update()
-  # temporarily game over logic
-  if player.health <= 0:
-    print("The skbidi has died")
-    pg.quit()
-    sys.exit()
-
-  if keys[pg.K_a]:
-    player.moveLeft()
-  if keys[pg.K_d]:
-    player.moveRight()
-  if keys[pg.K_SPACE]:
-    player.jump()
-  if keys[pg.K_1]:
-    player.changeSlot(0)
-  if keys[pg.K_2]:
-    player.changeSlot(1)
-  if keys[pg.K_3]:
-    player.changeSlot(2)
-  if keys[pg.K_4]:
-    player.changeSlot(3)
-  if keys[pg.K_5]:
-    player.changeSlot(4)
-  if keys[pg.K_6]:
-    player.changeSlot(5)
-  if keys[pg.K_7]:
-    player.changeSlot(6)
-  if keys[pg.K_8]:
-    player.changeSlot(7)
-  if keys[pg.K_9]:
-    player.changeSlot(8)
-  if keys[pg.K_0]:
-    player.changeSlot(9)
-
-  if pg.mouse.get_pressed()[0]:
-    player.mine()
-  if pg.mouse.get_pressed()[2]:
-    player.place()
-
-  for event in pg.event.get():
-    if event.type == QUIT:
+  defaultItems = [WoodenPickaxe(), CraftingTableItem()]
+  player = Player()
+  font = pg.font.Font(None, 15)
+  font20 = pg.font.Font(None, 20)
+  world = World()
+  sun = Sun()
+  end = time.time()
+  print("Load time:", end-start, "seconds")
+  while True:
+    SURF.fill((255, 255, 255))
+    ASURF.fill((0, 0, 0, 0))
+    LIGHTSURF.fill((0, 0, 0, 200))
+    keys = pg.key.get_pressed()
+    
+    sun.draw()
+    world.update()
+    player.update()
+    # temporarily game over logic
+    if player.health <= 0:
+      print("The skbidi has died")
       pg.quit()
       sys.exit()
-    elif event.type == KEYDOWN and event.key == pg.K_e:
-      check_for_interaction()
 
-  pg.draw.circle(SURF,(255,255,0),sun.pos,5)
-  SURF.blit(ASURF, (0, 0))
-  LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//20, HEIGHT//20))
-  LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
-  SURF.blit(LIGHTSURF, ((0,0)))
-    
-  if craftingMenu.isActive: craftingMenu.draw()
+    if keys[pg.K_a]:
+      player.moveLeft()
+    if keys[pg.K_d]:
+      player.moveRight()
+    if keys[pg.K_SPACE]:
+      player.jump()
+    if keys[pg.K_1]:
+      player.changeSlot(0)
+    if keys[pg.K_2]:
+      player.changeSlot(1)
+    if keys[pg.K_3]:
+      player.changeSlot(2)
+    if keys[pg.K_4]:
+      player.changeSlot(3)
+    if keys[pg.K_5]:
+      player.changeSlot(4)
+    if keys[pg.K_6]:
+      player.changeSlot(5)
+    if keys[pg.K_7]:
+      player.changeSlot(6)
+    if keys[pg.K_8]:
+      player.changeSlot(7)
+    if keys[pg.K_9]:
+      player.changeSlot(8)
+    if keys[pg.K_0]:
+      player.changeSlot(9)
 
-  pg.display.flip()
-  print("fps: ", round(clock.get_fps(), 2))
-  clock.tick(FPS)
+    if pg.mouse.get_pressed()[0]:
+      player.mine()
+    if pg.mouse.get_pressed()[2]:
+      player.place()
+
+    for event in pg.event.get():
+      if event.type == QUIT:
+        pg.quit()
+        sys.exit()
+      elif event.type == KEYDOWN and event.key == pg.K_e:
+        check_for_interaction()
+
+    pg.draw.circle(SURF,(255,255,0),sun.pos,5)
+    SURF.blit(ASURF, (0, 0))
+    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//20, HEIGHT//20))
+    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
+    SURF.blit(LIGHTSURF, ((0,0)))
+      
+    if craftingMenu.isActive: craftingMenu.draw()
+
+    pg.display.flip()
+    print("fps: ", round(clock.get_fps(), 2))
+    clock.tick(FPS)
