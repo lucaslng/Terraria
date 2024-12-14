@@ -28,8 +28,6 @@ gravity = 1
 SEED = time.time()
 random.seed(SEED)
 
-pg.display.set_caption("Terraria")
-
 def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   """Returns coordinate based on pixel location"""
   coord = int((x + player.camera.left) // BLOCK_SIZE), int(
@@ -1137,6 +1135,7 @@ if __name__ == "__main__":
   pg.init()
   clock = pg.time.Clock()
   SURF = pg.display.set_mode((WIDTH, HEIGHT), vsync=1)
+  pg.display.set_caption("Terraria")
   LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   FRAME = SURF.get_rect()
   ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
