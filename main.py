@@ -554,7 +554,7 @@ class Player(Entity, HasInventory):
     if this.blockFacing:
       if this.blockFacing.amountBroken < this.blockFacing.hardness:
         miningSpeed = 1
-        if this.heldSlot() and this.heldSlot().item.isTool() and this.heldSlot().item.type == this.blockFacing.type:
+        if this.heldSlot().item and this.heldSlot().item.isTool() and this.heldSlot().item.type == this.blockFacing.type:
           miningSpeed = this.heldSlot().item.speed
         this.usingItem = True
         this.blockFacing.amountBroken += miningSpeed / FPS
@@ -568,7 +568,7 @@ class Player(Entity, HasInventory):
         this.inventory.addItem(this.blockFacing.item)
   
   def place(this):
-    if this.heldSlot() and this.heldSlot().count > 0 and this.heldSlot().item.isPlaceable():
+    if this.heldSlot().item and this.heldSlot().count > 0 and this.heldSlot().item.isPlaceable():
       x, y = pixelToCoord(*pg.mouse.get_pos())
       if world.blockAt(x, y).isAir:
         this.animations["placingBlock"] = 0
