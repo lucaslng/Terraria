@@ -1142,74 +1142,72 @@ class World:
     this.draw()
     this.castRays()
 
-if __name__ == "__main__":
+font = pg.font.Font(None, 15)
+world = World()
+end = time.time()
+print("Load time:", end-start, "seconds")
+while True:
+  SURF.fill((255, 255, 255))
+  ASURF.fill((0, 0, 0, 0))
+  LIGHTSURF.fill((0, 0, 0, 200))
+  keys = pg.key.get_pressed()
+  
+  sun.draw()
+  world.update()
+  player.update()
+  # temporarily game over logic
+  if player.health <= 0:
+    print("The skbidi has died")
+    pg.quit()
+    sys.exit()
 
-  font = pg.font.Font(None, 15)
-  world = World()
-  end = time.time()
-  print("Load time:", end-start, "seconds")
-  while True:
-    SURF.fill((255, 255, 255))
-    ASURF.fill((0, 0, 0, 0))
-    LIGHTSURF.fill((0, 0, 0, 200))
-    keys = pg.key.get_pressed()
-    
-    sun.draw()
-    world.update()
-    player.update()
-    # temporarily game over logic
-    if player.health <= 0:
-      print("The skbidi has died")
+  if keys[pg.K_a]:
+    player.moveLeft()
+  if keys[pg.K_d]:
+    player.moveRight()
+  if keys[pg.K_SPACE]:
+    player.jump()
+  if keys[pg.K_1]:
+    player.changeSlot(0)
+  if keys[pg.K_2]:
+    player.changeSlot(1)
+  if keys[pg.K_3]:
+    player.changeSlot(2)
+  if keys[pg.K_4]:
+    player.changeSlot(3)
+  if keys[pg.K_5]:
+    player.changeSlot(4)
+  if keys[pg.K_6]:
+    player.changeSlot(5)
+  if keys[pg.K_7]:
+    player.changeSlot(6)
+  if keys[pg.K_8]:
+    player.changeSlot(7)
+  if keys[pg.K_9]:
+    player.changeSlot(8)
+  if keys[pg.K_0]:
+    player.changeSlot(9)
+
+  if pg.mouse.get_pressed()[0]:
+    player.mine()
+  if pg.mouse.get_pressed()[2]:
+    player.place()
+
+  for event in pg.event.get():
+    if event.type == QUIT:
       pg.quit()
       sys.exit()
-
-    if keys[pg.K_a]:
-      player.moveLeft()
-    if keys[pg.K_d]:
-      player.moveRight()
-    if keys[pg.K_SPACE]:
-      player.jump()
-    if keys[pg.K_1]:
-      player.changeSlot(0)
-    if keys[pg.K_2]:
-      player.changeSlot(1)
-    if keys[pg.K_3]:
-      player.changeSlot(2)
-    if keys[pg.K_4]:
-      player.changeSlot(3)
-    if keys[pg.K_5]:
-      player.changeSlot(4)
-    if keys[pg.K_6]:
-      player.changeSlot(5)
-    if keys[pg.K_7]:
-      player.changeSlot(6)
-    if keys[pg.K_8]:
-      player.changeSlot(7)
-    if keys[pg.K_9]:
-      player.changeSlot(8)
-    if keys[pg.K_0]:
-      player.changeSlot(9)
-
-    if pg.mouse.get_pressed()[0]:
-      player.mine()
-    if pg.mouse.get_pressed()[2]:
-      player.place()
-  
-  for event in pg.event.get():
-      if event.type == QUIT:
-        pg.quit()
-        sys.exit()
-    pg.draw.circle(SURF,(255,255,0),sun.pos,5)
-      elif event.type == KEYDOWN and event.key == pg.K_e:
+    elif event.type == KEYDOWN and event.key == pg.K_e:
       check_for_interaction()
 
+  pg.draw.circle(SURF,(255,255,0),sun.pos,5)
   SURF.blit(ASURF, (0, 0))
-    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//20, HEIGHT//20))
-    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
-    SURF.blit(LIGHTSURF, ((0,0)))
+  LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//20, HEIGHT//20))
+  LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
+  SURF.blit(LIGHTSURF, ((0,0)))
     
   if craftingMenu.isActive: craftingMenu.draw()
 
   pg.display.flip()
-    print("fps: ", round(clock.get_fps(), 2))
-    clock.tick(FPS)
+  print("fps: ", round(clock.get_fps(), 2))
+  clock.tick(FPS)
