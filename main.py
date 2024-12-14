@@ -2,7 +2,6 @@ import sys
 import pygame as pg
 from pygame.locals import *
 import math
-import numpy as np
 from math import radians, hypot
 import random
 from enum import Enum
