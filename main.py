@@ -23,6 +23,7 @@ WORLD_WIDTH = 1000
 gravity = 1
 SEED = time.time()
 random.seed(SEED)
+FONT = pg.font.Font(None, 20)
 # random.seed("niggers")
 
 pg.display.set_caption("Terraria")
@@ -146,19 +147,53 @@ class PlaceableItem(Item):
         world[y][x] = this.block(x, y)
 
 
-class Inventory:
-  """Inventory class"""
-
-  class Slot:
-    """Inventory slot class"""
+class Slot:
+    """Slot class"""
 
     item: Item = None
     count: int = 0
+    isActive = False
+    size = 40
+    
+    def draw(this, x, y, size=size):
+      pg.draw.rect(SURF, (200, 200, 200),
+                   (x, y, size, size))
+      if this.isActive:
+        pg.draw.rect(SURF, (0, 0, 0),
+                   (x, y, size, size), 2)
+      else:
+        pg.draw.rect(SURF, (90, 90, 90),
+                   (x, y, size, size), 2)
+
+      if this.item is not None:
+        item_texture = this.item.texture
+        scaled_texture = pg.transform.scale(
+            item_texture, (size - 6, size - 6)
+        )
+        # center texture in the slot
+        texture_rect = scaled_texture.get_rect(
+            center=(x + size // 2, y + size // 2)
+        )
+        SURF.blit(scaled_texture, texture_rect.topleft)
+
+        if this.count > 0:
+          count_text = FONT.render(
+              str(this.count), True, (255, 255, 255))
+          # item counter is in the bottom right of the slot
+          text_rect = count_text.get_rect(
+              bottomright=(x + size - 5,
+                           y + size - 5)
+          )
+          SURF.blit(count_text, text_rect.topleft)
+      
+
+class Inventory:
+  """Inventory class"""
 
   def __init__(this, rows: int, cols: int):
     this.rows = rows
     this.cols = cols
-    this.inventory = [[this.Slot() for _ in range(cols)]
+    this.inventory = [[Slot() for _ in range(cols)]
                       for _ in range(rows)]
 
 
@@ -443,21 +478,26 @@ class Player(Entity, HasInventory):
   def draw(this):
     super().draw()
 
-  def hotbar(this) -> list[Inventory.Slot]:
+  def hotbar(this) -> list[Slot]:
     '''Returns the first row of the player's inventory'''
     return this.inventory[0]
 
-  def heldSlot(this) -> Inventory.Slot:
+  def heldSlot(this) -> Slot:
     '''Returns the held slot, or None if the slot is empty'''
     slot = this.hotbar()[this.heldSlotIndex]
-    if slot.item:
+    if slot:
       return slot
     else:
       return None
+  
+  def changeSlot(this, index: int):
+    this.heldSlot().isActive = False
+    this.heldSlotIndex = index
+    this.heldSlot().isActive = True
 
   def drawHeldItem(this):
     slot = this.heldSlot()
-    if slot:
+    if slot.item:
       texture = slot.item.slotTexture()
       if this.usingItem and pg.time.get_ticks() % 200 < 100:
           texture = pg.transform.rotozoom(texture, -35, 1)
@@ -470,46 +510,14 @@ class Player(Entity, HasInventory):
 
   def drawHotbar(this):
     """Draws the first row of the inventory on the screen"""
-    SLOT_SIZE = 40  # size of each slot
-    HOTBAR_X = (WIDTH - (this.inventory.cols * SLOT_SIZE)) // 2
-    HOTBAR_Y = HEIGHT - SLOT_SIZE - 10
-    FONT = pg.font.Font(None, 20)
+    HOTBAR_X = (WIDTH - (this.inventory.cols * Slot.size)) // 2
+    HOTBAR_Y = HEIGHT - Slot.size - 10
 
     for col in range(this.inventory.cols):
-      slot_x = HOTBAR_X + col * SLOT_SIZE
+      slot_x = HOTBAR_X + col * Slot.size
       slot_y = HOTBAR_Y
-
-      # draws the slots
-      pg.draw.rect(SURF, (200, 200, 200),
-                   (slot_x, slot_y, SLOT_SIZE, SLOT_SIZE))
-      if col == this.heldSlotIndex:
-        pg.draw.rect(SURF, (0, 0, 0),
-                   (slot_x, slot_y, SLOT_SIZE, SLOT_SIZE), 2)
-      else:
-        pg.draw.rect(SURF, (90, 90, 90),
-                   (slot_x, slot_y, SLOT_SIZE, SLOT_SIZE), 2)
-
       slot = this.hotbar()[col]
-      if slot.item is not None:
-        item_texture = slot.item.texture
-        scaled_texture = pg.transform.scale(
-            item_texture, (SLOT_SIZE - 6, SLOT_SIZE - 6)
-        )
-        # center texture in the slot
-        texture_rect = scaled_texture.get_rect(
-            center=(slot_x + SLOT_SIZE // 2, slot_y + SLOT_SIZE // 2)
-        )
-        SURF.blit(scaled_texture, texture_rect.topleft)
-
-        if slot.count > 0:
-          count_text = FONT.render(
-              str(slot.count), True, (255, 255, 255))
-          # item counter is in the bottom right of the slot
-          text_rect = count_text.get_rect(
-              bottomright=(slot_x + SLOT_SIZE - 5,
-                           slot_y + SLOT_SIZE - 5)
-          )
-          SURF.blit(count_text, text_rect.topleft)
+      slot.draw(slot_x, slot_y)
 
   def move(this):
     if this.is_initial_spawn:
@@ -1048,25 +1056,25 @@ while True:
   if keys[pg.K_SPACE]:
     player.jump()
   if keys[pg.K_1]:
-    player.heldSlotIndex = 0
+    player.changeSlot(0)
   if keys[pg.K_2]:
-    player.heldSlotIndex = 1
+    player.changeSlot(1)
   if keys[pg.K_3]:
-    player.heldSlotIndex = 2
+    player.changeSlot(2)
   if keys[pg.K_4]:
-    player.heldSlotIndex = 3
+    player.changeSlot(3)
   if keys[pg.K_5]:
-    player.heldSlotIndex = 4
+    player.changeSlot(4)
   if keys[pg.K_6]:
-    player.heldSlotIndex = 5
+    player.changeSlot(5)
   if keys[pg.K_7]:
-    player.heldSlotIndex = 6
+    player.changeSlot(6)
   if keys[pg.K_8]:
-    player.heldSlotIndex = 7
+    player.changeSlot(7)
   if keys[pg.K_9]:
-    player.heldSlotIndex = 8
+    player.changeSlot(8)
   if keys[pg.K_0]:
-    player.heldSlotIndex = 9
+    player.changeSlot(9)
 
   if pg.mouse.get_pressed()[0]:
     player.mine()
