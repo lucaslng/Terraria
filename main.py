@@ -131,7 +131,7 @@ class Interactable():
 class Item:
   """Base item class"""
 
-  ITEM_SIZE = BLOCK_SIZE
+  ITEM_SIZE = 15
   name: str
   texture: pg.surface.Surface
   stackSize: int
@@ -162,7 +162,6 @@ class BlockType(Enum):
   SWORD = 3
   SHEARS = 4
 
-
 @dataclass
 class Block:
   SIZE = BLOCK_SIZE
@@ -171,7 +170,6 @@ class Block:
   texture: pg.surface.Surface
   x: int
   y: int
-  item: Item
   hardness: float
   blockType: BlockType
   isAir: bool = False
@@ -209,6 +207,9 @@ class Block:
       return True
     else:
       return False
+  
+  def item(this):
+    return BlockItemRegistry.getItem(type(this))
 
   def isInCamera(this) -> bool:
     return this.rect.colliderect(player.camera)
@@ -225,11 +226,171 @@ class Block:
 
 @dataclass
 class PlaceableItem(Item):
-  block: Block
-
+  
+  def block(this):
+    return BlockItemRegistry.getBlock(type(this))
+  
   def place(this, x: int, y: int) -> None:
-    world[y][x] = this.block(x, y)
+    world[y][x] = this.block()(x, y)
 
+
+class AirBlock(Block):
+  texture = pg.surface.Surface((BLOCK_SIZE, BLOCK_SIZE))
+  texture.fill((0, 0, 0, 0))
+
+  def __init__(this, x=-1, y=-1):
+    super().__init__("Air", this.texture, x, y, 0, BlockType.NONE, isAir=True)
+
+class CraftingTableBlock(Block, Interactable):
+  craftingTableTexture = pg.transform.scale(
+    pg.image.load("crafting_table.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  
+  def __init__(self, x, y):
+    Block.__init__(self, name="Crafting Table", texture=self.craftingTableTexture,
+                   x=x, y=y, hardness=2.5, blockType=BlockType.AXE)
+    Interactable.__init__(self, lambda: self.open_crafting_gui())
+
+  def open_crafting_gui(self):
+    crafting_grid = CraftingGrid()
+
+    crafting_open = True
+    while crafting_open:
+      for event in pg.event.get():
+        if event.type == pg.QUIT:
+          crafting_open = False
+
+        if event.type == pg.KEYDOWN:
+          if event.key == pg.K_e:
+            crafting_open = False
+
+        if event.type == pg.MOUSEBUTTONDOWN:
+          mouse_pos = pg.mouse.get_pos()
+
+          for row in range(3):
+            for col in range(3):
+              x = crafting_grid.grid_pos[0] + col * \
+                (crafting_grid.slot_size + crafting_grid.slot_padding)
+              y = crafting_grid.grid_pos[1] + row * \
+                  (crafting_grid.slot_size + crafting_grid.slot_padding)
+
+              slot_rect = pg.Rect(
+                x, y, crafting_grid.slot_size, crafting_grid.slot_size)
+              if slot_rect.collidepoint(mouse_pos):
+                selected_itplayer.inventory.get_selected_item()
+                if selected_item:
+                  crafting_grid.place_item(selected_item, row, col)
+
+          result_rect = pg.Rect(*crafting_grid.result_slot_pos,
+                                crafting_grid.slot_size, crafting_grid.slot_size)
+          if result_rect.collidepoint(mouse_pos) and crafting_grid.result_item:
+            crafting_grid.craft()
+
+      world.draw()
+      player.update()
+
+      crafting_grid.draw()
+      pg.display.flip()
+
+class CraftingTableItem(PlaceableItem):
+  craftingTableTexture = pg.transform.scale(pg.image.load("crafting_table.png"), (Item.ITEM_SIZE, Item.ITEM_SIZE))
+  def __init__(this):
+    super().__init__("Crafting Table", this.craftingTableTexture, 64)
+
+class DirtVariant:
+  def __init__(this, name: str, texture):
+    this.name = name
+    this.texture = texture
+class DirtVariantDirt(DirtVariant):
+  dirtTexture = pg.transform.scale(
+    pg.image.load("dirt.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  def __init__(this):
+    super().__init__("Dirt", this.dirtTexture)
+class DirtVariantGrass(DirtVariant):
+  grassTexture = pg.transform.scale(
+    pg.image.load("grass_block.png"), (BLOCK_SIZE, BLOCK_SIZE)
+  )
+  grassItemTexture = pg.transform.scale(grassTexture, (15, 15))
+  def __init__(this):
+    super().__init__("Grass Block", this.grassTexture)
+class DirtBlock(Block):
+  def __init__(this, x, y, variant: DirtVariant = DirtVariantDirt()):
+    super().__init__(variant.name, variant.texture, x, y, 1, BlockType.SHOVEL)
+class DirtItem(PlaceableItem):
+  dirtItemTexture = pg.transform.scale(pg.image.load("dirt.png"), (15, 15))
+  def __init__(this):
+    super().__init__("Dirt", this.dirtItemTexture, 64)
+
+class StoneBlock(Block):
+  stoneTexture = pg.transform.scale(
+    pg.image.load("stone.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  def __init__(this, x, y):
+    super().__init__("Stone", this.stoneTexture, x, y, 5, BlockType.PICKAXE)
+class CobblestoneBlock(Block):
+  cobblestoneTexture = pg.transform.scale(
+    pg.image.load("cobblestone.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  cobblestoneItemTexture = pg.transform.scale(cobblestoneTexture, (15, 15))
+
+  def __init__(this, x, y):
+    super().__init__("Cobblestone", this.cobblestoneTexture, x, y, 2, BlockType.PICKAXE)
+class CobbleStoneItem(PlaceableItem):
+  cobblestoneItemTexture = pg.transform.scale(
+    pg.image.load("cobblestone.png"), (Item.ITEM_SIZE, Item.ITEM_SIZE))
+  def __init__(this):
+    super().__init__("Cobblestone", this.cobblestoneItemTexture, 64)
+
+
+class Generated:
+  '''Things that can be generated by simplex noise'''
+  veinSize: int
+  rarity: int
+class IronOreBlock(Block, Generated):
+  ironOreTexture = pg.transform.scale(
+    pg.image.load("iron_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  veinSize = 3.2
+  rarity = 0.38
+  def __init__(this, x, y):
+    Block.__init__(this, "Iron Ore", this.ironOreTexture, x, y, 6, BlockType.PICKAXE)
+class IronOreItem(PlaceableItem):
+  ironOreItemTexture = pg.transform.scale(pg.image.load("iron_ore.png"), (Item.ITEM_SIZE, Item.ITEM_SIZE))
+  def __init__(this):
+    super().__init__("Iron Ore", this.ironOreItemTexture, 64)
+
+class CoalOreBlock(Block, Generated):
+  coalTexture = pg.transform.scale(pg.image.load("coal_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  veinSize = 3.9
+  rarity = 0.3
+  def __init__(this, x, y):
+    Block.__init__(this, "Coal Ore", this.coalTexture, x, y, 3, BlockType.PICKAXE)
+class CoalItem(Item):
+  coalItemTexture = pg.transform.scale(pg.image.load("coal.png"), (Item.ITEM_SIZE, Item.ITEM_SIZE))
+  def __init__(this):
+    super().__init__("Coal", this.coalItemTexture, 64)
+
+ores = {CoalOreBlock, IronOreBlock}
+
+class BlockItemRegistry:
+  block2Item = {}
+  item2Block = {}
+  
+  @classmethod
+  def register(cls, blockCls, itemCls):
+    cls.block2Item[blockCls] = itemCls
+    cls.item2Block[itemCls] = blockCls
+
+  @classmethod
+  def getItem(cls, blockCls):
+    return cls.block2Item.get(blockCls)
+
+  @classmethod
+  def getBlock(cls, itemCls):
+    return cls.item2Block.get(itemCls)
+
+BlockItemRegistry.register(CraftingTableBlock, CraftingTableItem)
+BlockItemRegistry.register(DirtBlock, DirtItem)
+BlockItemRegistry.register(StoneBlock, CobbleStoneItem)
+BlockItemRegistry.register(CobblestoneBlock, CobbleStoneItem)
+BlockItemRegistry.register(IronOreBlock, IronOreItem)
+BlockItemRegistry.register(CoalOreBlock, CoalItem)
 
 class Slot:
   """Slot class"""
@@ -647,13 +808,13 @@ class Player(Entity, HasInventory):
         this.usingItem = True
         this.blockFacing.amountBroken += miningSpeed / FPS
       else:
-        print("mined", this.blockFacing.name,
-              "got", this.blockFacing.item.name)
+        # print("mined", this.blockFacing.name,
+        #       "got", this.blockFacing.item().name)
 
-        world[this.blockFacing.y][this.blockFacing.x] = Air(
+        world[this.blockFacing.y][this.blockFacing.x] = AirBlock(
             this.blockFacing.x, this.blockFacing.y
         )
-        this.inventory.addItem(this.blockFacing.item)
+        this.inventory.addItem(this.blockFacing.item()())
 
   def place(this):
     if this.heldSlot().item and this.heldSlot().count > 0 and this.heldSlot().item.isPlaceable():
@@ -754,154 +915,10 @@ class CraftingGrid:
       self.result_item = None
 
 
-class CraftingTable(Block, Interactable):
-  craftingTableTexture = pg.transform.scale(
-    pg.image.load("crafting_table.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  craftingTableItemTexture = pg.transform.scale(craftingTableTexture, (15, 15))
-
-  def __init__(self, x, y):
-    item = PlaceableItem(
-      "Crafting Table", self.craftingTableItemTexture, 64, CraftingTable)
-    Block.__init__(self, name="Crafting Table", texture=self.craftingTableTexture,
-                   x=x, y=y, item=item, hardness=2.5, blockType=BlockType.NONE, isAir=False)
-    Interactable.__init__(self, lambda: self.open_crafting_gui())
-
-  def open_crafting_gui(self):
-    crafting_grid = CraftingGrid()
-
-    crafting_open = True
-    while crafting_open:
-      for event in pg.event.get():
-        if event.type == pg.QUIT:
-          crafting_open = False
-
-        if event.type == pg.KEYDOWN:
-          if event.key == pg.K_e:
-            crafting_open = False
-
-        if event.type == pg.MOUSEBUTTONDOWN:
-          mouse_pos = pg.mouse.get_pos()
-
-          for row in range(3):
-            for col in range(3):
-              x = crafting_grid.grid_pos[0] + col * \
-                (crafting_grid.slot_size + crafting_grid.slot_padding)
-              y = crafting_grid.grid_pos[1] + row * \
-                  (crafting_grid.slot_size + crafting_grid.slot_padding)
-
-              slot_rect = pg.Rect(
-                x, y, crafting_grid.slot_size, crafting_grid.slot_size)
-              if slot_rect.collidepoint(mouse_pos):
-                selected_itplayer.inventory.get_selected_item()
-                if selected_item:
-                  crafting_grid.place_item(selected_item, row, col)
-
-          result_rect = pg.Rect(*crafting_grid.result_slot_pos,
-                                crafting_grid.slot_size, crafting_grid.slot_size)
-          if result_rect.collidepoint(mouse_pos) and crafting_grid.result_item:
-            crafting_grid.craft()
-
-      world.draw()
-      player.update()
-
-      crafting_grid.draw()
-      pg.display.flip()
-
-
-class Air(Block):
-  texture = pg.surface.Surface((BLOCK_SIZE, BLOCK_SIZE))
-  texture.fill((0, 0, 0, 0))
-  item = Item("Air", texture, 0)
-
-  def __init__(this, x=-1, y=-1):
-    super().__init__("Air", this.texture, x, y, this.item, 0, BlockType.NONE, isAir=True)
-
-
-class DirtVariant:
-  def __init__(this, name: str, texture):
-    this.name = name
-    this.texture = texture
-
-
-class DirtVariantDirt(DirtVariant):
-  dirtTexture = pg.transform.scale(
-    pg.image.load("dirt.png"), (BLOCK_SIZE, BLOCK_SIZE))
-
-  def __init__(this):
-    super().__init__("Dirt", this.dirtTexture)
-
-
-class DirtVariantGrass(DirtVariant):
-  grassTexture = pg.transform.scale(
-    pg.image.load("grass_block.png"), (BLOCK_SIZE, BLOCK_SIZE)
-  )
-  grassItemTexture = pg.transform.scale(grassTexture, (15, 15))
-
-  def __init__(this):
-    super().__init__("Grass Block", this.grassTexture)
-
-
-class Dirt(Block):
-  itemTexture = pg.transform.scale(pg.image.load("dirt.png"), (15, 15))
-
-  def __init__(this, x, y, variant: DirtVariant = DirtVariantDirt()):
-
-    this.item = PlaceableItem("Dirt", this.itemTexture, 64, Dirt)
-    super().__init__(variant.name, variant.texture, x, y, this.item, 1, BlockType.SHOVEL)
-
-
-class Cobblestone(Block):
-  cobblestoneTexture = pg.transform.scale(
-    pg.image.load("cobblestone.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  cobblestoneItemTexture = pg.transform.scale(cobblestoneTexture, (15, 15))
-
-  def __init__(this, x, y):
-    super().__init__("Cobblestone", this.cobblestoneTexture, x, y, PlaceableItem(
-      "Cobblestone", this.cobblestoneItemTexture, 64, Cobblestone), 2, BlockType.PICKAXE)
-
-
-class Stone(Block):
-  stoneTexture = pg.transform.scale(
-    pg.image.load("stone.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  cobblestoneItemTexture = pg.transform.scale(
-    pg.image.load("cobblestone.png"), (15, 15))
-
-  def __init__(this, x, y):
-    super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Cobblestone",
-                                                                     this.cobblestoneItemTexture, 64, Cobblestone), 5, BlockType.PICKAXE)
-
-
-class IronOre(Block):
-  ironOreTexture = pg.transform.scale(
-    pg.image.load("iron_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  ironOreItemTexture = pg.transform.scale(ironOreTexture, (15, 15))
-  veinSize = 3.2
-  rarity = 0.38  # lower is more common
-
-  def __init__(this, x, y):
-    super().__init__("Iron Ore", this.ironOreTexture, x, y, PlaceableItem(
-      "Iron Ore", this.ironOreItemTexture, 64, IronOre), 6, BlockType.PICKAXE)
-
-
-class CoalOre(Block):
-  coalOreTexture = pg.transform.scale(
-    pg.image.load("coal_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  coalItemTexture = pg.transform.scale(pg.image.load("coal.png"), (15, 15))
-  veinSize = 3.9
-  rarity = 0.3  # lower is more common
-
-  def __init__(this, x, y):
-    super().__init__("Coal Ore", this.coalOreTexture, x, y, Item(
-      "Coal", this.coalItemTexture, 64), 3, BlockType.PICKAXE)
-
-
-ores = {CoalOre, IronOre}
-
-
 class World:
   def __init__(this):
     this.array = [
-        [Air(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
+        [AirBlock(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
     ]
     this.__generateWorld()
 
@@ -1024,7 +1041,7 @@ class World:
 
       # Stone pass
       for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
-        this.array[y][x] = Stone(x, y)
+        this.array[y][x] = StoneBlock(x, y)
 
       # Ore pass
       for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
@@ -1035,17 +1052,17 @@ class World:
 
       # Dirt pass
       for y in range(stoneHeight, grassHeight, -1):
-        this.array[y][x] = Dirt(x, y)
+        this.array[y][x] = DirtBlock(x, y)
 
       # Grass Dirt pass
-      this.array[grassHeight][x] = Dirt(
+      this.array[grassHeight][x] = DirtBlock(
           x, grassHeight, DirtVariantGrass()
       )
 
       # cave pass
       for y in range(WORLD_HEIGHT - 1, grassHeight - 1, - 1):
         if cavesNoise[y][x] > 0.1:
-          this.array[y][x] = Air(x, y)
+          this.array[y][x] = AirBlock(x, y)
 
   def hoveredBlock(this) -> Block:
     mousepos = pg.mouse.get_pos()
@@ -1075,8 +1092,7 @@ world = World()
 
 end = time.time()
 print("Load time:", round(end - start, 3), "seconds")
-player.inventory.addItem(PlaceableItem(
-  "Crafting Table", CraftingTable.craftingTableItemTexture, 64, CraftingTable))
+player.inventory.addItem(CraftingTableItem())
 while True:
   SURF.fill((255, 255, 255))
   ASURF.fill((0, 0, 0, 0))
