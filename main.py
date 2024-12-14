@@ -1,32 +1,25 @@
-import sys
-import math
-import random
-import pickle
-import time  # pickle stores game data onto local system
+import sys, math, random, time, concurrent.futures, pickle          #pickle stores game data onto system
 import pygame as pg
 from pygame.locals import *
 from abc import *
 from dataclasses import dataclass
 from typing import Callable
 from enum import Enum
-import pickle  # use pickle to store save
-import time
-import concurrent.futures
-
 
 
 WIDTH = 1000
 HEIGHT = 600
 FPS = 60
 
-
 BLOCK_SIZE = 20
 WORLD_HEIGHT = 256
 WORLD_WIDTH = 1000
 SHADOW_QUALITY = 6
 gravity = 1
+
 SEED = time.time()
 random.seed(SEED)
+
 
 def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   """Returns coordinate based on pixel location"""
@@ -35,10 +28,8 @@ def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   )
   return coord
 
-
 def distance(x1: float, y1: float, x2: float, y2: float) -> float:
   return math.hypot(x1 - x2, y1 - y2)
-
 
 def relativeRect(rect: pg.rect.Rect) -> pg.rect.Rect:
   """Returns on screen rect relative to the camera"""
@@ -46,11 +37,9 @@ def relativeRect(rect: pg.rect.Rect) -> pg.rect.Rect:
       rect.x - player.camera.x, rect.y - player.camera.y, rect.width, rect.height
   )
 
-
 def relativeCoord(x: float, y: float) -> tuple[int, int]:
   '''Convert a pixel coordinate relative to the camera. Useful for drawing things and more.'''
   return x - player.camera.x, y - player.camera.y
-
 
 def check_for_interaction() -> None:
   '''loops over every visible block to check for interactable blocks'''
@@ -63,7 +52,6 @@ def check_for_interaction() -> None:
         if dist <= 3 * BLOCK_SIZE:
           block.interact()
           return
-
 
 def bresenham(x0: int, y0: int, x1: int, y1: int, checkVertices=False, quality: int=1) -> tuple[int, int] | None:
   """Bresenham's algorithm to detect first non-air block along a line, starting from end point."""
