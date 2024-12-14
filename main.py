@@ -7,6 +7,8 @@ import random
 from enum import Enum
 import pickle  # use pickle to store save
 import time
+import concurrent.futures
+from functools import partial
 start = time.time()
 
 pg.init()
@@ -51,7 +53,7 @@ def relativeCoord(x: float, y: float) -> tuple[int, int]:
 
 def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery, checkVertices=False):
   """Bresenham's algorithm to detect first non-air block along a line, starting from end point."""
-  pointsTouched = {}
+  pointsTouched = set()
   def plotLineLow(x0, y0, x1, y1):
     dx = abs(x1 - x0)
     dy = abs(y1 - y0)
@@ -64,7 +66,9 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery, checkVertices=False):
       blockTouched = world.blockAt(*pixelToCoord(x, y))
       if not blockTouched.isAir:
         if checkVertices:
-          return True
+          pointsTouched.add((x, y))
+          if len(pointsTouched) == 2:
+            return pointsTouched
         else: return blockTouched
       if d > 0:
         y += yi
@@ -72,7 +76,9 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery, checkVertices=False):
       else:
         d += 2 * dy
       x += xi
-    return None
+    if checkVertices:
+      return pointsTouched
+    else: return None
 
   def plotLineHigh(x0, y0, x1, y1):
     dx = abs(x1 - x0)
@@ -86,7 +92,9 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery, checkVertices=False):
       blockTouched = world.blockAt(*pixelToCoord(x, y))
       if not blockTouched.isAir:
         if checkVertices:
-          return True
+          pointsTouched.add((x, y))
+          if len(pointsTouched) == 2:
+            return pointsTouched
         else: return blockTouched
       if d > 0:
         x += xi
@@ -94,7 +102,9 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery, checkVertices=False):
       else:
         d += 2 * dx
       y += yi
-    return None
+    if checkVertices:
+      return pointsTouched
+    else: return None
 
   if abs(y1 - y0) < abs(x1 - x0):
     return plotLineLow(x0, y0, x1, y1)
@@ -743,6 +753,8 @@ class Sun:
 sun = Sun()
 
 class World:
+  litVertices = list()
+  vertices = set()
   def __init__(this):
     this.array = [
         [Air(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
@@ -905,8 +917,7 @@ class World:
         return this[i][x]
 
   def draw(this):
-    litVertices = set()
-    vertices = list()
+    this.vertices.clear()
     for y in range(
         player.camera.top // BLOCK_SIZE, (player.camera.bottom //
                                           BLOCK_SIZE) + 1
@@ -917,88 +928,87 @@ class World:
       ):
         block = this[y][x]
         if not block.isAir:
-          vertices.extend(block.vertices)
+          if (y-1>=0 and this[y-1][x].isAir) or (x-1>=0 and this[y][x-1].isAir) or (x+1<WORLD_WIDTH and this[y][x+1].isAir): this.vertices.update(map(lambda a: relativeCoord(*a), block.vertices))
           block.drawBlock()
     
-    vertices.sort(key=lambda a: a[1])
-    # print(len(vertices))
-    vertices = vertices[:500]
+  def castRays(this):
+    this.litVertices.clear()
     for x in range(0, WIDTH, 20):
       bottomBlock = this.blockAt(*pixelToCoord(x, HEIGHT-1))
       if bottomBlock.isAir:
-        vertices.extend((bottomBlock.rect.bottomleft, bottomBlock.rect.bottomright))
-    for vertex in vertices:
-      if not bresenham(*relativeCoord(*vertex), *sun.pos, checkVertices=True):
-        litVertices.add(vertex)
-    listLitVertices = list(map(lambda a: relativeCoord(*a), litVertices))
-    listLitVertices.extend((FRAME.topleft, FRAME.topright, relativeCoord(*this.topBlock(WORLD_WIDTH-1).rect.topleft), relativeCoord(*this.topBlock(0).rect.topright)))
-    listLitVertices.sort(key=lambda a: math.atan2(sun.pos[1]-a[1], sun.pos[0]-a[0]))
-    for i in range(1, len(listLitVertices)):
-      # pg.draw.line(SURF, (0,0,0), sun.rect.center, listLitVertices[i])
-      pg.draw.polygon(LIGHTSURF, (255,255,255, 0), (sun.pos, listLitVertices[i], listLitVertices[i-1]))
-      # SURF.blit(font.render(str(i), False, (0,0,0)), relativeCoord(*listLitVertices[i]))
-    pg.draw.polygon(LIGHTSURF, (255,255,255, 0), (sun.pos, listLitVertices[0], listLitVertices[len(listLitVertices)-1]))
-    
-      
-
-font = pg.font.Font(None, 15)
-world = World()
-end = time.time()
-print("Load time:", end-start, "seconds")
-while True:
-  SURF.fill((255, 255, 255))
-  ASURF.fill((0, 0, 0, 0))
-  LIGHTSURF.fill((0, 0, 0, 200))
-  keys = pg.key.get_pressed()
+        this.vertices.update((relativeCoord(*bottomBlock.rect.bottomleft), relativeCoord(*bottomBlock.rect.bottomright)))
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
+      pool.map(this.__findPointsTouched, this.vertices)
+    this.litVertices.extend((FRAME.topleft, FRAME.topright, relativeCoord(*this.topBlock(WORLD_WIDTH-1).rect.topleft), relativeCoord(*this.topBlock(0).rect.topright)))
+    this.litVertices.sort(key=lambda a: math.atan2(sun.pos[1]-a[1], sun.pos[0]-a[0]))
+    pg.draw.polygon(LIGHTSURF, (255,255,255,0), [sun.pos] + this.litVertices)
   
-  sun.draw()
+  def __findPointsTouched(this, vertex):
+    this.litVertices.extend(bresenham(*vertex, *sun.pos, checkVertices=True))
+  
+  def update(this):
+    this.draw()
+    this.castRays()
 
-  world.draw()
-  player.update()
+if __name__ == "__main__":
 
-  # temporarily game over logic
-  if player.health <= 0:
-    print("The skbidi has died")
-    pg.quit()
-    sys.exit()
-
-  if keys[pg.K_a]:
-    player.moveLeft()
-  if keys[pg.K_d]:
-    player.moveRight()
-  if keys[pg.K_SPACE]:
-    player.jump()
-  if keys[pg.K_1]:
-    player.heldSlotIndex = 0
-  if keys[pg.K_2]:
-    player.heldSlotIndex = 1
-  if keys[pg.K_3]:
-    player.heldSlotIndex = 2
-  if keys[pg.K_4]:
-    player.heldSlotIndex = 3
-  if keys[pg.K_5]:
-    player.heldSlotIndex = 4
-  if keys[pg.K_6]:
-    player.heldSlotIndex = 5
-  if keys[pg.K_7]:
-    player.heldSlotIndex = 6
-  if keys[pg.K_8]:
-    player.heldSlotIndex = 7
-  if keys[pg.K_9]:
-    player.heldSlotIndex = 8
-  if keys[pg.K_0]:
-    player.heldSlotIndex = 9
-
-  if pg.mouse.get_pressed()[0]:
-    player.mine()
-  if pg.mouse.get_pressed()[2]:
-    player.place()
-  for event in pg.event.get():
-    if event.type == QUIT:
+  font = pg.font.Font(None, 15)
+  world = World()
+  end = time.time()
+  print("Load time:", end-start, "seconds")
+  while True:
+    SURF.fill((255, 255, 255))
+    ASURF.fill((0, 0, 0, 0))
+    LIGHTSURF.fill((0, 0, 0, 200))
+    keys = pg.key.get_pressed()
+    
+    sun.draw()
+    world.update()
+    player.update()
+    # temporarily game over logic
+    if player.health <= 0:
+      print("The skbidi has died")
       pg.quit()
       sys.exit()
 
-  SURF.blit(ASURF, (0, 0))
-  SURF.blit(LIGHTSURF, (0, 0))
-  pg.display.flip()
-  clock.tick(FPS)
+    if keys[pg.K_a]:
+      player.moveLeft()
+    if keys[pg.K_d]:
+      player.moveRight()
+    if keys[pg.K_SPACE]:
+      player.jump()
+    if keys[pg.K_1]:
+      player.heldSlotIndex = 0
+    if keys[pg.K_2]:
+      player.heldSlotIndex = 1
+    if keys[pg.K_3]:
+      player.heldSlotIndex = 2
+    if keys[pg.K_4]:
+      player.heldSlotIndex = 3
+    if keys[pg.K_5]:
+      player.heldSlotIndex = 4
+    if keys[pg.K_6]:
+      player.heldSlotIndex = 5
+    if keys[pg.K_7]:
+      player.heldSlotIndex = 6
+    if keys[pg.K_8]:
+      player.heldSlotIndex = 7
+    if keys[pg.K_9]:
+      player.heldSlotIndex = 8
+    if keys[pg.K_0]:
+      player.heldSlotIndex = 9
+
+    if pg.mouse.get_pressed()[0]:
+      player.mine()
+    if pg.mouse.get_pressed()[2]:
+      player.place()
+    for event in pg.event.get():
+      if event.type == QUIT:
+        pg.quit()
+        sys.exit()
+    pg.draw.circle(SURF,(255,255,0),sun.pos,5)
+    SURF.blit(ASURF, (0, 0))
+    SURF.blit(LIGHTSURF, (0, 0))
+    pg.display.flip()
+    print("fps: ", round(clock.get_fps(), 2))
+    clock.tick(FPS)
