@@ -1,12 +1,9 @@
-import sys
+import sys, math, random, pickle, time      #pickle stores game data onto local system
 import pygame as pg
 from pygame.locals import *
-import math
-from math import radians, hypot
-import random
+
 from enum import Enum
-import pickle  # use pickle to store save
-import time
+
 start = time.time()
 
 pg.init()
@@ -25,6 +22,9 @@ SEED = time.time()
 random.seed(SEED)
 FONT = pg.font.Font(None, 20)
 # random.seed("niggers")
+#^
+#|
+#wtf???
 
 pg.display.set_caption("Terraria")
 clock = pg.time.Clock()
@@ -37,6 +37,8 @@ def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   )
   return coord
 
+def distance(x1, y1, x2=FRAME.centerx, y2=FRAME.centery):
+  return math.hypot(x1 - x2, y1 - y2)
 
 def relativeRect(rect: pg.rect.Rect):
   """Returns on screen rect relative to the camera"""
@@ -44,16 +46,18 @@ def relativeRect(rect: pg.rect.Rect):
       rect.x - player.camera.x, rect.y - player.camera.y, rect.width, rect.height
   )
 
-
 def relativeCoord(x: float, y: float) -> tuple[int, int]:
   return x - player.camera.x, y - player.camera.y
 
-
 def check_for_interaction():
-    block = world.hoveredBlock()
-    if isinstance(block, Interactable):
-        block.interact()
-
+    for y in range(player.camera.top // BLOCK_SIZE, (player.camera.bottom // BLOCK_SIZE) + 1):
+        for x in range(player.camera.left // BLOCK_SIZE, (player.camera.right // BLOCK_SIZE) + 1):
+            block = world.blockAt(x, y)
+            if isinstance(block, Interactable):
+                dist = distance(player.rect.centerx, player.rect.centery, block.rect.centerx, block.rect.centery)
+                if dist <= 3 * BLOCK_SIZE:
+                    block.interact()
+                    return
 
 def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery):
   """Bresenham's algorithm to detect first non-air block along a line, starting from end point."""
@@ -104,10 +108,6 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery):
     return plotLineHigh(x0, y0, x1, y1)
 
 
-def distance(x1, y1, x2=FRAME.centerx, y2=FRAME.centery):
-  return hypot(x1 - x2, y1 - y2)
-
-
 class Item:
   """Base item class"""
 
@@ -134,6 +134,7 @@ class Item:
   
   def isTool(this) -> bool:
     return isinstance(this, Tool)
+
 
 class PlaceableItem(Item):
   def __init__(this, name: str, texture, block, stackSize: int = 64):
@@ -218,6 +219,7 @@ class Inventory:
   def __getitem__(this, row: int):
     return this.inventory[row]
 
+
 class BlockType(Enum):
   NONE=-1
   PICKAXE=0
@@ -225,6 +227,7 @@ class BlockType(Enum):
   SHOVEL=2
   SWORD=3
   SHEARS=4
+
 
 class Tool(Item):
   def __init__(this, name: str, texture: pg.surface.Surface, speed: float, type: BlockType):
@@ -237,6 +240,7 @@ class WoodenPickaxe(Tool):
   woodenPickaxeTexture = pg.transform.scale(pg.image.load("wooden_pickaxe.png"), (15, 15))
   def __init__(this):
     super().__init__("Wooden Pickaxe", this.woodenPickaxeTexture, 1.5, BlockType.PICKAXE)
+
 
 class HasInventory:
   """Parent class for classes than have an inventory"""
@@ -385,9 +389,7 @@ class Entity:
     this.move()
     this.draw()
 
-
 vertices = set()
-
 
 class Player(Entity, HasInventory):
   camera = FRAME.copy()
@@ -605,10 +607,10 @@ class Player(Entity, HasInventory):
     this.draw_health()
     if not pg.mouse.get_pressed()[0]: this.usingItem = False
 
-
 ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
 ASURF.fill((0, 0, 0, 0))
 player = Player()
+
 
 class Interactable:
     def __init__(self, interact_action):
@@ -735,7 +737,8 @@ class CraftingGrid:
         
         self.grid = [[None for _ in range(3)] for _ in range(3)]
         self.result_item = None 
-   
+
+
 class CraftingTable(Block, Interactable):
     craftingTableTexture = pg.transform.scale(pg.image.load("crafting_table.png"), (BLOCK_SIZE, BLOCK_SIZE))
     craftingTableItemTexture = pg.transform.scale(craftingTableTexture, (15, 15))
@@ -782,6 +785,7 @@ class CraftingTable(Block, Interactable):
           crafting_grid.draw()
           pg.display.flip()
 
+
 class Air(Block):
   texture = pg.surface.Surface((BLOCK_SIZE, BLOCK_SIZE))
   texture.fill((0, 0, 0, 0))
@@ -790,10 +794,12 @@ class Air(Block):
   def __init__(this, x=-1, y=-1):
     super().__init__("Air", this.texture, x, y, this.item, 0, BlockType.NONE, isAir=True)
 
+
 class DirtVariant:
   def __init__(this, name: str, texture):
     this.name = name
     this.texture = texture  
+
 
 class DirtVariantDirt(DirtVariant):
   dirtTexture = pg.transform.scale(
@@ -801,6 +807,7 @@ class DirtVariantDirt(DirtVariant):
 
   def __init__(this):
     super().__init__("Dirt", this.dirtTexture)
+
 
 class DirtVariantGrass(DirtVariant):
   grassTexture = pg.transform.scale(
@@ -811,12 +818,14 @@ class DirtVariantGrass(DirtVariant):
   def __init__(this):
     super().__init__("Grass Block", this.grassTexture)
 
+
 class Dirt(Block):
   itemTexture = pg.transform.scale(pg.image.load("dirt.png"), (15, 15))
   def __init__(this, x, y, variant: DirtVariant = DirtVariantDirt()):
     
     this.item = PlaceableItem("Dirt", this.itemTexture, Dirt)
     super().__init__(variant.name, variant.texture, x, y, this.item, 1, BlockType.SHOVEL)
+
 
 class Cobblestone(Block):
     cobblestoneTexture = pg.transform.scale(pg.image.load("cobblestone.png"), (BLOCK_SIZE, BLOCK_SIZE))
@@ -825,12 +834,14 @@ class Cobblestone(Block):
     def __init__(this, x, y):
         super().__init__("Cobblestone", this.cobblestoneTexture, x, y, PlaceableItem("Cobblestone", this.cobblestoneItemTexture, Cobblestone), 2, BlockType.PICKAXE)
 
+
 class Stone(Block):
   stoneTexture = pg.transform.scale(pg.image.load("stone.png"), (BLOCK_SIZE, BLOCK_SIZE))
   cobblestoneItemTexture = pg.transform.scale(pg.image.load("cobblestone.png"), (15, 15))
   
   def __init__(this, x, y):
     super().__init__("Stone", this.stoneTexture, x, y, PlaceableItem("Cobblestone", this.cobblestoneItemTexture, Cobblestone), 5, BlockType.PICKAXE)
+
 
 class IronOre(Block):
   ironOreTexture = pg.transform.scale(pg.image.load("iron_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
@@ -839,6 +850,7 @@ class IronOre(Block):
   rarity = 0.38 # lower is more common
   def __init__(this, x, y):
     super().__init__("Iron Ore", this.ironOreTexture, x, y, PlaceableItem("Iron Ore", this.ironOreItemTexture, IronOre), 6, BlockType.PICKAXE)
+
 
 class CoalOre(Block):
   coalOreTexture = pg.transform.scale(pg.image.load("coal_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
@@ -850,12 +862,14 @@ class CoalOre(Block):
 
 ores = {CoalOre, IronOre}
 
+
 class World:
   def __init__(this):
     this.array = [
         [Air(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
     ]
     this.__generateWorld()
+
 
   class SimplexNoise:
     def __init__(this, scale: float, dimension: int, width: int=WORLD_WIDTH, height: int=WORLD_HEIGHT):
@@ -1023,7 +1037,8 @@ class World:
 
 world = World()
 
-#add crafting table
+#add crafting table to player inventory at beginning of game
+#remove later
 if player.add_crafting_table_later:
     crafting_table_item = PlaceableItem(
         "Crafting Table",
@@ -1034,6 +1049,7 @@ if player.add_crafting_table_later:
 
 end = time.time()
 print("Load time:", round(end-start, 3), "seconds")
+
 while True:
   SURF.fill((255, 255, 255))
   ASURF.fill((0, 0, 0, 0))
@@ -1043,7 +1059,7 @@ while True:
   world.draw()
   player.update()
 
-  # temporarily game over logic
+  #temporarily game over logic
   if player.health <= 0:
     print("The skbidi has died")
     pg.quit()
@@ -1080,6 +1096,7 @@ while True:
     player.mine()
   if pg.mouse.get_pressed()[2]:
     player.place()
+    
   for event in pg.event.get():
     if event.type == QUIT:
       pg.quit()
@@ -1089,5 +1106,6 @@ while True:
         check_for_interaction()
 
   SURF.blit(ASURF, (0, 0))
+  
   pg.display.flip()
   clock.tick(FPS)
