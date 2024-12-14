@@ -224,6 +224,16 @@ class Block:
 
   def isInCamera(this) -> bool:
     return this.rect.colliderect(player.camera)
+  
+  def exposedVertices(this) -> set[tuple[int, int]]:
+    result = set()
+    if this.x-1 >= 0 and world[this.y][this.x-1].isAir:
+      result.update((this.rect.topleft, this.rect.bottomleft))
+    if this.x+1 < WORLD_WIDTH and world[this.y][this.x+1].isAir:
+      result.update((this.rect.topright, this.rect.bottomright))
+    if this.y-1 >= 0 and world[this.y-1][this.x].isAir:
+      result.update((this.rect.topleft, this.rect.topright))
+    return result
 
   def __repr__(this):
     return this.name
@@ -1106,7 +1116,7 @@ class World:
       ):
         block = this[y][x]
         if not block.isAir:
-          if (y-1>=0 and this[y-1][x].isAir) or (x-1>=0 and this[y][x-1].isAir) or (x+1<WORLD_WIDTH and this[y][x+1].isAir): this.vertices.update(map(lambda a: relativeCoord(*a), block.vertices))
+          this.vertices.update(map(lambda a: relativeCoord(*a), block.exposedVertices()))
           block.drawBlock()
     
   def castRays(this):
@@ -1126,7 +1136,7 @@ class World:
   
   def update(this):
     this.draw()
-    # this.castRays()
+    this.castRays()
 
 if __name__ == "__main__":
   start = time.time()
@@ -1158,7 +1168,7 @@ if __name__ == "__main__":
   while True:
     SURF.fill((255, 255, 255))
     ASURF.fill((0, 0, 0, 0))
-    # LIGHTSURF.fill((0, 0, 0, 240))
+    LIGHTSURF.fill((0, 0, 0, 240))
     keys = pg.key.get_pressed()
     
     sun.draw()
@@ -1217,9 +1227,9 @@ if __name__ == "__main__":
         # print(world.mask.get_at())
 
     SURF.blit(ASURF, (0, 0))
-    # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
-    # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
-    # SURF.blit(LIGHTSURF, ((0,0)))
+    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
+    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
+    SURF.blit(LIGHTSURF, ((0,0)))
     player.drawHUD()
     if craftingMenu.isActive: craftingMenu.draw()
 
