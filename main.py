@@ -913,12 +913,13 @@ class Player(Entity, HasInventory):
     super().update()
     this.blockFacing = this.getBlockFacing()
     this.drawBlockFacing()
-    this.drawHotbar()
     this.drawHeldItem()
-    this.draw_health()
     if not pg.mouse.get_pressed()[0]:
       this.usingItem = False
-
+  
+  def drawHUD(this):
+    this.draw_health()
+    this.drawHotbar()
 
 class Sun:
   size = BLOCK_SIZE * 5
@@ -1152,7 +1153,7 @@ if __name__ == "__main__":
   while True:
     SURF.fill((255, 255, 255))
     ASURF.fill((0, 0, 0, 0))
-    LIGHTSURF.fill((0, 0, 0, 200))
+    LIGHTSURF.fill((0, 0, 0, 240))
     keys = pg.key.get_pressed()
     
     sun.draw()
@@ -1203,12 +1204,11 @@ if __name__ == "__main__":
       elif event.type == KEYDOWN and event.key == pg.K_e:
         check_for_interaction()
 
-    pg.draw.circle(SURF,(255,255,0),sun.pos,5)
     SURF.blit(ASURF, (0, 0))
-    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//20, HEIGHT//20))
+    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
     LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
     SURF.blit(LIGHTSURF, ((0,0)))
-      
+    player.drawHUD()
     if craftingMenu.isActive: craftingMenu.draw()
 
     pg.display.flip()
