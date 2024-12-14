@@ -206,6 +206,7 @@ class Block:
       this.rect.bottomright,
     )
     this.mask = pg.mask.from_surface(this.texture)
+    if this.isAir: this.mask.clear()
 
   def drawBlockOutline(this, color: pg.color.Color):
     pg.draw.rect(ASURF, color, relativeRect(this.rect), 2)
@@ -255,6 +256,7 @@ class PlaceableItem(Item):
   
   def place(this, x: int, y: int) -> None:
     world[y][x] = this.block()(x, y)
+    world.mask.draw(world[y][x].mask, world[y][x].rect.topleft)
 
 
 class AirBlock(Block):
@@ -872,7 +874,7 @@ class Player(Entity, HasInventory):
       else:
         # print("mined", this.blockFacing.name,
         #       "got", this.blockFacing.item().name)
-
+        world.mask.erase(world[this.blockFacing.y][this.blockFacing.x].mask, this.blockFacing.rect.topleft)
         world[this.blockFacing.y][this.blockFacing.x] = AirBlock(
             this.blockFacing.x, this.blockFacing.y
         )
@@ -938,7 +940,9 @@ class World:
     this.array = [
         [AirBlock(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
     ]
+    this.mask = pg.mask.Mask((WORLD_WIDTH*20, WORLD_HEIGHT*20))
     this.__generateWorld()
+    this.generateMask()
 
   class SimplexNoise:
     def __init__(this, scale: float, dimension: int, width: int = WORLD_WIDTH, height: int = WORLD_HEIGHT):
@@ -1082,6 +1086,11 @@ class World:
         if cavesNoise[y][x] > 0.1:
           this.array[y][x] = AirBlock(x, y)
 
+  def generateMask(this):
+    for row in this.array:
+      for block in row:
+        this.mask.draw(block.mask, block.rect.topleft)
+  
   def hoveredBlock(this) -> Block:
     mousepos = pg.mouse.get_pos()
     return this.blockAt(*pixelToCoord(*mousepos))
@@ -1129,7 +1138,7 @@ class World:
   
   def update(this):
     this.draw()
-    this.castRays()
+    # this.castRays()
 
 if __name__ == "__main__":
   start = time.time()
@@ -1153,7 +1162,7 @@ if __name__ == "__main__":
   while True:
     SURF.fill((255, 255, 255))
     ASURF.fill((0, 0, 0, 0))
-    LIGHTSURF.fill((0, 0, 0, 240))
+    # LIGHTSURF.fill((0, 0, 0, 240))
     keys = pg.key.get_pressed()
     
     sun.draw()
@@ -1203,14 +1212,19 @@ if __name__ == "__main__":
         sys.exit()
       elif event.type == KEYDOWN and event.key == pg.K_e:
         check_for_interaction()
+      elif event.type == KEYDOWN and event.key == pg.K_m:
+        pixel = tuple(map(lambda a: 20*a,pixelToCoord(*pg.mouse.get_pos())))
+        print(pixel, world.mask.get_at(pixel), world.blockAt(*pixelToCoord(*pg.mouse.get_pos())).rect.topleft)
+        
+        # print(world.mask.get_at())
 
     SURF.blit(ASURF, (0, 0))
-    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
-    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
-    SURF.blit(LIGHTSURF, ((0,0)))
+    # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
+    # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
+    # SURF.blit(LIGHTSURF, ((0,0)))
     player.drawHUD()
     if craftingMenu.isActive: craftingMenu.draw()
 
     pg.display.flip()
-    print("fps: ", round(clock.get_fps(), 2))
+    # print("fps: ", round(clock.get_fps(), 2))
     clock.tick(FPS)
