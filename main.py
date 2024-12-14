@@ -734,11 +734,11 @@ ores = {CoalOre, IronOre}
 
 class Sun:
   size = BLOCK_SIZE * 5
-  rect = pg.rect.Rect(HEIGHT * 0.1, HEIGHT * 0.1, size, size)
+  pos = (FRAME.centerx, 0)
   sunTexture = pg.transform.scale(pg.image.load("sun.png"), (size, size))
   # pg.transform.threshold(sunTexture, sunTexture, (0,0,0,255), (120,120,120,0), (0,0,0,0), 1, inverse_set=True)
   def draw(this):
-    ASURF.blit(this.sunTexture, this.rect)
+    ASURF.blit(this.sunTexture, (HEIGHT * 0.1, HEIGHT * 0.1, this.size, this.size))
 
 sun = Sun()
 
@@ -898,6 +898,11 @@ class World:
 
   def __getitem__(this, x: int):
     return this.array[x]
+  
+  def topBlock(this, x) -> Block:
+    for i in range(0, WORLD_HEIGHT-1):
+      if not this[i][x].isAir:
+        return this[i][x]
 
   def draw(this):
     litVertices = set()
@@ -918,17 +923,21 @@ class World:
     vertices.sort(key=lambda a: a[1])
     # print(len(vertices))
     vertices = vertices[:500]
+    for x in range(0, WIDTH, 20):
+      bottomBlock = this.blockAt(*pixelToCoord(x, HEIGHT-1))
+      if bottomBlock.isAir:
+        vertices.extend((bottomBlock.rect.bottomleft, bottomBlock.rect.bottomright))
     for vertex in vertices:
-      if not bresenham(*relativeCoord(*vertex), *sun.rect.center, checkVertices=True):
+      if not bresenham(*relativeCoord(*vertex), *sun.pos, checkVertices=True):
         litVertices.add(vertex)
     listLitVertices = list(map(lambda a: relativeCoord(*a), litVertices))
-    listLitVertices.extend((FRAME.topleft, FRAME.topright))
-    listLitVertices.sort(key=lambda a: math.atan2(sun.rect.centery-a[1], sun.rect.centerx-a[0]))
+    listLitVertices.extend((FRAME.topleft, FRAME.topright, relativeCoord(*this.topBlock(WORLD_WIDTH-1).rect.topleft), relativeCoord(*this.topBlock(0).rect.topright)))
+    listLitVertices.sort(key=lambda a: math.atan2(sun.pos[1]-a[1], sun.pos[0]-a[0]))
     for i in range(1, len(listLitVertices)):
       # pg.draw.line(SURF, (0,0,0), sun.rect.center, listLitVertices[i])
-      pg.draw.polygon(LIGHTSURF, (255,255,255, 0), (sun.rect.center, listLitVertices[i], listLitVertices[i-1]))
+      pg.draw.polygon(LIGHTSURF, (255,255,255, 0), (sun.pos, listLitVertices[i], listLitVertices[i-1]))
       # SURF.blit(font.render(str(i), False, (0,0,0)), relativeCoord(*listLitVertices[i]))
-    pg.draw.polygon(LIGHTSURF, (255,255,255, 0), (sun.rect.center, listLitVertices[0], listLitVertices[len(listLitVertices)-1]))
+    pg.draw.polygon(LIGHTSURF, (255,255,255, 0), (sun.pos, listLitVertices[0], listLitVertices[len(listLitVertices)-1]))
     
       
 
