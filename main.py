@@ -253,45 +253,7 @@ class CraftingTableBlock(Block, Interactable):
                    x=x, y=y, hardness=2.5, blockType=BlockType.AXE)
 
   def interact(self):
-    crafting_grid = CraftingGrid()
-
-    crafting_open = True
-    while crafting_open:
-      for event in pg.event.get():
-        if event.type == pg.QUIT:
-          crafting_open = False
-
-        if event.type == pg.KEYDOWN:
-          if event.key == pg.K_e:
-            crafting_open = False
-
-        if event.type == pg.MOUSEBUTTONDOWN:
-          mouse_pos = pg.mouse.get_pos()
-
-          for row in range(3):
-            for col in range(3):
-              x = crafting_grid.grid_pos[0] + col * \
-                (crafting_grid.slot_size + crafting_grid.slot_padding)
-              y = crafting_grid.grid_pos[1] + row * \
-                  (crafting_grid.slot_size + crafting_grid.slot_padding)
-
-              slot_rect = pg.Rect(
-                x, y, crafting_grid.slot_size, crafting_grid.slot_size)
-              if slot_rect.collidepoint(mouse_pos):
-                selected_itplayer.inventory.get_selected_item()
-                if selected_item:
-                  crafting_grid.place_item(selected_item, row, col)
-
-          result_rect = pg.Rect(*crafting_grid.result_slot_pos,
-                                crafting_grid.slot_size, crafting_grid.slot_size)
-          if result_rect.collidepoint(mouse_pos) and crafting_grid.result_item:
-            crafting_grid.craft()
-
-      world.draw()
-      player.update()
-
-      crafting_grid.draw()
-      pg.display.flip()
+    craftingMenu.isActive = not craftingMenu.isActive
 
 class CraftingTableItem(PlaceableItem):
   craftingTableTexture = pg.transform.scale(pg.image.load("crafting_table.png"), (Item.SIZE, Item.SIZE))
@@ -432,6 +394,83 @@ class Slot:
         )
         SURF.blit(count_text, text_rect.topleft)
 
+@dataclass
+class Section:
+  rows: int
+  cols: int
+  x: float
+  y: float
+  slotSize: int = 40
+  def __post_init__(this):
+    this.array = [[Slot() for _ in range(this.cols)] for _ in range(this.rows)]
+  def __getitem__(this, i: int) -> list[Slot]:
+    return this.array[i]
+  def draw(this) -> None:
+    for r in range(this.rows):
+      for c in range(this.cols):
+        this[r][c].draw(this.x+c*this.slotSize, this.y+r*this.slotSize, size = this.slotSize)
+class Menu:
+  '''A menu is effectively a list of Sections. One section is an array of Slots.'''
+  def __init__(this, *args: Section, isActive: bool = False):
+    this.isActive = isActive
+    this.sections = [args[i] for i in range(len(args))]
+  
+  def draw(this) -> None:
+    for section in this.sections:
+      section.draw()
+
+class CraftingMenu(Menu):
+  def __init__(this):
+    super().__init__(Section(3, 3, 200, 100, 50), Section(1, 1, 400, 150))
+  #   self.grid = [[None for _ in range(3)] for _ in range(3)]  # 3x3 grid
+
+  #   self.grid_pos = (200, 100)
+  #   self.slot_size = 50
+  #   self.slot_padding = 5
+
+  #   self.result_slot_pos = (self.grid_pos[0] + 4 * (
+  #     self.slot_size + self.slot_padding), self.grid_pos[1] + self.slot_size + self.slot_padding)
+  #   self.result_item = None
+
+  # def draw(self):
+  #   for row in range(3):
+  #     for col in range(3):
+  #       x = self.grid_pos[0] + col * (self.slot_size + self.slot_padding)
+  #       y = self.grid_pos[1] + row * (self.slot_size + self.slot_padding)
+
+  #       pg.draw.rect(SURF, (200, 200, 200),
+  #                    (x, y, self.slot_size, self.slot_size))
+
+  #       item = self.grid[row][col]
+  #       if item:
+  #         scaled_item = pg.transform.scale(
+  #           item.texture, (self.slot_size, self.slot_size))
+  #         SURF.blit(scaled_item, (x, y))
+
+  #   pg.draw.rect(SURF, (150, 150, 150),
+  #                (*self.result_slot_pos, self.slot_size, self.slot_size))
+
+  #   if self.result_item:
+  #     scaled_result = pg.transform.scale(
+  #       self.result_item.texture, (self.slot_size, self.slot_size))
+  #     SURF.blit(scaled_result, self.result_slot_pos)
+
+  # def place_item(self, item, row, col):
+  #   if 0 <= row < 3 and 0 <= col < 3:
+  #     self.grid[row][col] = item
+  #     self.check_crafting_recipe()
+
+  # def check_crafting_recipe(self):
+  #   # implement when i feel like it (when i get more chatgpt credits)
+  #   pass
+
+  # def craft(self):
+  #   if self.result_item:
+  #     player.inventory.add_item(self.result_item)
+
+  #     self.grid = [[None for _ in range(3)] for _ in range(3)]
+  #     self.result_item = None
+craftingMenu = CraftingMenu()
 @dataclass
 class Inventory:
   """Inventory class"""
@@ -863,59 +902,6 @@ ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
 ASURF.fill((0, 0, 0, 0))
 player = Player()
 
-
-class CraftingGrid:
-  def __init__(self):
-    self.grid = [[None for _ in range(3)] for _ in range(3)]  # 3x3 grid
-
-    self.grid_pos = (200, 100)
-    self.slot_size = 50
-    self.slot_padding = 5
-
-    self.result_slot_pos = (self.grid_pos[0] + 4 * (
-      self.slot_size + self.slot_padding), self.grid_pos[1] + self.slot_size + self.slot_padding)
-    self.result_item = None
-
-  def draw(self):
-    for row in range(3):
-      for col in range(3):
-        x = self.grid_pos[0] + col * (self.slot_size + self.slot_padding)
-        y = self.grid_pos[1] + row * (self.slot_size + self.slot_padding)
-
-        pg.draw.rect(SURF, (200, 200, 200),
-                     (x, y, self.slot_size, self.slot_size))
-
-        item = self.grid[row][col]
-        if item:
-          scaled_item = pg.transform.scale(
-            item.texture, (self.slot_size, self.slot_size))
-          SURF.blit(scaled_item, (x, y))
-
-    pg.draw.rect(SURF, (150, 150, 150),
-                 (*self.result_slot_pos, self.slot_size, self.slot_size))
-
-    if self.result_item:
-      scaled_result = pg.transform.scale(
-        self.result_item.texture, (self.slot_size, self.slot_size))
-      SURF.blit(scaled_result, self.result_slot_pos)
-
-  def place_item(self, item, row, col):
-    if 0 <= row < 3 and 0 <= col < 3:
-      self.grid[row][col] = item
-      self.check_crafting_recipe()
-
-  def check_crafting_recipe(self):
-    # implement when i feel like it (when i get more chatgpt credits)
-    pass
-
-  def craft(self):
-    if self.result_item:
-      player.inventory.add_item(self.result_item)
-
-      self.grid = [[None for _ in range(3)] for _ in range(3)]
-      self.result_item = None
-
-
 class World:
   def __init__(this):
     this.array = [
@@ -1150,6 +1136,8 @@ while True:
       check_for_interaction()
 
   SURF.blit(ASURF, (0, 0))
+  
+  if craftingMenu.isActive: craftingMenu.draw()
 
   pg.display.flip()
   clock.tick(FPS)
