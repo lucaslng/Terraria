@@ -490,7 +490,7 @@ class CraftingMenu(Menu):
 
   #     self.grid = [[None for _ in range(3)] for _ in range(3)]
   #     self.result_item = None
-craftingMenu = CraftingMenu()
+
 @dataclass
 class Inventory:
   """Inventory class"""
@@ -1142,6 +1142,7 @@ if __name__ == "__main__":
   ASURF.fill((0, 0, 0, 0))
   defaultItems = [WoodenPickaxe(), CraftingTableItem()]
   player = Player()
+  craftingMenu = CraftingMenu()
   font = pg.font.Font(None, 15)
   font20 = pg.font.Font(None, 20)
   world = World()
