@@ -57,12 +57,15 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery, checkVertices=False):
   def plotLineLow(x0, y0, x1, y1):
     dx = abs(x1 - x0)
     dy = abs(y1 - y0)
-    xi = -1 if x0 < x1 else 1
-    yi = -1 if y0 < y1 else 1
+    xi = -6 if x0 < x1 else 6
+    yi = -6 if y0 < y1 else 6
+    xii = -1 if x0 < x1 else 1
+    yii = -1 if y0 < y1 else 1
     d = (2 * dy) - dx
     y = y1
     x = x1
     while x != x0 - xi:
+      # print(x, x0-x1)
       blockTouched = world.blockAt(*pixelToCoord(x, y))
       if not blockTouched.isAir:
         if checkVertices:
@@ -76,6 +79,10 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery, checkVertices=False):
       else:
         d += 2 * dy
       x += xi
+      nextBlock = world.blockAt(*pixelToCoord(x, y))
+      if not nextBlock.isAir:
+        xi = xii
+        yi = yii
     if checkVertices:
       return pointsTouched
     else: return None
@@ -83,8 +90,10 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery, checkVertices=False):
   def plotLineHigh(x0, y0, x1, y1):
     dx = abs(x1 - x0)
     dy = abs(y1 - y0)
-    xi = -1 if x0 < x1 else 1
-    yi = -1 if y0 < y1 else 1
+    xi = -6 if x0 < x1 else 6
+    yi = -6 if y0 < y1 else 6
+    xii = -1 if x0 < x1 else 1
+    yii = -1 if y0 < y1 else 1
     d = (2 * dx) - dy
     x = x1
     y = y1
@@ -102,6 +111,10 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery, checkVertices=False):
       else:
         d += 2 * dx
       y += yi
+      nextBlock = world.blockAt(*pixelToCoord(x, y))
+      if not nextBlock.isAir:
+        xi = xii
+        yi = yii
     if checkVertices:
       return pointsTouched
     else: return None
