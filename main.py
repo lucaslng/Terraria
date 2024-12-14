@@ -8,7 +8,6 @@ from enum import Enum
 import pickle  # use pickle to store save
 import time
 import concurrent.futures
-from functools import partial
 start = time.time()
 
 pg.init()
@@ -23,6 +22,7 @@ FRAME = SURF.get_rect()
 BLOCK_SIZE = 20
 WORLD_HEIGHT = 256
 WORLD_WIDTH = 1000
+SHADOW_QUALITY = 6
 gravity = 1
 SEED = time.time()
 random.seed(SEED)
@@ -51,14 +51,14 @@ def relativeCoord(x: float, y: float) -> tuple[int, int]:
   return x - player.camera.x, y - player.camera.y
 
 
-def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery, checkVertices=False):
+def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery, checkVertices=False, quality: int=1):
   """Bresenham's algorithm to detect first non-air block along a line, starting from end point."""
   pointsTouched = set()
   def plotLineLow(x0, y0, x1, y1):
     dx = abs(x1 - x0)
     dy = abs(y1 - y0)
-    xi = -6 if x0 < x1 else 6
-    yi = -6 if y0 < y1 else 6
+    xi = -quality if x0 < x1 else quality
+    yi = -quality if y0 < y1 else quality
     xii = -1 if x0 < x1 else 1
     yii = -1 if y0 < y1 else 1
     d = (2 * dy) - dx
@@ -90,8 +90,8 @@ def bresenham(x0, y0, x1=FRAME.centerx, y1=FRAME.centery, checkVertices=False):
   def plotLineHigh(x0, y0, x1, y1):
     dx = abs(x1 - x0)
     dy = abs(y1 - y0)
-    xi = -6 if x0 < x1 else 6
-    yi = -6 if y0 < y1 else 6
+    xi = -quality if x0 < x1 else quality
+    yi = -quality if y0 < y1 else quality
     xii = -1 if x0 < x1 else 1
     yii = -1 if y0 < y1 else 1
     d = (2 * dx) - dy
@@ -957,7 +957,7 @@ class World:
     pg.draw.polygon(LIGHTSURF, (255,255,255,0), [sun.pos] + this.litVertices)
   
   def __findPointsTouched(this, vertex):
-    this.litVertices.extend(bresenham(*vertex, *sun.pos, checkVertices=True))
+    this.litVertices.extend(bresenham(*vertex, *sun.pos, checkVertices=True, quality=SHADOW_QUALITY))
   
   def update(this):
     this.draw()
@@ -1021,7 +1021,8 @@ if __name__ == "__main__":
         sys.exit()
     pg.draw.circle(SURF,(255,255,0),sun.pos,5)
     SURF.blit(ASURF, (0, 0))
-    SURF.blit(LIGHTSURF, (0, 0))
+    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//20, HEIGHT//20))
+    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
     pg.display.flip()
     print("fps: ", round(clock.get_fps(), 2))
     clock.tick(FPS)
