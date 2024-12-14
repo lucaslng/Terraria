@@ -53,10 +53,12 @@ def relativeRect(rect: pg.rect.Rect) -> pg.rect.Rect:
 
 
 def relativeCoord(x: float, y: float) -> tuple[int, int]:
+  '''Convert a pixel coordinate relative to the camera. Useful for drawing things and more.'''
   return x - player.camera.x, y - player.camera.y
 
 
 def check_for_interaction() -> None:
+  '''loops over every visible block to check for interactable blocks'''
   for y in range(player.camera.top // BLOCK_SIZE, (player.camera.bottom // BLOCK_SIZE) + 1):
     for x in range(player.camera.left // BLOCK_SIZE, (player.camera.right // BLOCK_SIZE) + 1):
       block = world.blockAt(x, y)
@@ -153,6 +155,7 @@ class Item:
 
 
 class BlockType(Enum):
+  '''Possible block types corresponding to the tool that they are mined with.'''
   NONE = -1
   PICKAXE = 0
   AXE = 1
@@ -162,6 +165,7 @@ class BlockType(Enum):
 
 @dataclass
 class Block:
+  '''Base block class'''
   SIZE = BLOCK_SIZE
   amountBroken = float(0)
   name: str
@@ -224,18 +228,19 @@ class Block:
 
 @dataclass
 class PlaceableItem(Item):
-  
-  def block(this):
-    return BlockItemRegistry.getBlock(type(this))
+  '''Items that have a corresponding block and can be placed.'''
+  @classmethod
+  def block(cls):
+    return BlockItemRegistry.getBlock(cls)
   
   def place(this, x: int, y: int) -> None:
     world[y][x] = this.block()(x, y)
 
 
 class AirBlock(Block):
+  '''Empty air block'''
   texture = pg.surface.Surface((BLOCK_SIZE, BLOCK_SIZE))
   texture.fill((0, 0, 0, 0))
-
   def __init__(this, x=-1, y=-1):
     super().__init__("Air", this.texture, x, y, 0, BlockType.NONE, isAir=True)
 
