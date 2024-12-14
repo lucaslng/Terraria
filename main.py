@@ -9,7 +9,9 @@ from abc import *
 from dataclasses import dataclass
 from typing import Callable
 from enum import Enum
-
+import pickle  # use pickle to store save
+import time
+import concurrent.futures
 start = time.time()
 
 pg.init()
@@ -18,11 +20,13 @@ WIDTH = 1000
 HEIGHT = 600
 FPS = 60
 SURF = pg.display.set_mode((WIDTH, HEIGHT), vsync=1)
+LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
 FRAME = SURF.get_rect()
 
 BLOCK_SIZE = 20
 WORLD_HEIGHT = 256
 WORLD_WIDTH = 1000
+SHADOW_QUALITY = 6
 gravity = 1
 SEED = time.time()
 random.seed(SEED)
@@ -69,48 +73,73 @@ def check_for_interaction() -> None:
           return
 
 
-def bresenham(x0: int, y0: int, x1: int = FRAME.centerx, y1: int = FRAME.centery) -> tuple[int, int] | None:
+def bresenham(x0: int, y0: int, x1: int = FRAME.centerx, y1: int = FRAME.centery, checkVertices=False, quality: int=1) -> tuple[int, int] | None:
   """Bresenham's algorithm to detect first non-air block along a line, starting from end point."""
-
-  def plotLineLow(x0: int, y0: int, x1: int, y1: int) -> tuple[int, int] | None:
+  pointsTouched = set()
+  def plotLineLow(x0, y0, x1, y1):
     dx = abs(x1 - x0)
     dy = abs(y1 - y0)
-    xi = -1 if x0 < x1 else 1
-    yi = -1 if y0 < y1 else 1
+    xi = -quality if x0 < x1 else quality
+    yi = -quality if y0 < y1 else quality
+    xii = -1 if x0 < x1 else 1
+    yii = -1 if y0 < y1 else 1
     d = (2 * dy) - dx
     y = y1
     x = x1
     while x != x0 - xi:
+      # print(x, x0-x1)
       blockTouched = world.blockAt(*pixelToCoord(x, y))
       if not blockTouched.isAir:
-        return x, y
+        if checkVertices:
+          pointsTouched.add((x, y))
+          if len(pointsTouched) == 2:
+            return pointsTouched
+        else: return x, y
       if d > 0:
         y += yi
         d += 2 * (dy - dx)
       else:
         d += 2 * dy
       x += xi
-    return None
+      nextBlock = world.blockAt(*pixelToCoord(x, y))
+      if not nextBlock.isAir:
+        xi = xii
+        yi = yii
+    if checkVertices:
+      return pointsTouched
+    else: return None
 
   def plotLineHigh(x0: int, y0: int, x1: int, y1: int) -> tuple[int, int] | None:
     dx = abs(x1 - x0)
     dy = abs(y1 - y0)
-    xi = -1 if x0 < x1 else 1
-    yi = -1 if y0 < y1 else 1
+    xi = -quality if x0 < x1 else quality
+    yi = -quality if y0 < y1 else quality
+    xii = -1 if x0 < x1 else 1
+    yii = -1 if y0 < y1 else 1
     d = (2 * dx) - dy
     x = x1
     y = y1
     while y != y0 - yi:
       blockTouched = world.blockAt(*pixelToCoord(x, y))
       if not blockTouched.isAir:
-        return x, y
+        if checkVertices:
+          pointsTouched.add((x, y))
+          if len(pointsTouched) == 2:
+            return pointsTouched
+        else: return x, y
       if d > 0:
         x += xi
         d += 2 * (dx - dy)
       else:
         d += 2 * dx
       y += yi
-    return None
+      nextBlock = world.blockAt(*pixelToCoord(x, y))
+      if not nextBlock.isAir:
+        xi = xii
+        yi = yii
+    if checkVertices:
+      return pointsTouched
+    else: return None
 
   if abs(y1 - y0) < abs(x1 - x0):
     return plotLineLow(x0, y0, x1, y1)
@@ -675,6 +704,7 @@ class Entity:
     this.move()
     this.draw()
 
+
 class Player(Entity, HasInventory):
   camera = FRAME.copy()
   camera.center = (
@@ -902,7 +932,19 @@ ASURF.fill((0, 0, 0, 0))
 defaultItems = [WoodenPickaxe(), CraftingTableItem()]
 player = Player()
 
+class Sun:
+  size = BLOCK_SIZE * 5
+  pos = (FRAME.centerx, 0)
+  sunTexture = pg.transform.scale(pg.image.load("sun.png"), (size, size))
+  # pg.transform.threshold(sunTexture, sunTexture, (0,0,0,255), (120,120,120,0), (0,0,0,0), 1, inverse_set=True)
+  def draw(this):
+    ASURF.blit(this.sunTexture, (HEIGHT * 0.1, HEIGHT * 0.1, this.size, this.size))
+
+sun = Sun()
+
 class World:
+  litVertices = list()
+  vertices = set()
   def __init__(this):
     this.array = [
         [AirBlock(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
@@ -1060,8 +1102,14 @@ class World:
 
   def __getitem__(this, x: int):
     return this.array[x]
+  
+  def topBlock(this, x) -> Block:
+    for i in range(0, WORLD_HEIGHT-1):
+      if not this[i][x].isAir:
+        return this[i][x]
 
   def draw(this):
+    this.vertices.clear()
     for y in range(
         player.camera.top // BLOCK_SIZE, (player.camera.bottom //
                                           BLOCK_SIZE) + 1
@@ -1072,71 +1120,96 @@ class World:
       ):
         block = this[y][x]
         if not block.isAir:
+          if (y-1>=0 and this[y-1][x].isAir) or (x-1>=0 and this[y][x-1].isAir) or (x+1<WORLD_WIDTH and this[y][x+1].isAir): this.vertices.update(map(lambda a: relativeCoord(*a), block.vertices))
           block.drawBlock()
+    
+  def castRays(this):
+    this.litVertices.clear()
+    for x in range(0, WIDTH, 20):
+      bottomBlock = this.blockAt(*pixelToCoord(x, HEIGHT-1))
+      if bottomBlock.isAir:
+        this.vertices.update((relativeCoord(*bottomBlock.rect.bottomleft), relativeCoord(*bottomBlock.rect.bottomright)))
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
+      pool.map(this.__findPointsTouched, this.vertices)
+    this.litVertices.extend((FRAME.topleft, FRAME.topright, relativeCoord(*this.topBlock(WORLD_WIDTH-1).rect.topleft), relativeCoord(*this.topBlock(0).rect.topright)))
+    this.litVertices.sort(key=lambda a: math.atan2(sun.pos[1]-a[1], sun.pos[0]-a[0]))
+    pg.draw.polygon(LIGHTSURF, (255,255,255,0), [sun.pos] + this.litVertices)
+  
+  def __findPointsTouched(this, vertex):
+    this.litVertices.extend(bresenham(*vertex, *sun.pos, checkVertices=True, quality=SHADOW_QUALITY))
+  
+  def update(this):
+    this.draw()
+    this.castRays()
 
-vertices = set()
-world = World()
+if __name__ == "__main__":
 
-end = time.time()
-print("Load time:", round(end - start, 3), "seconds")
-while True:
-  SURF.fill((255, 255, 255))
-  ASURF.fill((0, 0, 0, 0))
-  keys = pg.key.get_pressed()
-  vertices.clear()
-
-  world.draw()
-  player.update()
-
-  # temporarily game over logic
-  if player.health <= 0:
-    print("The skbidi has died")
-    pg.quit()
-    sys.exit()
-
-  if keys[pg.K_a]:
-    player.moveLeft()
-  if keys[pg.K_d]:
-    player.moveRight()
-  if keys[pg.K_SPACE]:
-    player.jump()
-  if keys[pg.K_1]:
-    player.changeSlot(0)
-  if keys[pg.K_2]:
-    player.changeSlot(1)
-  if keys[pg.K_3]:
-    player.changeSlot(2)
-  if keys[pg.K_4]:
-    player.changeSlot(3)
-  if keys[pg.K_5]:
-    player.changeSlot(4)
-  if keys[pg.K_6]:
-    player.changeSlot(5)
-  if keys[pg.K_7]:
-    player.changeSlot(6)
-  if keys[pg.K_8]:
-    player.changeSlot(7)
-  if keys[pg.K_9]:
-    player.changeSlot(8)
-  if keys[pg.K_0]:
-    player.changeSlot(9)
-
-  if pg.mouse.get_pressed()[0]:
-    player.mine()
-  if pg.mouse.get_pressed()[2]:
-    player.place()
-
-  for event in pg.event.get():
-    if event.type == QUIT:
+  font = pg.font.Font(None, 15)
+  world = World()
+  end = time.time()
+  print("Load time:", end-start, "seconds")
+  while True:
+    SURF.fill((255, 255, 255))
+    ASURF.fill((0, 0, 0, 0))
+    LIGHTSURF.fill((0, 0, 0, 200))
+    keys = pg.key.get_pressed()
+    
+    sun.draw()
+    world.update()
+    player.update()
+    # temporarily game over logic
+    if player.health <= 0:
+      print("The skbidi has died")
       pg.quit()
       sys.exit()
 
-    elif event.type == KEYDOWN and event.key == pg.K_e:
+    if keys[pg.K_a]:
+      player.moveLeft()
+    if keys[pg.K_d]:
+      player.moveRight()
+    if keys[pg.K_SPACE]:
+      player.jump()
+    if keys[pg.K_1]:
+      player.changeSlot(0)
+    if keys[pg.K_2]:
+      player.changeSlot(1)
+    if keys[pg.K_3]:
+      player.changeSlot(2)
+    if keys[pg.K_4]:
+      player.changeSlot(3)
+    if keys[pg.K_5]:
+      player.changeSlot(4)
+    if keys[pg.K_6]:
+      player.changeSlot(5)
+    if keys[pg.K_7]:
+      player.changeSlot(6)
+    if keys[pg.K_8]:
+      player.changeSlot(7)
+    if keys[pg.K_9]:
+      player.changeSlot(8)
+    if keys[pg.K_0]:
+      player.changeSlot(9)
+
+    if pg.mouse.get_pressed()[0]:
+      player.mine()
+    if pg.mouse.get_pressed()[2]:
+      player.place()
+  
+  for event in pg.event.get():
+      if event.type == QUIT:
+        pg.quit()
+        sys.exit()
+    pg.draw.circle(SURF,(255,255,0),sun.pos,5)
+      elif event.type == KEYDOWN and event.key == pg.K_e:
       check_for_interaction()
 
   SURF.blit(ASURF, (0, 0))
-  
+    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//20, HEIGHT//20))
+    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
+    SURF.blit(LIGHTSURF, ((0,0)))
+    
   if craftingMenu.isActive: craftingMenu.draw()
 
   pg.display.flip()
-  clock.tick(FPS)
+    print("fps: ", round(clock.get_fps(), 2))
+    clock.tick(FPS)
