@@ -4,9 +4,10 @@ from pygame.locals import *
 from pygame import Vector2
 from abc import *
 from dataclasses import dataclass
-from typing import List
+from typing import List, Set
 from enum import Enum
-
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
 
 WIDTH = 1000
 HEIGHT = 600
@@ -197,11 +198,11 @@ class Block:
   def __post_init__(this):
     this.rect = pg.rect.Rect(
       this.x * BLOCK_SIZE, this.y * BLOCK_SIZE, this.SIZE, this.SIZE)
-    this.vertices = (
-      this.rect.topleft,
-      this.rect.topright,
-      this.rect.bottomleft,
-      this.rect.bottomright,
+    this.points = (
+      Point(*this.rect.topleft),
+      Point(*this.rect.topright),
+      Point(*this.rect.bottomleft),
+      Point(*this.rect.bottomright),
     )
     this.mask = pg.mask.from_surface(this.texture)
     if this.isAir: this.mask.clear()
@@ -908,8 +909,8 @@ class Player(Entity, HasInventory):
     blockPixel = bresenham(*pg.mouse.get_pos(), *FRAME.center)
     if blockPixel:
       block = world.blockAt(*pixelToCoord(*bresenham(*pg.mouse.get_pos(), *FRAME.center)))
-      for vertex in block.vertices:
-        if distance(*relativeCoord(*vertex), *FRAME.center) < this.reach:
+      for point in block.points:
+        if distance(*point.coord(), *FRAME.center) < this.reach:
           return block
     return None
 
@@ -939,23 +940,73 @@ class Sun:
     ASURF.blit(this.sunTexture, (HEIGHT * 0.1, HEIGHT * 0.1, this.size, this.size))
 
 @dataclass
-class Edge:
+class Point:
   x: int
   y: int
-  ex: int
-  ey: int
+  def __getitem__(this, i: int):
+    if i==0: return this.x
+    elif i==1: return this.y
+    else: raise ValueError("Tried to access index that isn't 0 or 1 for a point")
+  def draw(this,color=(0,255,0)):
+    pg.draw.circle(SURF,color, this.coord(), 3)
+  def coord(this):
+    return relativeCoord(this.x,this.y)
+  def __hash__(this):
+    return hash((this.x,this.y))
+
+@dataclass
+class Edge:
+  start: Point
+  end: Point
   
   def draw(this):
-    # if this.x != this.ex and this.y != this.ey: print("diagonal wtf")
-    pg.draw.line(SURF,(0,0,0),relativeCoord(this.x*20, this.y*20),relativeCoord(this.ex*20, this.ey*20), 3)
-    pg.draw.circle(SURF,(0,255,0),relativeCoord(this.x*20,this.y*20), 3)
-    pg.draw.circle(SURF,(0,255,0),relativeCoord(this.ex*20,this.ey*20), 3)
-  def __repr__(this):
-    return str((this.x, this.y, this.ex, this.ey))
+    pg.draw.line(SURF,(0,0,0),relativeCoord(start.x*20, start.y*20),relativeCoord(end.x*20, end.y*20), 3)
+    this.start.draw()
+    this.end.draw()
+
+class KdTree:
+  k = 2
+  def __init__(this, points: List[Point], depth=0):
+    this.points = points
+    this.depth = depth
+    n = len(points)
+    if n<=0:
+      this.point = None
+      this.left = None
+      this.right = None
+      return
+    axis = depth % 2
+    sortedPoints = sorted(points, key=lambda point: point[axis])
+    this.point = sortedPoints[n//2]
+    this.left = KdTree(sortedPoints[:n//2], depth=depth+1)
+    this.right = KdTree(sortedPoints[n//2+1:], depth=depth+1)
+  def draw(this, x_min, x_max, y_min, y_max):
+    if not this.point:
+      return
+    x, y = this.point.coord()
+    axis = this.depth % 2
+    if axis == 0:  # Vertical split (x-axis)
+      pg.draw.line(SURF, (255, 0, 0), (x, y_min), (x, y_max), 1)
+      # Update boundaries for children
+      left_boundary = (x_min, x, y_min, y_max)
+      right_boundary = (x, x_max, y_min, y_max)
+    else:  # Horizontal split (y-axis)
+      pg.draw.line(SURF, (0, 0, 255), (x_min, y), (x_max, y), 1)
+      # Update boundaries for children
+      left_boundary = (x_min, x_max, y_min, y)
+      right_boundary = (x_min, x_max, y, y_max)
+    # Recursively draw child nodes with updated boundaries
+    if this.left:
+      this.left.draw(*left_boundary)
+    if this.right:
+      this.right.draw(*right_boundary)
+    # Optionally, draw the point itself
+    # pg.draw.circle(SURF, (0, 255, 0), (x, y), 3)
 
 class World:
   litVertices = list()
-  vertices = set()
+  edgeVertices = set()
+  allBlockPoints: Set[Point] = set()
   edgePool: List[Edge] = list()
   def __init__(this):
     this.array = [
@@ -1128,6 +1179,7 @@ class World:
         return this[i][x]
 
   def draw(this):
+    this.allBlockPoints.clear()
     for y in range(
         player.camera.top // BLOCK_SIZE, (player.camera.bottom //
                                           BLOCK_SIZE) + 1
@@ -1139,10 +1191,17 @@ class World:
         block = this[y][x]
         if not block.isAir:
           block.drawBlock()
+          this.allBlockPoints.update(block.points)
+    # for point in this.allBlockPoints:
+    #   point.draw()
+  
+  def buildKdTree(this):
+    '''build the kd tree for the visible vertices'''
+    this.kdtree = KdTree(this.allBlockPoints)
   
   def buildEdgePool(this):
     this.edgePool.clear()
-    this.vertices.clear()
+    this.edgeVertices.clear()
     # frame is 30 x 50 blocks
     for y in range(
         player.camera.top // BLOCK_SIZE,
@@ -1169,12 +1228,12 @@ class World:
           if x-1 >= 0 and this[y][x-1].isAir:
             if y-1 >= 0 and this[y-1][x].edgeExist[Direction.WEST] and this[y-1][x].edgeId[Direction.WEST]<len(this.edgePool):
               # print("edge exists")
-              this.edgePool[this[y-1][x].edgeId[Direction.WEST]].ey += 1
+              this.edgePool[this[y-1][x].edgeId[Direction.WEST]].end.y += 1
               # print(this.edgePool[this[y-1][x].edgeId[Direction.WEST]])
               cur.edgeId[Direction.WEST] = this[y-1][x].edgeId[Direction.WEST]
               cur.edgeExist[Direction.WEST] = True
             else:
-              edge = Edge(x, y, x, y+1)
+              edge = Edge(Point(x, y), Point(x, y+1))
               edgeId = len(this.edgePool)
               cur.edgeId[Direction.WEST] = edgeId
               this.edgePool.append(edge)
@@ -1182,11 +1241,11 @@ class World:
           # east
           if x+1 < (player.camera.right // BLOCK_SIZE) + 1 and this[y][x+1].isAir and this[y-1][x].edgeId[Direction.EAST]<len(this.edgePool):
             if y-1 >= 0 and this[y-1][x].edgeExist[Direction.EAST]:
-              this.edgePool[this[y-1][x].edgeId[Direction.EAST]].ey += 1
+              this.edgePool[this[y-1][x].edgeId[Direction.EAST]].end.y += 1
               cur.edgeId[Direction.EAST] = this[y-1][x].edgeId[Direction.EAST]
               cur.edgeExist[Direction.EAST] = True
             else:
-              edge = Edge(x+1, y, x+1, y+1)
+              edge = Edge(Point(x+1, y), Point(x+1, y+1))
               edgeId = len(this.edgePool)
               cur.edgeId[Direction.EAST] = edgeId
               this.edgePool.append(edge)
@@ -1194,11 +1253,11 @@ class World:
           # north
           if y-1 >= 0 and this[y-1][x].isAir:
             if x-1 >= 0 and this[y][x-1].edgeExist[Direction.NORTH] and this[y][x-1].edgeId[Direction.NORTH]<len(this.edgePool):
-              this.edgePool[this[y][x-1].edgeId[Direction.NORTH]].ex += 1
+              this.edgePool[this[y][x-1].edgeId[Direction.NORTH]].end.x += 1
               cur.edgeId[Direction.NORTH] = this[y][x-1].edgeId[Direction.NORTH]
               cur.edgeExist[Direction.NORTH] = True
             else:
-              edge = Edge(x, y, x+1, y)
+              edge = Edge(Point(x, y), Point(x+1, y))
               edgeId = len(this.edgePool)
               cur.edgeId[Direction.NORTH] = edgeId
               this.edgePool.append(edge)
@@ -1206,24 +1265,23 @@ class World:
           # south
           if y+1 < player.camera.bottom // BLOCK_SIZE + 1 and this[y+1][x].isAir and this[y][x-1].edgeId[Direction.SOUTH]<len(this.edgePool):
             if x-1 >= 0 and this[y][x-1].edgeExist[Direction.SOUTH]:
-              this.edgePool[this[y][x-1].edgeId[Direction.SOUTH]].ex += 1
+              this.edgePool[this[y][x-1].edgeId[Direction.SOUTH]].end.x += 1
               cur.edgeId[Direction.SOUTH] = this[y][x-1].edgeId[Direction.SOUTH]
               cur.edgeExist[Direction.SOUTH] = True
             else:
-              edge = Edge(x, y+1, x+1, y+1)
+              edge = Edge(Point(x, y+1), Point(x+1, y+1))
               edgeId = len(this.edgePool)
               cur.edgeId[Direction.SOUTH] = edgeId
               this.edgePool.append(edge)
               cur.edgeExist[Direction.SOUTH] = True
     for i in range(len(this.edgePool)):
-      this.vertices.add(relativeCoord(this.edgePool[i].x*20,this.edgePool[i].y*20))
-      this.vertices.add(relativeCoord(this.edgePool[i].ex*20,this.edgePool[i].ey*20))
-      # this.edgePool[i].draw()
+      this.edgeVertices.add(relativeCoord(this.edgePool[i].start.x*20,this.edgePool[i].start.y*20))
+      this.edgeVertices.add(relativeCoord(this.edgePool[i].end.x*20,this.edgePool[i].end.y*20))
   
-  # sunpos = relativeCoord(WORLD_WIDTH*20//2, 0)
+  
   def castRays(this):
     this.litVertices.clear()
-    for vertex in this.vertices:
+    for vertex in this.edgeVertices:
       bres = bresenham(*vertex, *sun.pos, True, SHADOW_QUALITY)
       if bres: 
         this.litVertices.extend(bres)
@@ -1235,7 +1293,10 @@ class World:
   def update(this):
     this.draw()
     this.buildEdgePool()
-    this.castRays()
+    this.buildKdTree()
+    this.kdtree.draw(0,FRAME.width,0,FRAME.height)
+    
+    # this.castRays()
 
 if __name__ == "__main__":
   start = time.time()
@@ -1330,9 +1391,9 @@ if __name__ == "__main__":
         # print(world.mask.get_at())
 
     SURF.blit(ASURF, (0, 0))
-    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
-    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
-    SURF.blit(LIGHTSURF, ((0,0)))
+    # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
+    # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
+    # SURF.blit(LIGHTSURF, ((0,0)))
     player.drawHUD()
     SURF.blit(font20.render(str(pixelToCoord(*player.camera.center)), True, (0,0,0)), (20, 50))
     if craftingMenu.isActive: craftingMenu.draw()
