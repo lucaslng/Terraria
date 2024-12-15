@@ -18,7 +18,7 @@ WORLD_WIDTH = 1000
 SHADOW_QUALITY = 3
 gravity = 1
 
-SEED = 0
+SEED = time.time()
 random.seed(SEED)
 
 class Direction:
@@ -87,6 +87,7 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, checkVertices=False, quality: 
       else:
         d += 2 * dy
       x += xi
+      if not 0 <= x < WIDTH or not 0 <= y < HEIGHT: return pointsTouched
       nextBlock = world.blockAt(*pixelToCoord(x, y))
       if not nextBlock.isAir:
         xi = xii
@@ -121,6 +122,7 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, checkVertices=False, quality: 
       else:
         d += 2 * dx
       y += yi
+      if not 0 <= x < WIDTH or not 0 <= y < HEIGHT: return pointsTouched
       nextBlock = world.blockAt(*pixelToCoord(x, y))
       if not nextBlock.isAir:
         xi = xii
