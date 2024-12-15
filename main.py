@@ -1220,6 +1220,7 @@ class World:
       this.vertices.add(relativeCoord(this.edgePool[i].ex*20,this.edgePool[i].ey*20))
       # this.edgePool[i].draw()
   
+  # sunpos = relativeCoord(WORLD_WIDTH*20//2, 0)
   def castRays(this):
     this.litVertices.clear()
     for vertex in this.vertices:
