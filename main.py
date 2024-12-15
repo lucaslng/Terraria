@@ -947,6 +947,10 @@ class Edge:
   def draw(this):
     if this.x != this.ex and this.y != this.ey: print("diagonal wtf")
     pg.draw.line(SURF,(0,0,0),relativeCoord(this.x*20,this.y*20),relativeCoord(this.ex*20,this.ey*20), 3)
+    pg.draw.circle(SURF,(0,255,0),relativeCoord(this.x*20,this.y*20), 3)
+    pg.draw.circle(SURF,(0,255,0),relativeCoord(this.ex*20,this.ey*20), 3)
+  def __repr__(this):
+    return str((this.x, this.y, this.ex, this.ey))
 
 class World:
   litVertices = list()
@@ -1161,40 +1165,50 @@ class World:
       ):
         cur = this[y][x]
         if not cur.isAir:
+          # west
           if x-1 >= 0 and this[y][x-1].isAir:
             if y-1 >= 0 and this[y-1][x].edgeExist[Direction.WEST] and this[y-1][x].edgeId[Direction.WEST]<len(this.edgePool):
+              print("edge exists")
               this.edgePool[this[y-1][x].edgeId[Direction.WEST]].ey += 1
+              print(this.edgePool[this[y-1][x].edgeId[Direction.WEST]])
               cur.edgeId[Direction.WEST] = this[y-1][x].edgeId[Direction.WEST]
+              cur.edgeExist[Direction.WEST] = True
             else:
               edge = Edge(x, y, x, y+1)
               edgeId = len(this.edgePool)
               cur.edgeId[Direction.WEST] = edgeId
               this.edgePool.append(edge)
               cur.edgeExist[Direction.WEST] = True
-          if x+1 < (player.camera.right // BLOCK_SIZE) + 1 and this[y][x+1].isAir:
-            if y-1 >= 0 and this[y-1][x].edgeExist[Direction.EAST] and this[y-1][x].edgeId[Direction.EAST]<len(this.edgePool):
+          # east
+          if x+1 < (player.camera.right // BLOCK_SIZE) + 1 and this[y][x+1].isAir and this[y][x-1].edgeId[Direction.EAST]<len(this.edgePool):
+            if y-1 >= 0 and this[y-1][x].edgeExist[Direction.EAST]:
               this.edgePool[this[y-1][x].edgeId[Direction.EAST]].ey += 1
               cur.edgeId[Direction.EAST] = this[y-1][x].edgeId[Direction.EAST]
+              cur.edgeExist[Direction.EAST] = True
             else:
               edge = Edge(x+1, y, x+1, y+1)
               edgeId = len(this.edgePool)
               cur.edgeId[Direction.EAST] = edgeId
               this.edgePool.append(edge)
               cur.edgeExist[Direction.EAST] = True
+          # north
           if y-1 >= 0 and this[y-1][x].isAir:
             if x-1 >= 0 and this[y][x-1].edgeExist[Direction.NORTH] and this[y][x-1].edgeId[Direction.NORTH]<len(this.edgePool):
               this.edgePool[this[y][x-1].edgeId[Direction.NORTH]].ex += 1
               cur.edgeId[Direction.NORTH] = this[y][x-1].edgeId[Direction.NORTH]
+              cur.edgeExist[Direction.NORTH] = True
             else:
               edge = Edge(x, y, x+1, y)
               edgeId = len(this.edgePool)
               cur.edgeId[Direction.NORTH] = edgeId
               this.edgePool.append(edge)
               cur.edgeExist[Direction.NORTH] = True
-          if y+1 < player.camera.bottom // BLOCK_SIZE + 1 and this[y+1][x].isAir:
-            if x-1 >= 0 and this[y][x-1].edgeExist[Direction.SOUTH] and this[y][x-1].edgeId[Direction.SOUTH]<len(this.edgePool):
+          # south
+          if y+1 < player.camera.bottom // BLOCK_SIZE + 1 and this[y+1][x].isAir and this[y][x-1].edgeId[Direction.SOUTH]<len(this.edgePool):
+            if x-1 >= 0 and this[y][x-1].edgeExist[Direction.SOUTH]:
               this.edgePool[this[y][x-1].edgeId[Direction.SOUTH]].ex += 1
               cur.edgeId[Direction.SOUTH] = this[y][x-1].edgeId[Direction.SOUTH]
+              cur.edgeExist[Direction.SOUTH] = True
             else:
               edge = Edge(x, y+1, x+1, y+1)
               edgeId = len(this.edgePool)
