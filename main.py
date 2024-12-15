@@ -1162,7 +1162,7 @@ if __name__ == "__main__":
   
   world = World()
   sun = Sun()
-  
+  shadowBlur = 20
   end = time.time()
   print("Load time:", round(end-start, 2), "seconds")
   
@@ -1226,12 +1226,16 @@ if __name__ == "__main__":
         check_for_interaction()
       elif event.type == KEYDOWN and event.key == pg.K_m:
         pixel = tuple(map(lambda a: 20*a,pixelToCoord(*pg.mouse.get_pos())))
-        print(pixel, world.mask.get_at(pixel), world.blockAt(*pixelToCoord(*pg.mouse.get_pos())).rect.topleft)
-        
-        # print(world.mask.get_at())
+        print(pixel, world.mask.get_at(pixel), world.blockAt(*pixelToCoord(*pg.mouse.get_pos())).rect.topleft) 
+      elif event.type == KEYDOWN and event.key == pg.K_b:
+        shadowBlur += 1
+        print("shadow blur", shadowBlur)
+      elif event.type == KEYDOWN and event.key == pg.K_k:
+        shadowBlur -= 1
+        print("shadow blur", shadowBlur)
 
     SURF.blit(ASURF, (0, 0))
-    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
+    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//shadowBlur, HEIGHT//shadowBlur))
     LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
     SURF.blit(LIGHTSURF, ((0,0)))
     player.drawHUD()
