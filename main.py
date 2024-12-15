@@ -1,4 +1,4 @@
-import sys, math, random, time, concurrent.futures, pickle          #pickle stores game data onto system
+import sys, math, random, time, pickle          #pickle stores game data onto system
 import pygame as pg
 from pygame.locals import *
 from pygame import Vector2
@@ -15,10 +15,10 @@ FPS = 60
 BLOCK_SIZE = 20
 WORLD_HEIGHT = 256
 WORLD_WIDTH = 1000
-SHADOW_QUALITY = 4
+SHADOW_QUALITY = 3
 gravity = 1
 
-SEED = time.time()
+SEED = 0
 random.seed(SEED)
 
 class Direction:
@@ -92,7 +92,9 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, checkVertices=False, quality: 
         xi = xii
         yi = yii
     if checkVertices:
-      return pointsTouched
+      pointsTouched.append((x, y))
+      if len(pointsTouched) == 2:
+        return pointsTouched
     else: return None
 
   def plotLineHigh(x0: int, y0: int, x1: int, y1: int) -> tuple[int, int] | None:
@@ -110,8 +112,8 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, checkVertices=False, quality: 
       if not blockTouched.isAir:
         if checkVertices:
           pointsTouched.append((x, y))
-          if len(pointsTouched) == 2:
-            return pointsTouched
+          # if len(pointsTouched) == 2:
+          return pointsTouched
         else: return x, y
       if d > 0:
         x += xi
@@ -913,10 +915,6 @@ class Player(Entity, HasInventory):
     if this.blockFacing:
       this.blockFacing.drawBlockOutline((0, 0, 0, 200))
 
-  # def sweep(this):
-  # https://www.redblobgames.com/articles/visibility/
-  # endpoints = []
-
   def update(this):
     super().update()
     this.blockFacing = this.getBlockFacing()
@@ -946,7 +944,7 @@ class Edge:
   ey: int
   
   def draw(this):
-    if this.x != this.ex and this.y != this.ey: print("diagonal wtf")
+    # if this.x != this.ex and this.y != this.ey: print("diagonal wtf")
     pg.draw.line(SURF,(0,0,0),relativeCoord(this.x*20, this.y*20),relativeCoord(this.ex*20, this.ey*20), 3)
     pg.draw.circle(SURF,(0,255,0),relativeCoord(this.x*20,this.y*20), 3)
     pg.draw.circle(SURF,(0,255,0),relativeCoord(this.ex*20,this.ey*20), 3)
@@ -1218,71 +1216,18 @@ class World:
     for i in range(len(this.edgePool)):
       this.vertices.add(relativeCoord(this.edgePool[i].x*20,this.edgePool[i].y*20))
       this.vertices.add(relativeCoord(this.edgePool[i].ex*20,this.edgePool[i].ey*20))
-      this.edgePool[i].draw()
+      # this.edgePool[i].draw()
   
   def castRays(this):
     this.litVertices.clear()
     for vertex in this.vertices:
-      # pg.draw.line(SURF, (0,0,0), vertex, sun.pos, 2)
       bres = bresenham(*vertex, *sun.pos, True, SHADOW_QUALITY)
-      if bres:
-        # print(bres)
+      if bres: 
         this.litVertices.extend(bres)
-        # pg.draw.line(SURF,(0,0,0), bres[0], sun.pos, 2)
-        # pg.draw.line(SURF,(255,0,0), bres[1], sun.pos, 2)
-    # with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
-    #   pool.map(this.__findPointsTouched, this.vertices)
     this.litVertices.extend((FRAME.topleft, FRAME.topright, relativeCoord(*this.topBlock(WORLD_WIDTH-1).rect.topleft), relativeCoord(*this.topBlock(0).rect.topright)))
-    # this.litVertices.extend((FRAME.topleft, FRAME.topright))
     if len(this.litVertices) > 2:
       this.litVertices.sort(key=lambda a: math.atan2(sun.pos[1]-a[1], sun.pos[0]-a[0]))
       pg.draw.polygon(LIGHTSURF, (255,255,255,0), [sun.pos] + this.litVertices)
-  
-  def __findPointsTouched(this, vertex):
-    this.litVertices.extend(bresenham(*vertex, *sun.pos, checkVertices=True, quality=SHADOW_QUALITY))
-    # radius = WORLD_WIDTH
-    # for vertex in this.vertices:
-    #   rdx = vertex[0] - sun.pos[0]
-    #   rdy = vertex[1] - sun.pos[1]
-    #   baseAngle = math.atan2(rdy, rdx)
-      
-    #   for j in range(3):
-    #     if j==0: ang = baseAngle - 0.0001
-    #     if j==1: ang = baseAngle
-    #     if j==2: ang = baseAngle + 0.0001
-    #     rdx = radius * math.cos(ang)
-    #     rdy = radius * math.sin(ang)
-        
-    #     mint1 = 1e9
-    #     minang = minpx = minpy = 0
-    #     for edge in this.edgePool:
-    #       x, y = relativeCoord(edge.x, edge.y)
-    #       ex, ey = relativeCoord(edge.ex, edge.ey)
-    #       sdx = ex - x
-    #       sdy = ey - y
-    #       # Avoid division by near-zero
-    #       denominator = sdx * rdy - sdy * rdx
-    #       if abs(denominator) < 1e-6:
-    #           continue
-          
-    #       # Calculate t2 and t1
-    #       t2 = (rdx * (y - sun.pos[1]) - rdy * (x - sun.pos[0])) / denominator
-    #       t1 = (x + sdx * t2 - sun.pos[0]) / rdx
-          
-    #       # Check valid intersection
-    #       if t1 > 0 and 0 <= t2 <= 1:
-    #           if t1 < mint1:
-    #               mint1 = t1
-    #               minpx = sun.pos[0] + rdx * t1
-    #               minpy = sun.pos[1] + rdy * t1
-
-        
-    #     this.litVertices.append((minang, minpx, minpy))      
-      
-    # print(this.litVertices)
-    # this.litVertices.sort(key=lambda a: a[0])
-    # pg.draw.polygon(LIGHTSURF, (255,255,255,0), [sun.pos] + [(v[1], v[2]) for v in this.litVertices])
-  
   
   def update(this):
     this.draw()
