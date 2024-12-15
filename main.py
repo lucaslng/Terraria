@@ -15,7 +15,7 @@ FPS = 60
 BLOCK_SIZE = 20
 WORLD_HEIGHT = 256
 WORLD_WIDTH = 1000
-SHADOW_QUALITY = 6
+SHADOW_QUALITY = 4
 gravity = 1
 
 SEED = time.time()
@@ -59,9 +59,9 @@ def check_for_interaction() -> None:
           block.interact()
           return
 
-def bresenham(x0: int, y0: int, x1: int, y1: int, checkVertices=False, quality: int=1) -> tuple[int, int] | None:
+def bresenham(x0: int, y0: int, x1: int, y1: int, checkVertices=False, quality: int=1):
   """Bresenham's algorithm to detect first non-air block along a line, starting from end point."""
-  pointsTouched = set()
+  pointsTouched = list()
   def plotLineLow(x0, y0, x1, y1):
     dx = abs(x1 - x0)
     dy = abs(y1 - y0)
@@ -77,7 +77,7 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, checkVertices=False, quality: 
       blockTouched = world.blockAt(*pixelToCoord(x, y))
       if not blockTouched.isAir:
         if checkVertices:
-          pointsTouched.add((x, y))
+          pointsTouched.append((x, y))
           if len(pointsTouched) == 2:
             return pointsTouched
         else: return x, y
@@ -109,7 +109,7 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, checkVertices=False, quality: 
       blockTouched = world.blockAt(*pixelToCoord(x, y))
       if not blockTouched.isAir:
         if checkVertices:
-          pointsTouched.add((x, y))
+          pointsTouched.append((x, y))
           if len(pointsTouched) == 2:
             return pointsTouched
         else: return x, y
@@ -944,9 +944,10 @@ class Edge:
   y: int
   ex: int
   ey: int
+  
   def draw(this):
     if this.x != this.ex and this.y != this.ey: print("diagonal wtf")
-    pg.draw.line(SURF,(0,0,0),relativeCoord(this.x*20,this.y*20),relativeCoord(this.ex*20,this.ey*20), 3)
+    pg.draw.line(SURF,(0,0,0),relativeCoord(this.x*20, this.y*20),relativeCoord(this.ex*20, this.ey*20), 3)
     pg.draw.circle(SURF,(0,255,0),relativeCoord(this.x*20,this.y*20), 3)
     pg.draw.circle(SURF,(0,255,0),relativeCoord(this.ex*20,this.ey*20), 3)
   def __repr__(this):
@@ -1127,7 +1128,6 @@ class World:
         return this[i][x]
 
   def draw(this):
-    this.vertices.clear()
     for y in range(
         player.camera.top // BLOCK_SIZE, (player.camera.bottom //
                                           BLOCK_SIZE) + 1
@@ -1138,11 +1138,11 @@ class World:
       ):
         block = this[y][x]
         if not block.isAir:
-          this.vertices.update(map(lambda a: relativeCoord(*a), block.exposedVertices()))
           block.drawBlock()
   
   def buildEdgePool(this):
     this.edgePool.clear()
+    this.vertices.clear()
     # frame is 30 x 50 blocks
     for y in range(
         player.camera.top // BLOCK_SIZE,
@@ -1168,9 +1168,9 @@ class World:
           # west
           if x-1 >= 0 and this[y][x-1].isAir:
             if y-1 >= 0 and this[y-1][x].edgeExist[Direction.WEST] and this[y-1][x].edgeId[Direction.WEST]<len(this.edgePool):
-              print("edge exists")
+              # print("edge exists")
               this.edgePool[this[y-1][x].edgeId[Direction.WEST]].ey += 1
-              print(this.edgePool[this[y-1][x].edgeId[Direction.WEST]])
+              # print(this.edgePool[this[y-1][x].edgeId[Direction.WEST]])
               cur.edgeId[Direction.WEST] = this[y-1][x].edgeId[Direction.WEST]
               cur.edgeExist[Direction.WEST] = True
             else:
@@ -1216,30 +1216,78 @@ class World:
               this.edgePool.append(edge)
               cur.edgeExist[Direction.SOUTH] = True
     for i in range(len(this.edgePool)):
+      this.vertices.add(relativeCoord(this.edgePool[i].x*20,this.edgePool[i].y*20))
+      this.vertices.add(relativeCoord(this.edgePool[i].ex*20,this.edgePool[i].ey*20))
       this.edgePool[i].draw()
-      
-    
+  
   def castRays(this):
     this.litVertices.clear()
-    for x in range(0, WIDTH, 20):
-      bottomBlock = this.blockAt(*pixelToCoord(x, HEIGHT-1))
-      if bottomBlock.isAir:
-        this.vertices.update((relativeCoord(*bottomBlock.rect.bottomleft), relativeCoord(*bottomBlock.rect.bottomright)))
-       
-    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
-      pool.map(this.__findPointsTouched, this.vertices)
+    for vertex in this.vertices:
+      # pg.draw.line(SURF, (0,0,0), vertex, sun.pos, 2)
+      bres = bresenham(*vertex, *sun.pos, True, SHADOW_QUALITY)
+      if bres:
+        # print(bres)
+        this.litVertices.extend(bres)
+        # pg.draw.line(SURF,(0,0,0), bres[0], sun.pos, 2)
+        # pg.draw.line(SURF,(255,0,0), bres[1], sun.pos, 2)
+    # with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
+    #   pool.map(this.__findPointsTouched, this.vertices)
     this.litVertices.extend((FRAME.topleft, FRAME.topright, relativeCoord(*this.topBlock(WORLD_WIDTH-1).rect.topleft), relativeCoord(*this.topBlock(0).rect.topright)))
-    this.litVertices.sort(key=lambda a: math.atan2(sun.pos[1]-a[1], sun.pos[0]-a[0]))
-    pg.draw.polygon(LIGHTSURF, (255,255,255,0), [sun.pos] + this.litVertices)
+    # this.litVertices.extend((FRAME.topleft, FRAME.topright))
+    if len(this.litVertices) > 2:
+      this.litVertices.sort(key=lambda a: math.atan2(sun.pos[1]-a[1], sun.pos[0]-a[0]))
+      pg.draw.polygon(LIGHTSURF, (255,255,255,0), [sun.pos] + this.litVertices)
   
   def __findPointsTouched(this, vertex):
-    if bresenham(*vertex, *sun.pos, checkVertices=True, quality=SHADOW_QUALITY):
-      this.litVertices.append(vertex)
+    this.litVertices.extend(bresenham(*vertex, *sun.pos, checkVertices=True, quality=SHADOW_QUALITY))
+    # radius = WORLD_WIDTH
+    # for vertex in this.vertices:
+    #   rdx = vertex[0] - sun.pos[0]
+    #   rdy = vertex[1] - sun.pos[1]
+    #   baseAngle = math.atan2(rdy, rdx)
+      
+    #   for j in range(3):
+    #     if j==0: ang = baseAngle - 0.0001
+    #     if j==1: ang = baseAngle
+    #     if j==2: ang = baseAngle + 0.0001
+    #     rdx = radius * math.cos(ang)
+    #     rdy = radius * math.sin(ang)
+        
+    #     mint1 = 1e9
+    #     minang = minpx = minpy = 0
+    #     for edge in this.edgePool:
+    #       x, y = relativeCoord(edge.x, edge.y)
+    #       ex, ey = relativeCoord(edge.ex, edge.ey)
+    #       sdx = ex - x
+    #       sdy = ey - y
+    #       # Avoid division by near-zero
+    #       denominator = sdx * rdy - sdy * rdx
+    #       if abs(denominator) < 1e-6:
+    #           continue
+          
+    #       # Calculate t2 and t1
+    #       t2 = (rdx * (y - sun.pos[1]) - rdy * (x - sun.pos[0])) / denominator
+    #       t1 = (x + sdx * t2 - sun.pos[0]) / rdx
+          
+    #       # Check valid intersection
+    #       if t1 > 0 and 0 <= t2 <= 1:
+    #           if t1 < mint1:
+    #               mint1 = t1
+    #               minpx = sun.pos[0] + rdx * t1
+    #               minpy = sun.pos[1] + rdy * t1
+
+        
+    #     this.litVertices.append((minang, minpx, minpy))      
+      
+    # print(this.litVertices)
+    # this.litVertices.sort(key=lambda a: a[0])
+    # pg.draw.polygon(LIGHTSURF, (255,255,255,0), [sun.pos] + [(v[1], v[2]) for v in this.litVertices])
+  
   
   def update(this):
     this.draw()
-    # this.castRays()
     this.buildEdgePool()
+    this.castRays()
 
 if __name__ == "__main__":
   start = time.time()
@@ -1334,9 +1382,9 @@ if __name__ == "__main__":
         # print(world.mask.get_at())
 
     SURF.blit(ASURF, (0, 0))
-    # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
-    # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
-    # SURF.blit(LIGHTSURF, ((0,0)))
+    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
+    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
+    SURF.blit(LIGHTSURF, ((0,0)))
     player.drawHUD()
     SURF.blit(font20.render(str(pixelToCoord(*player.camera.center)), True, (0,0,0)), (20, 50))
     if craftingMenu.isActive: craftingMenu.draw()
