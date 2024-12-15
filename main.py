@@ -1,9 +1,10 @@
 import sys, math, random, time, concurrent.futures, pickle          #pickle stores game data onto system
 import pygame as pg
 from pygame.locals import *
+from pygame import Vector2
 from abc import *
 from dataclasses import dataclass
-from typing import Callable
+from typing import List
 from enum import Enum
 
 
@@ -20,6 +21,11 @@ gravity = 1
 SEED = time.time()
 random.seed(SEED)
 
+class Direction:
+  NORTH=0
+  SOUTH=1
+  WEST=2
+  EAST=3
 
 def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   """Returns coordinate based on pixel location"""
@@ -195,6 +201,8 @@ class Block:
     )
     this.mask = pg.mask.from_surface(this.texture)
     if this.isAir: this.mask.clear()
+    this.edgeExist = [False for _ in range(4)]
+    this.edgeId = [0 for _ in range(4)]
 
   def drawBlockOutline(this, color: pg.color.Color):
     pg.draw.rect(ASURF, color, relativeRect(this.rect), 2)
@@ -930,10 +938,19 @@ class Sun:
   def draw(this):
     ASURF.blit(this.sunTexture, (HEIGHT * 0.1, HEIGHT * 0.1, this.size, this.size))
 
+@dataclass
+class Edge:
+  x: int
+  y: int
+  ex: int
+  ey: int
+  def draw(this):
+    pg.draw.line(SURF,(0,0,0),relativeCoord(this.x*20,this.y*20),relativeCoord(this.ex*20,this.ey*20), 3)
 
 class World:
   litVertices = list()
   vertices = set()
+  edgePool: List[Edge] = list()
   def __init__(this):
     this.array = [
         [AirBlock(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
@@ -1118,6 +1135,76 @@ class World:
         if not block.isAir:
           this.vertices.update(map(lambda a: relativeCoord(*a), block.exposedVertices()))
           block.drawBlock()
+  
+  def buildEdgePool(this):
+    this.edgePool.clear()
+    # frame is 30 x 50 blocks
+    for y in range(
+        player.camera.top // BLOCK_SIZE,
+        (player.camera.bottom // BLOCK_SIZE) + 1
+    ):
+      for x in range(
+          player.camera.left // BLOCK_SIZE,
+          (player.camera.right // BLOCK_SIZE) + 1,
+      ):
+        for j in range(4):
+          this[y][x].edgeExist[j] = False
+    
+    for y in range(
+        player.camera.top // BLOCK_SIZE,
+        (player.camera.bottom // BLOCK_SIZE) + 1
+    ):
+      for x in range(
+          player.camera.left // BLOCK_SIZE,
+          (player.camera.right // BLOCK_SIZE) + 1,
+      ):
+        cur = this[y][x]
+        if not cur.isAir:
+          if x-1 >= 0 and this[y][x-1].isAir:
+            if y-1 >= 0 and this[y-1][x].edgeExist[Direction.WEST] and this[y-1][x].edgeId[Direction.WEST]<len(this.edgePool):
+              this.edgePool[this[y-1][x].edgeId[Direction.WEST]].ey += 1
+              cur.edgeId[Direction.WEST] = this[y-1][x].edgeId[Direction.WEST]
+            else:
+              edge = Edge(x, y, x, y+1)
+              edgeId = len(this.edgePool)
+              cur.edgeId[Direction.WEST] = edgeId
+              this.edgePool.append(edge)
+              cur.edgeExist[Direction.WEST] = True
+          if x+1 < (player.camera.right // BLOCK_SIZE) + 1 and this[y][x+1].isAir:
+            if y-1 >= 0 and this[y-1][x].edgeExist[Direction.EAST] and this[y-1][x].edgeId[Direction.EAST]<len(this.edgePool):
+              this.edgePool[this[y-1][x].edgeId[Direction.EAST]].ey += 1
+              cur.edgeId[Direction.EAST] = this[y-1][x].edgeId[Direction.EAST]
+            else:
+              edge = Edge(x+1, y, x+1, y+1)
+              edgeId = len(this.edgePool)
+              cur.edgeId[Direction.EAST] = edgeId
+              this.edgePool.append(edge)
+              cur.edgeExist[Direction.EAST] = True
+          if y-1 >= 0 and this[y-1][x].isAir:
+            if x-1 >= 0 and this[y][x-1].edgeExist[Direction.NORTH] and this[y][x-1].edgeId[Direction.NORTH]<len(this.edgePool):
+              this.edgePool[this[y][x-1].edgeId[Direction.NORTH]].ex += 1
+              cur.edgeId[Direction.NORTH] = this[y][x-1].edgeId[Direction.NORTH]
+            else:
+              edge = Edge(x, y, x+1, y)
+              edgeId = len(this.edgePool)
+              cur.edgeId[Direction.NORTH] = edgeId
+              this.edgePool.append(edge)
+              cur.edgeExist[Direction.NORTH] = True
+          if y+1 < player.camera.bottom // BLOCK_SIZE + 1 and this[y+1][x].isAir:
+            print("south")
+            if x-1 >= 0 and this[y][x-1].edgeExist[Direction.SOUTH] and this[y][x-1].edgeId[Direction.SOUTH]<len(this.edgePool):
+              this.edgePool[this[y][x-1].edgeId[Direction.SOUTH]].ex += 1
+              cur.edgeId[Direction.SOUTH] = this[y][x-1].edgeId[Direction.SOUTH]
+            else:
+              edge = Edge(x, y+1, x+1, y+1)
+              edgeId = len(this.edgePool)
+              cur.edgeId[Direction.SOUTH] = edgeId
+              this.edgePool.append(edge)
+              cur.edgeExist[Direction.SOUTH] = True
+    # print(this.edgePool)
+    for i in range(len(this.edgePool)):
+      this.edgePool[i].draw()
+      
     
   def castRays(this):
     this.litVertices.clear()
@@ -1125,6 +1212,7 @@ class World:
       bottomBlock = this.blockAt(*pixelToCoord(x, HEIGHT-1))
       if bottomBlock.isAir:
         this.vertices.update((relativeCoord(*bottomBlock.rect.bottomleft), relativeCoord(*bottomBlock.rect.bottomright)))
+       
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
       pool.map(this.__findPointsTouched, this.vertices)
     this.litVertices.extend((FRAME.topleft, FRAME.topright, relativeCoord(*this.topBlock(WORLD_WIDTH-1).rect.topleft), relativeCoord(*this.topBlock(0).rect.topright)))
@@ -1132,11 +1220,13 @@ class World:
     pg.draw.polygon(LIGHTSURF, (255,255,255,0), [sun.pos] + this.litVertices)
   
   def __findPointsTouched(this, vertex):
-    this.litVertices.extend(bresenham(*vertex, *sun.pos, checkVertices=True, quality=SHADOW_QUALITY))
+    if bresenham(*vertex, *sun.pos, checkVertices=True, quality=SHADOW_QUALITY):
+      this.litVertices.append(vertex)
   
   def update(this):
     this.draw()
     this.castRays()
+    this.buildEdgePool()
 
 if __name__ == "__main__":
   start = time.time()
@@ -1231,9 +1321,9 @@ if __name__ == "__main__":
         # print(world.mask.get_at())
 
     SURF.blit(ASURF, (0, 0))
-    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
-    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
-    SURF.blit(LIGHTSURF, ((0,0)))
+    # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
+    # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
+    # SURF.blit(LIGHTSURF, ((0,0)))
     player.drawHUD()
     if craftingMenu.isActive: craftingMenu.draw()
 
