@@ -1143,6 +1143,8 @@ if __name__ == "__main__":
   pg.init()
   clock = pg.time.Clock()
   
+  pg.time.set_timer(101,500)
+  
   SURF = pg.display.set_mode((WIDTH, HEIGHT), vsync=1)
   pg.display.set_caption("Terraria")
   
@@ -1218,6 +1220,8 @@ if __name__ == "__main__":
       if event.type == QUIT:
         pg.quit()
         sys.exit()
+      elif event.type == 101:
+        print("fps: ", round(clock.get_fps(), 2))
       elif event.type == KEYDOWN and event.key == pg.K_e:
         check_for_interaction()
       elif event.type == KEYDOWN and event.key == pg.K_m:
@@ -1234,5 +1238,4 @@ if __name__ == "__main__":
     if craftingMenu.isActive: craftingMenu.draw()
 
     pg.display.flip()
-    # print("fps: ", round(clock.get_fps(), 2))
     clock.tick(FPS)
