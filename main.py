@@ -1180,7 +1180,7 @@ class World:
               this.edgePool.append(edge)
               cur.edgeExist[Direction.WEST] = True
           # east
-          if x+1 < (player.camera.right // BLOCK_SIZE) + 1 and this[y][x+1].isAir and this[y][x-1].edgeId[Direction.EAST]<len(this.edgePool):
+          if x+1 < (player.camera.right // BLOCK_SIZE) + 1 and this[y][x+1].isAir and this[y-1][x].edgeId[Direction.EAST]<len(this.edgePool):
             if y-1 >= 0 and this[y-1][x].edgeExist[Direction.EAST]:
               this.edgePool[this[y-1][x].edgeId[Direction.EAST]].ey += 1
               cur.edgeId[Direction.EAST] = this[y-1][x].edgeId[Direction.EAST]
