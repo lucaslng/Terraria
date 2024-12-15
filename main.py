@@ -945,6 +945,7 @@ class Edge:
   ex: int
   ey: int
   def draw(this):
+    if this.x != this.ex and this.y != this.ey: print("diagonal wtf")
     pg.draw.line(SURF,(0,0,0),relativeCoord(this.x*20,this.y*20),relativeCoord(this.ex*20,this.ey*20), 3)
 
 class World:
@@ -1191,7 +1192,6 @@ class World:
               this.edgePool.append(edge)
               cur.edgeExist[Direction.NORTH] = True
           if y+1 < player.camera.bottom // BLOCK_SIZE + 1 and this[y+1][x].isAir:
-            print("south")
             if x-1 >= 0 and this[y][x-1].edgeExist[Direction.SOUTH] and this[y][x-1].edgeId[Direction.SOUTH]<len(this.edgePool):
               this.edgePool[this[y][x-1].edgeId[Direction.SOUTH]].ex += 1
               cur.edgeId[Direction.SOUTH] = this[y][x-1].edgeId[Direction.SOUTH]
@@ -1201,7 +1201,6 @@ class World:
               cur.edgeId[Direction.SOUTH] = edgeId
               this.edgePool.append(edge)
               cur.edgeExist[Direction.SOUTH] = True
-    # print(this.edgePool)
     for i in range(len(this.edgePool)):
       this.edgePool[i].draw()
       
@@ -1225,7 +1224,7 @@ class World:
   
   def update(this):
     this.draw()
-    this.castRays()
+    # this.castRays()
     this.buildEdgePool()
 
 if __name__ == "__main__":
@@ -1325,6 +1324,7 @@ if __name__ == "__main__":
     # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
     # SURF.blit(LIGHTSURF, ((0,0)))
     player.drawHUD()
+    SURF.blit(font20.render(str(pixelToCoord(*player.camera.center)), True, (0,0,0)), (20, 50))
     if craftingMenu.isActive: craftingMenu.draw()
 
     pg.display.flip()
