@@ -966,9 +966,13 @@ class Edge:
 
 class KdTree:
   k = 2
-  def __init__(this, points: List[Point], depth=0):
+  def __init__(this, points: List[Point], x_min, x_max, y_min, y_max, depth=0):
     this.points = points
     this.depth = depth
+    this.x_min = x_min
+    this.x_max = x_max
+    this.y_min = y_min
+    this.y_max = y_max
     n = len(points)
     if n<=0:
       this.point = None
@@ -976,21 +980,11 @@ class KdTree:
       this.right = None
       return
     axis = depth % 2
+    
     sortedPoints = sorted(points, key=lambda point: point[axis])
     this.point = sortedPoints[n//2]
-    this.left = KdTree(sortedPoints[:n//2], depth=depth+1)
-    this.right = KdTree(sortedPoints[n//2+1:], depth=depth+1)
-  
-  
-  def draw(this, x_min, x_max, y_min, y_max):
-    '''draw kdtree boundaries'''
-    if not this.point:
-      return
     x, y = this.point.coord()
-    axis = this.depth % 2
     if axis == 0:  # Vertical split (x-axis)
-      pg.draw.line(SURF, (255, 0, 0), (x, y_min), (x, y_max), 1)
-      # Update boundaries for children
       left_boundary = (x_min, x, y_min, y_max)
       right_boundary = (x, x_max, y_min, y_max)
     else:  # Horizontal split (y-axis)
@@ -998,11 +992,24 @@ class KdTree:
       # Update boundaries for children
       left_boundary = (x_min, x_max, y_min, y)
       right_boundary = (x_min, x_max, y, y_max)
-    # Recursively draw child nodes with updated boundaries
+    
+    this.left = KdTree(sortedPoints[:n//2], *left_boundary, depth=depth+1)
+    this.right = KdTree(sortedPoints[n//2+1:], *right_boundary, depth=depth+1)
+  
+  def draw(this):
+    '''draw kdtree boundaries'''
+    if not this.point:
+      return
+    x, y = this.point.coord()
+    axis = this.depth % 2
+    if axis == 0:  # Vertical split (x-axis)
+      pg.draw.line(SURF, (255, 0, 0), (x, this.y_min), (x, this.y_max), 1)
+    else:  # Horizontal split (y-axis)
+      pg.draw.line(SURF, (0, 0, 255), (this.x_min, y), (this.x_max, y), 1)
     if this.left:
-      this.left.draw(*left_boundary)
+      this.left.draw()
     if this.right:
-      this.right.draw(*right_boundary)
+      this.right.draw()
     # Optionally, draw the point itself
     # pg.draw.circle(SURF, (0, 255, 0), (x, y), 3)
 
@@ -1200,7 +1207,7 @@ class World:
   
   def buildKdTree(this):
     '''build the kd tree for the visible vertices'''
-    this.kdtree = KdTree(this.allBlockPoints)
+    this.kdtree = KdTree(this.allBlockPoints, 0, FRAME.width, 0, FRAME.height)
   
   def buildEdgePool(this):
     this.edgePool.clear()
@@ -1315,9 +1322,9 @@ class World:
     this.draw()
     this.buildEdgePool()
     this.buildKdTree()
-    this.kdtree.draw(0,FRAME.width,0,FRAME.height)
+    this.kdtree.draw()
     
-    this.castRays()
+    # this.castRays()
 
 if __name__ == "__main__":
   start = time.time()
