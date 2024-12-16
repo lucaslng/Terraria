@@ -947,8 +947,8 @@ class Point:
     if i==0: return this.x
     elif i==1: return this.y
     else: raise ValueError("Tried to access index that isn't 0 or 1 for a point")
-  def draw(this,color=(0,255,0)):
-    pg.draw.circle(SURF,color, this.coord(), 3)
+  def draw(this,color=(0,255,0), radius=3):
+    pg.draw.circle(SURF,color, this.coord(), radius)
   def coord(this):
     return relativeCoord(this.x,this.y)
   def tup(this):
@@ -992,21 +992,25 @@ class KdTree:
     axis = depth % 2
     
     sortedPoints = sorted(points, key=lambda point: point[axis])
-    this.point = sortedPoints[n//2]
+    m = n//2
+    this.point = sortedPoints[m]
     x, y = this.point.coord()
     if axis == 0:  # vert split
       left_boundary = (x_min, x, y_min, y_max)
       right_boundary = (x, x_max, y_min, y_max)
-      this.split = x
+      this.split = x + player.camera.x
     else:  # hori split
-      pg.draw.line(SURF, (0, 0, 255), (x_min, y), (x_max, y), 1)
+      # pg.draw.line(SURF, (0, 0, 255), (x_min, y), (x_max, y), 1)
       # update boundaries for children
       left_boundary = (x_min, x_max, y_min, y)
       right_boundary = (x_min, x_max, y, y_max)
-      this.split = y
-    
-    this.left = KdTree(sortedPoints[:n//2], *left_boundary, depth=depth+1)
-    this.right = KdTree(sortedPoints[n//2+1:], *right_boundary, depth=depth+1)
+      this.split = y + player.camera.y
+    this.left = None
+    this.right = None
+    if m > 0:
+      this.left = KdTree(sortedPoints[:n//2], *left_boundary, depth=depth+1)
+    if n - m > 0:
+      this.right = KdTree(sortedPoints[n//2+1:], *right_boundary, depth=depth+1)
   
   def isLeaf(this):
     return this.left is None and this.right is None
@@ -1030,7 +1034,7 @@ class KdTree:
       if ok == this.split:
         if this.point: this.point.draw(); print(this.point)
         return tStart
-      else: return None
+      else: return 1e9
     
     if t <= tStart:
       return this.right.traverse(orig, dir, tStart, tEnd)
@@ -1040,7 +1044,18 @@ class KdTree:
       tHit = this.left.traverse(orig, dir, tStart, t)
       if tHit <= t: return tHit
       return this.right.traverse(orig, dir, t, tEnd)
-    
+  
+  def query(this, point: Point):
+    # pg.draw.rect(SURF, (0,0,0), (this.x_min, this.y_min, this.x_max-this.x_min, this.y_max-this.y_min), width=this.depth//3 + 1)
+    if this.isLeaf():
+      pg.draw.rect(SURF, (0,0,0), (this.x_min, this.y_min, this.x_max-this.x_min, this.y_max-this.y_min),width=5)
+      if this.point: this.point.draw((0,0,255),5)
+      return
+    axis = this.depth % 2
+    if point[axis] < this.split:
+      return this.left.query(point)
+    else:
+      return this.right.query(point)
   
   def intersection(this, orig, dir):
     '''find t-start and t-end for the bounding box given a line'''
@@ -1072,9 +1087,9 @@ class KdTree:
     if this.isLeaf():
       return
     if this.depth % 2 == 0:
-      pg.draw.line(SURF, (0,0,0), (this.split, this.y_min), (this.split, this.y_max))
+      pg.draw.line(SURF, (0,0,0), (this.split-player.camera.x, this.y_min), (this.split-player.camera.x, this.y_max))
     else:
-      pg.draw.line(SURF, (0,0,0), (this.x_min, this.split), (this.x_max, this.split))
+      pg.draw.line(SURF, (0,0,0), (this.x_min, this.split-player.camera.y), (this.x_max, this.split-player.camera.y))
     if this.left:
       this.left.draw()
     if this.right:
@@ -1363,17 +1378,17 @@ class World:
       sunx, suny = relativeCoord(*sun.pos) # sun coords relative to the camera
       nsuny = -suny
       vx, vy = vertex
+      nvy = -vy
       dx = sunx - vx
-      dy = nsuny - vy
-      if dx == 0: orig = (sunx, 0)  # edge case, vertical ray down
+      dy = nsuny - nvy
+      if dx == 0: orig = (sunx, FRAME.top)  # edge case, vertical ray down
       else:
         m = dy/dx
         b = nsuny - m * sunx
         x = -b / m
-        orig = (x, 0)
+        orig = (x, FRAME.top)
       length = math.sqrt(dx * dx + dy * dy)  # Normalize the direction
       dir = (dx / length, dy / length)
-      tStart, tEnd = this.kdtree.intersection(orig, dir)
       this.kdtree.traverse(orig, dir, 0, distance(*vertex, *orig))
       # pg.draw.line(SURF, (0,0,0), vertex, (orig[0],-orig[1]))
     # this.litVertices.clear()
@@ -1390,8 +1405,9 @@ class World:
     this.draw()
     this.buildEdgePool()
     this.buildKdTree()
-    # this.kdtree.draw()
-    this.castRays()
+    this.kdtree.draw()
+    this.kdtree.point.draw()
+    # this.castRays()
 
 if __name__ == "__main__":
   start = time.time()
@@ -1470,7 +1486,7 @@ if __name__ == "__main__":
       player.mine()
     if pg.mouse.get_pressed()[2]:   #right click
       player.place()
-
+    mouse = pg.mouse.get_pos()
     for event in pg.event.get():
       if event.type == QUIT:
         pg.quit()
@@ -1480,11 +1496,15 @@ if __name__ == "__main__":
       elif event.type == KEYDOWN and event.key == pg.K_e:
         check_for_interaction()
       elif event.type == KEYDOWN and event.key == pg.K_m:
-        pixel = tuple(map(lambda a: 20*a,pixelToCoord(*pg.mouse.get_pos())))
-        print(pixel, world.mask.get_at(pixel), world.blockAt(*pixelToCoord(*pg.mouse.get_pos())).rect.topleft)
+        pass
+        # print(mouse, (mouse[0] + player.camera.left, mouse[1] + player.camera.top), world.kdtree.point, world.kdtree.split)
+        # pixel = tuple(map(lambda a: 20*a,pixelToCoord(*pg.mouse.get_pos())))
+        # print(pixel, world.mask.get_at(pixel), world.blockAt(*pixelToCoord(*pg.mouse.get_pos())).rect.topleft)
         
         # print(world.mask.get_at())
-
+    
+    mpoint = Point(mouse[0] + player.camera.left, mouse[1] + player.camera.top)
+    world.kdtree.query(mpoint)
     SURF.blit(ASURF, (0, 0))
     # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
     # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
