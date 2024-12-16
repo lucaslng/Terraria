@@ -27,6 +27,17 @@ class Direction:
   WEST=2
   EAST=3
 
+class SpriteSheet:
+  '''sprite sheet class'''
+  def __init__(this, imageName: str):
+    this.sheet = pg.image.load(imageName).convert_alpha()
+  def get(this, frame, width, height, scale, colour):
+    image = pg.Surface((width, height)).convert_alpha()
+    image.blit(this.sheet, (0, 0), ((frame * width), 0, width, height))
+    image = pg.transform.scale(image, (width * scale, height * scale))
+    image.set_colorkey(colour)
+    return image
+
 def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   """Returns coordinate based on pixel location"""
   coord = int((x + player.camera.left) // BLOCK_SIZE), int(
