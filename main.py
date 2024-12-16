@@ -935,7 +935,7 @@ class Sun:
   sunTexture = pg.transform.scale(pg.image.load("sun.png"), (size, size))
   # pg.transform.threshold(sunTexture, sunTexture, (0,0,0,255), (120,120,120,0), (0,0,0,0), 1, inverse_set=True)
   def __init__(this):
-    this.pos = (FRAME.centerx, 0)
+    this.pos = (WORLD_WIDTH*20//2, -100000)
   def draw(this):
     ASURF.blit(this.sunTexture, (HEIGHT * 0.1, HEIGHT * 0.1, this.size, this.size))
 
@@ -980,7 +980,10 @@ class KdTree:
     this.point = sortedPoints[n//2]
     this.left = KdTree(sortedPoints[:n//2], depth=depth+1)
     this.right = KdTree(sortedPoints[n//2+1:], depth=depth+1)
+  
+  
   def draw(this, x_min, x_max, y_min, y_max):
+    '''draw kdtree boundaries'''
     if not this.point:
       return
     x, y = this.point.coord()
@@ -1280,15 +1283,33 @@ class World:
   
   
   def castRays(this):
-    this.litVertices.clear()
     for vertex in this.edgeVertices:
-      bres = bresenham(*vertex, *sun.pos, True, SHADOW_QUALITY)
-      if bres: 
-        this.litVertices.extend(bres)
-    this.litVertices.extend((FRAME.topleft, FRAME.topright, relativeCoord(*this.topBlock(WORLD_WIDTH-1).rect.topleft), relativeCoord(*this.topBlock(0).rect.topright)))
-    if len(this.litVertices) > 2:
-      this.litVertices.sort(key=lambda a: math.atan2(sun.pos[1]-a[1], sun.pos[0]-a[0]))
-      pg.draw.polygon(LIGHTSURF, (255,255,255,0), [sun.pos] + this.litVertices)
+      sunx, suny = relativeCoord(*sun.pos) # sun coords relative to the camera
+      vx, vy = vertex
+      dx = sunx - vx
+      if dx == 0: sunpos = (sunx, 0)  # edge case, vertical ray down
+      else:
+        dy = suny - vy
+        m = dy/dx
+        # y = mx + b
+        # b = y - mx
+        b = suny - m * sunx
+        # y value of top of screen is 0
+        # 0 = mx + b
+        # -b = mx
+        # x = -b / m
+        x = -b / m
+        sunpos = (x, 0)
+      pg.draw.line(SURF, (0,0,0), vertex, sunpos)
+    # this.litVertices.clear()
+    # for vertex in this.edgeVertices:
+    #   bres = bresenham(*vertex, *sun.pos, True, SHADOW_QUALITY)
+    #   if bres: 
+    #     this.litVertices.extend(bres)
+    # this.litVertices.extend((FRAME.topleft, FRAME.topright, relativeCoord(*this.topBlock(WORLD_WIDTH-1).rect.topleft), relativeCoord(*this.topBlock(0).rect.topright)))
+    # if len(this.litVertices) > 2:
+    #   this.litVertices.sort(key=lambda a: math.atan2(sun.pos[1]-a[1], sun.pos[0]-a[0]))
+    #   pg.draw.polygon(LIGHTSURF, (255,255,255,0), [sun.pos] + this.litVertices)
   
   def update(this):
     this.draw()
@@ -1296,7 +1317,7 @@ class World:
     this.buildKdTree()
     this.kdtree.draw(0,FRAME.width,0,FRAME.height)
     
-    # this.castRays()
+    this.castRays()
 
 if __name__ == "__main__":
   start = time.time()
