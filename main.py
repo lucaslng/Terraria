@@ -4,7 +4,7 @@ from pygame.locals import *
 from pygame import Vector2
 from abc import *
 from dataclasses import dataclass
-from typing import List
+from typing import List, TypedDict
 from enum import Enum
 
 
@@ -12,7 +12,7 @@ WIDTH = 1000
 HEIGHT = 600
 FPS = 60
 
-BLOCK_SIZE = 20
+BLOCK_SIZE = 25
 WORLD_HEIGHT = 256
 WORLD_WIDTH = 1000
 SHADOW_QUALITY = 3
@@ -20,6 +20,14 @@ gravity = 1
 
 SEED = time.time()
 random.seed(SEED)
+start = time.time()
+pg.init()
+clock = pg.time.Clock()
+
+pg.time.set_timer(101,500)
+
+SURF = pg.display.set_mode((WIDTH, HEIGHT), vsync=1)
+pg.display.set_caption("Terraria")
 
 class Direction:
   NORTH=0
@@ -31,12 +39,53 @@ class SpriteSheet:
   '''sprite sheet class'''
   def __init__(this, imageName: str):
     this.sheet = pg.image.load(imageName).convert_alpha()
-  def get(this, frame, width, height, scale, colour):
+  def get(this, x, y, width, height, scale=BLOCK_SIZE, colour=(0,0,0)):
     image = pg.Surface((width, height)).convert_alpha()
-    image.blit(this.sheet, (0, 0), ((frame * width), 0, width, height))
-    image = pg.transform.scale(image, (width * scale, height * scale))
+    image.blit(this.sheet, (0, 0), (x, y, width, height))
+    image = pg.transform.scale(image, (scale, scale))
     image.set_colorkey(colour)
     return image
+
+class Animation:
+  '''list of frames to cycle between for an animation. unit of duration is in frames'''
+  def __init__(this, *args, duration: int=10, startFrame: int = 0):
+    this.arr: List[pg.surface.Surface] = list(args)
+    this.duration = duration
+    this.frame = startFrame * duration
+  
+  def __getitem__(this, i: int) -> pg.surface.Surface:
+    return this.arr[i]
+  
+  def drawAnimated(this, x: int, y: int, flipped=False):
+    '''draws the the animation, takes a pixel relative to camera'''
+    index = this.frame//this.duration
+    this.frame += 1
+    if this.frame > len(this.arr) * this.duration - 1: this.frame = 0
+    return this.drawFrame(x, y, index, flipped)
+
+  def drawFrame(this, x: int, y: int, index=0, flipped=False):
+    '''draws the frame of the given index, takes a pixel relative to camera'''
+    texture = this[index]
+    if flipped: texture = pg.transform.flip(texture, True, False).convert_alpha()
+    return SURF.blit(texture, (x, y))
+
+catSheet = SpriteSheet("cat.png")
+sprites = {
+  "cat": {
+    "walk": Animation(
+      catSheet.get(9, 144, 16, 16),
+      catSheet.get(40, 144, 16, 16),
+      catSheet.get(71, 144, 16, 16),
+      catSheet.get(103, 144, 16, 16),
+      catSheet.get(135, 144, 16, 16),
+      catSheet.get(167, 144, 16, 16),
+      catSheet.get(200, 144, 16, 16),
+      catSheet.get(232, 144, 16, 16)
+    )
+  },
+}
+
+
 
 def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   """Returns coordinate based on pixel location"""
@@ -465,54 +514,6 @@ class Menu:
 class CraftingMenu(Menu):
   def __init__(this):
     super().__init__(Section(3, 3, WIDTH*0.4, HEIGHT*0.3, 60), Section(1, 1, WIDTH*0.4+240, HEIGHT*0.3+60, 60))
-  #   self.grid = [[None for _ in range(3)] for _ in range(3)]  # 3x3 grid
-
-  #   self.grid_pos = (200, 100)
-  #   self.slot_size = 50
-  #   self.slot_padding = 5
-
-  #   self.result_slot_pos = (self.grid_pos[0] + 4 * (
-  #     self.slot_size + self.slot_padding), self.grid_pos[1] + self.slot_size + self.slot_padding)
-  #   self.result_item = None
-
-  # def draw(self):
-  #   for row in range(3):
-  #     for col in range(3):
-  #       x = self.grid_pos[0] + col * (self.slot_size + self.slot_padding)
-  #       y = self.grid_pos[1] + row * (self.slot_size + self.slot_padding)
-
-  #       pg.draw.rect(SURF, (200, 200, 200),
-  #                    (x, y, self.slot_size, self.slot_size))
-
-  #       item = self.grid[row][col]
-  #       if item:
-  #         scaled_item = pg.transform.scale(
-  #           item.texture, (self.slot_size, self.slot_size))
-  #         SURF.blit(scaled_item, (x, y))
-
-  #   pg.draw.rect(SURF, (150, 150, 150),
-  #                (*self.result_slot_pos, self.slot_size, self.slot_size))
-
-  #   if self.result_item:
-  #     scaled_result = pg.transform.scale(
-  #       self.result_item.texture, (self.slot_size, self.slot_size))
-  #     SURF.blit(scaled_result, self.result_slot_pos)
-
-  # def place_item(self, item, row, col):
-  #   if 0 <= row < 3 and 0 <= col < 3:
-  #     self.grid[row][col] = item
-  #     self.check_crafting_recipe()
-
-  # def check_crafting_recipe(self):
-  #   # implement when i feel like it (when i get more chatgpt credits)
-  #   pass
-
-  # def craft(self):
-  #   if self.result_item:
-  #     player.inventory.add_item(self.result_item)
-
-  #     self.grid = [[None for _ in range(3)] for _ in range(3)]
-  #     self.result_item = None
 
 @dataclass
 class Inventory:
@@ -590,7 +591,7 @@ class Entity:
   ):
     this.rect = pg.rect.Rect(x, y, width, height)
     this.texture = texture
-    this.reversedTexture = pg.transform.flip(texture, True, False)
+    this.reversedTexture = pg.transform.flip(texture, True, False).convert_alpha()
     this.mask = pg.mask.from_surface(texture)
     this.health = health
     this.speed = speed
@@ -721,17 +722,15 @@ class Entity:
 
 
 class Player(Entity, HasInventory):
-  texture = pg.transform.scale(
-      pg.image.load("player.png"), (BLOCK_SIZE, BLOCK_SIZE * 2)
-  )
-  reversedTexture = pg.transform.flip(texture, True, False)
+  texture = sprites["cat"]["walk"][0]
+  thisSprites = sprites["cat"]
   reach = 4 * BLOCK_SIZE
   full_heart_texture = pg.transform.scale(
-      pg.image.load("full_heart.png"), (20, 20))
+      pg.image.load("full_heart.png"), (BLOCK_SIZE, BLOCK_SIZE))
   half_heart_texture = pg.transform.scale(
-      pg.image.load("half_heart.png"), (20, 20))
+      pg.image.load("half_heart.png"), (BLOCK_SIZE, BLOCK_SIZE))
   empty_heart_texture = pg.transform.scale(
-      pg.image.load("empty_heart.png"), (20, 20))
+      pg.image.load("empty_heart.png"), (BLOCK_SIZE, BLOCK_SIZE))
   blockFacing = None
 
   def __init__(this):
@@ -743,14 +742,15 @@ class Player(Entity, HasInventory):
     Entity.__init__(
         this,
         this.camera.centerx - BLOCK_SIZE // 2,
-        this.camera.centery - BLOCK_SIZE,
+        this.camera.centery - BLOCK_SIZE // 2,
         BLOCK_SIZE,
-        BLOCK_SIZE * 2,
+        BLOCK_SIZE,
         this.texture,
         10,
         2,
         18,
     )
+    this.mask = pg.mask.Mask((20, 20), True)
 
     HasInventory.__init__(this, 4, 10)
     
@@ -810,7 +810,16 @@ class Player(Entity, HasInventory):
       )
 
   def draw(this):
-    super().draw()
+    if this.hvelo < 0:
+      this.thisSprites["walk"].drawAnimated(*relativeRect(this.rect).topleft, flipped=True)
+      this.previousDirection = 0
+    elif this.hvelo > 0:
+      this.thisSprites["walk"].drawAnimated(*relativeRect(this.rect).topleft)
+      this.previousDirection = 1
+    elif this.previousDirection:
+      this.thisSprites["walk"].drawFrame(*relativeRect(this.rect).topleft)
+    else:
+      this.thisSprites["walk"].drawFrame(*relativeRect(this.rect).topleft, flipped=True)
 
   def hotbar(this) -> list[Slot]:
     '''Returns the first row of the player's inventory'''
@@ -958,9 +967,9 @@ class Edge:
   
   def draw(this):
     # if this.x != this.ex and this.y != this.ey: print("diagonal wtf")
-    pg.draw.line(SURF,(0,0,0),relativeCoord(this.x*20, this.y*20),relativeCoord(this.ex*20, this.ey*20), 3)
-    pg.draw.circle(SURF,(0,255,0),relativeCoord(this.x*20,this.y*20), 3)
-    pg.draw.circle(SURF,(0,255,0),relativeCoord(this.ex*20,this.ey*20), 3)
+    pg.draw.line(SURF,(0,0,0),relativeCoord(this.x*BLOCK_SIZE, this.y*BLOCK_SIZE),relativeCoord(this.ex*BLOCK_SIZE, this.ey*BLOCK_SIZE), 3)
+    pg.draw.circle(SURF,(0,255,0),relativeCoord(this.x*BLOCK_SIZE,this.y*BLOCK_SIZE), 3)
+    pg.draw.circle(SURF,(0,255,0),relativeCoord(this.ex*BLOCK_SIZE,this.ey*BLOCK_SIZE), 3)
   def __repr__(this):
     return str((this.x, this.y, this.ex, this.ey))
 
@@ -972,7 +981,7 @@ class World:
     this.array = [
         [AirBlock(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
     ]
-    this.mask = pg.mask.Mask((WORLD_WIDTH*20, WORLD_HEIGHT*20))
+    this.mask = pg.mask.Mask((WORLD_WIDTH*BLOCK_SIZE, WORLD_HEIGHT*BLOCK_SIZE))
     this.__generateWorld()
     this.generateMask()
 
@@ -1227,8 +1236,8 @@ class World:
               this.edgePool.append(edge)
               cur.edgeExist[Direction.SOUTH] = True
     for i in range(len(this.edgePool)):
-      this.vertices.add(relativeCoord(this.edgePool[i].x*20,this.edgePool[i].y*20))
-      this.vertices.add(relativeCoord(this.edgePool[i].ex*20,this.edgePool[i].ey*20))
+      this.vertices.add(relativeCoord(this.edgePool[i].x*BLOCK_SIZE,this.edgePool[i].y*BLOCK_SIZE))
+      this.vertices.add(relativeCoord(this.edgePool[i].ex*BLOCK_SIZE,this.edgePool[i].ey*BLOCK_SIZE))
       # this.edgePool[i].draw()
   
   def castRays(this):
@@ -1248,14 +1257,7 @@ class World:
     this.castRays()
 
 if __name__ == "__main__":
-  start = time.time()
-  pg.init()
-  clock = pg.time.Clock()
   
-  pg.time.set_timer(101,500)
-  
-  SURF = pg.display.set_mode((WIDTH, HEIGHT), vsync=1)
-  pg.display.set_caption("Terraria")
   
   LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   FRAME = SURF.get_rect()
@@ -1334,7 +1336,7 @@ if __name__ == "__main__":
       elif event.type == KEYDOWN and event.key == pg.K_e:
         check_for_interaction()
       elif event.type == KEYDOWN and event.key == pg.K_m:
-        pixel = tuple(map(lambda a: 20*a,pixelToCoord(*pg.mouse.get_pos())))
+        pixel = tuple(map(lambda a: BLOCK_SIZE*a,pixelToCoord(*pg.mouse.get_pos())))
         print(pixel, world.mask.get_at(pixel), world.blockAt(*pixelToCoord(*pg.mouse.get_pos())).rect.topleft)
         
         # print(world.mask.get_at())
