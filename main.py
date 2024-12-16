@@ -1061,25 +1061,31 @@ class KdTree:
     '''find t-start and t-end for the bounding box given a line'''
     rox, roy, = orig
     rdx, rdy = dir
+    # print(rdx, rdy)
     
     if rdx != 0:
-      t1x = (this.x_min - rox) / rdx
-      t2x = (this.x_max - rox) / rdx
+      t1x = (this.x_min + player.camera.x - rox) / rdx
+      t2x = (this.x_max + player.camera.x - rox) / rdx
+      t1x, t2x = min(t1x, t2x), max(t1x, t2x)
     else: # vertical line
-      t1y = (this.y_min - roy) / rdy
-      t2y = (this.y_max - roy) / rdy
+      t1y = (this.y_min + player.camera.y - roy) / rdy
+      t2y = (this.y_max + player.camera.y - roy) / rdy
       return t1y, t2y
 
     if rdy != 0:
-      t1y = (this.y_min - roy) / rdy
-      t2y = (this.y_max - roy) / rdy
+      t1y = (this.y_min + player.camera.y - roy) / rdy
+      t2y = (this.y_max + player.camera.y - roy) / rdy
+      t1y, t2y = min(t1y, t2y), max(t1y, t2y)
     else: # horizontal line
-      t1x = (this.x_min - rox) / rdx
-      t2x = (this.x_max - rox) / rdx
+      t1x = (this.x_min + player.camera.x - rox) / rdx
+      t2x = (this.x_max + player.camera.x - rox) / rdx
       return t1x, t2x
     
     start = max(t1x, t1y)
     end = min(t2x, t2y)
+    # if start <= end:
+    #   pg.draw.circle(SURF,(255,0,0),relativeCoord(rox + start * rdx, roy + start * rdy),10)
+    #   pg.draw.circle(SURF,(0,0,0),relativeCoord(rox + end * rdx, roy + end * rdy),10)
     return start, end
   
   def draw(this):
@@ -1369,27 +1375,20 @@ class World:
               this.edgePool.append(edge)
               cur.edgeExist[Direction.SOUTH] = True
     for i in range(len(this.edgePool)):
-      this.edgeVertices.add(relativeCoord(this.edgePool[i].start.x*20,this.edgePool[i].start.y*20))
-      this.edgeVertices.add(relativeCoord(this.edgePool[i].end.x*20,this.edgePool[i].end.y*20))
+      this.edgeVertices.add((this.edgePool[i].start.x*20,this.edgePool[i].start.y*20))
+      this.edgeVertices.add((this.edgePool[i].end.x*20,this.edgePool[i].end.y*20))
   
   
   def castRays(this):
     for vertex in this.edgeVertices:
-      sunx, suny = relativeCoord(*sun.pos) # sun coords relative to the camera
-      nsuny = -suny
+      # pg.draw.circle(SURF,(0,0,0),relativeCoord(*vertex),4)
+      sunx, suny = sun.pos # sun coords 
       vx, vy = vertex
-      nvy = -vy
-      dx = sunx - vx
-      dy = nsuny - nvy
-      if dx == 0: orig = (sunx, FRAME.top)  # edge case, vertical ray down
-      else:
-        m = dy/dx
-        b = nsuny - m * sunx
-        x = -b / m
-        orig = (x, FRAME.top)
-      length = math.sqrt(dx * dx + dy * dy)  # Normalize the direction
-      dir = (dx / length, dy / length)
-      this.kdtree.traverse(orig, dir, 0, distance(*vertex, *orig))
+      dx = vx - sunx
+      dy = vy - suny
+      dir = (dx, dy)
+      # pg.draw.line(SURF,(0,0,0),relativeCoord(*sun.pos), relativeCoord(sunx+dx, suny+dy), 2)
+      this.kdtree.traverse(sun.pos, dir, *this.kdtree.intersection(sun.pos, dir))
       # pg.draw.line(SURF, (0,0,0), vertex, (orig[0],-orig[1]))
     # this.litVertices.clear()
     # for vertex in this.edgeVertices:
@@ -1406,8 +1405,8 @@ class World:
     this.buildEdgePool()
     this.buildKdTree()
     this.kdtree.draw()
-    this.kdtree.point.draw()
-    # this.castRays()
+    # this.kdtree.point.draw()
+    this.castRays()
 
 if __name__ == "__main__":
   start = time.time()
@@ -1503,8 +1502,8 @@ if __name__ == "__main__":
         
         # print(world.mask.get_at())
     
-    mpoint = Point(mouse[0] + player.camera.left, mouse[1] + player.camera.top)
-    world.kdtree.query(mpoint)
+    # mpoint = Point(mouse[0] + player.camera.left, mouse[1] + player.camera.top)
+    # world.kdtree.query(mpoint)
     SURF.blit(ASURF, (0, 0))
     # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
     # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
