@@ -951,6 +951,8 @@ class Point:
     pg.draw.circle(SURF,color, this.coord(), 3)
   def coord(this):
     return relativeCoord(this.x,this.y)
+  def tup(this):
+    return this.x, this.y
   def __hash__(this):
     return hash((this.x,this.y))
 
@@ -959,8 +961,9 @@ class Edge:
   start: Point
   end: Point
   
-  def draw(this):
-    pg.draw.line(SURF,(0,0,0),relativeCoord(start.x*20, start.y*20),relativeCoord(end.x*20, end.y*20), 3)
+  def draw(this, rel: bool = True):
+    if rel: pg.draw.line(SURF,(0,0,0),relativeCoord(this.start.x*20, this.start.y*20),relativeCoord(this.end.x*20, this.end.y*20), 3)
+    else: pg.draw.line(SURF,(0,0,0),this.start.tup(),this.end.tup(),3)
     this.start.draw()
     this.end.draw()
 
@@ -987,25 +990,57 @@ class KdTree:
     if axis == 0:  # Vertical split (x-axis)
       left_boundary = (x_min, x, y_min, y_max)
       right_boundary = (x, x_max, y_min, y_max)
+      this.split = Edge(Point(x, y_min), Point(x, y_max))
     else:  # Horizontal split (y-axis)
       pg.draw.line(SURF, (0, 0, 255), (x_min, y), (x_max, y), 1)
       # Update boundaries for children
       left_boundary = (x_min, x_max, y_min, y)
       right_boundary = (x_min, x_max, y, y_max)
+      this.split = Edge(Point(x_min, y), Point(x_max, y))
     
     this.left = KdTree(sortedPoints[:n//2], *left_boundary, depth=depth+1)
     this.right = KdTree(sortedPoints[n//2+1:], *right_boundary, depth=depth+1)
+  
+  def traverse(this, tStart: Point, tEnd: Point):
+    '''traverse kd tree'''
+    pass
+  
+  def intersection(this, rayStart: Point, rayEnd: Point):
+    '''detect whether line intersects with blocks in kdtree'''
+    rox = rayStart.x
+    roy = rayStart.y
+    rdx = rayEnd.x - rox
+    rdy = rayEnd.y - roy
+    
+    if rdx != 0:
+      t1x = (this.x_min - rox) / rdx
+      t2x = (this.x_max - rox) / rdx
+    else: # vertical line
+      t1y = (this.y_min - roy) / rdy
+      t2y = (this.y_max - roy) / rdy
+      return t1y, t2y
+
+    if rdy != 0:
+      t1y = (this.y_min - roy) / rdy
+      t2y = (this.y_max - roy) / rdy
+    else: # horizontal line, but we don't need to calculate t1x and t2x again
+      return t1x, t2x
+    
+    start = max(t1x, t1y)
+    end = min(t2x, t2y)
+    return start, end
   
   def draw(this):
     '''draw kdtree boundaries'''
     if not this.point:
       return
-    x, y = this.point.coord()
-    axis = this.depth % 2
-    if axis == 0:  # Vertical split (x-axis)
-      pg.draw.line(SURF, (255, 0, 0), (x, this.y_min), (x, this.y_max), 1)
-    else:  # Horizontal split (y-axis)
-      pg.draw.line(SURF, (0, 0, 255), (this.x_min, y), (this.x_max, y), 1)
+    this.split.draw(rel=False)
+    # x, y = this.point.coord()
+    # axis = this.depth % 2
+    # if axis == 0:  # Vertical split (x-axis)
+    #   pg.draw.line(SURF, (255, 0, 0), (x, this.y_min), (x, this.y_max), 1)
+    # else:  # Horizontal split (y-axis)
+    #   pg.draw.line(SURF, (0, 0, 255), (this.x_min, y), (this.x_max, y), 1)
     if this.left:
       this.left.draw()
     if this.right:
