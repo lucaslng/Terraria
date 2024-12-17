@@ -416,7 +416,11 @@ class OakLogItem(PlaceableItem):
 class LeavesBlock(Block):
     leavesTexture = pg.transform.scale(pg.image.load("leaves.png"), (BLOCK_SIZE, BLOCK_SIZE))  
     def __init__(self, x, y):
-        super().__init__("Leaves", self.leavesTexture, x, y, 1, BlockType.SHEARS)
+      super().__init__("Leaves", self.leavesTexture, x, y, 1, BlockType.SHEARS)
+class LeavesItem(PlaceableItem):
+    leavesItemTexture = pg.transform.scale(pg.image.load("leaves.png"), (Item.SIZE, Item.SIZE))
+    def __init__(self):
+      super().__init__("Leaves", self.leavesItemTexture, 64)
 
 class StoneBlock(Block):
   stoneTexture = pg.transform.scale(
@@ -487,6 +491,7 @@ BlockItemRegistry.register(DirtBlock, DirtItem)
 BlockItemRegistry.register(StoneBlock, CobbleStoneItem)
 BlockItemRegistry.register(CobblestoneBlock, CobbleStoneItem)
 BlockItemRegistry.register(OakLogBlock, OakLogItem)
+BlockItemRegistry.register(LeavesBlock, LeavesItem)
 BlockItemRegistry.register(IronOreBlock, IronOreItem)
 BlockItemRegistry.register(CoalOreBlock, CoalItem)
 
@@ -1415,7 +1420,7 @@ if __name__ == "__main__":
   ASURF.fill((0, 0, 0, 0))
   
   #Give player items at the beginning of the game
-  defaultItems = [StonePickaxe(), WoodenAxe(), WoodenShovel(), WoodenSword(), Shears(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)]
+  defaultItems = [StonePickaxe(), WoodenAxe(), WoodenShovel(), LeavesItem(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)]
   
   player = Player()
   craftingMenu = CraftingMenu()
