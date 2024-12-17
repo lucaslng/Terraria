@@ -412,6 +412,11 @@ class OakLogItem(PlaceableItem):
     def __init__(self):
         super().__init__("Oak Log", self.oakLogItemTexture, 64)
 
+class LeavesBlock(Block):
+    leavesTexture = pg.transform.scale(pg.image.load("leaves.png"), (BLOCK_SIZE, BLOCK_SIZE))  
+    def __init__(self, x, y):
+        super().__init__("Leaves", self.leavesTexture, x, y, 2, BlockType.SHEARS)
+
 class StoneBlock(Block):
   stoneTexture = pg.transform.scale(
     pg.image.load("stone.png"), (BLOCK_SIZE, BLOCK_SIZE))
@@ -952,7 +957,9 @@ class Player(Entity, HasInventory):
         world[this.blockFacing.y][this.blockFacing.x] = AirBlock(
             this.blockFacing.x, this.blockFacing.y
         )
-        this.inventory.addItem(this.blockFacing.item()())
+        item = this.blockFacing.item()
+        if item:
+          this.inventory.addItem(item())
 
   def place(this):
     if this.heldSlot().item and this.heldSlot().count > 0 and this.heldSlot().item.isPlaceable():
@@ -1175,20 +1182,33 @@ class World:
           this.array[y][x] = AirBlock(x, y)
           
       #Tree pass
-      for y in range(0, WORLD_WIDTH):
-        top_block = this.array[grassHeight][y]
-        if isinstance(top_block, DirtBlock) and isinstance(top_block.variant, DirtVariantDirt):
-            if random.randint(0, 10) > 7:
-                this.__generateTree(y, grassHeight)
+      if isinstance(this[y][x], DirtBlock):
+        if random.randint(0, 10) > 8:
+          this.__generateTree(x, y-1)
 
   def generateMask(this):
     for row in this.array:
       for block in row:
         this.mask.draw(block.mask, block.rect.topleft)
         
-  def __generateTree(this, x, y, max_height=6):
-    #will do
-    pass
+  def __generateTree(this, x, y):
+    if x < 2: return
+    if x > WORLD_WIDTH - 2: return
+    height = random.randint(3, 7)
+    for r in range(y-height-1, y+1):
+      for c in range(x-2, x+3):
+        if not this[r][c].isAir: return
+    for i in range(height):
+      this[y-i][x] = OakLogBlock(x, y-i)
+    this[y-height][x-2] = LeavesBlock(x-2, y-height)
+    this[y-height][x-1] = LeavesBlock(x-1, y-height)
+    this[y-height][x] = LeavesBlock(x, y-height)
+    this[y-height][x+1] = LeavesBlock(x+1, y-height)
+    this[y-height][x+2] = LeavesBlock(x+2, y-height)
+    this[y-height-1][x-1] = LeavesBlock(x-1, y-height-1)
+    this[y-height-1][x] = LeavesBlock(x, y-height-1)
+    this[y-height-1][x+1] = LeavesBlock(x+1, y-height-1)
+    
   
   def hoveredBlock(this) -> Block:
     mousepos = pg.mouse.get_pos()
@@ -1398,9 +1418,9 @@ if __name__ == "__main__":
         # print(world.mask.get_at())
 
     SURF.blit(ASURF, (0, 0))
-    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
-    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
-    SURF.blit(LIGHTSURF, ((0,0)))
+    # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
+    # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
+    # SURF.blit(LIGHTSURF, ((0,0)))
     player.drawHUD()
     SURF.blit(font20.render(str(pixelToCoord(*player.camera.center)), True, (0,0,0)), (20, 50))
     if craftingMenu.isActive: craftingMenu.draw()
