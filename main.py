@@ -529,31 +529,25 @@ class Slot:
         )
         SURF.blit(count_text, text_rect.topleft)
         
-      # Draw durability bar for tools
+      #Draw durability bar
       if this.item.isTool():
-        # Durability bar parameters
         bar_height = 3
         bar_width = size - 4
         bar_x = x + 2
         bar_y = y + size - bar_height - 1
         
-        # Calculate durability percentage
         tool = this.item
         durability_percentage = tool.durability / tool.startingDurability
         
-        # Choose color based on durability
         if durability_percentage > 0.6:
-          color = (0, 255, 0)  # Green for high durability
+          colour = (0, 255, 0)
         elif durability_percentage > 0.3:
-          color = (255, 165, 0)  # Orange for medium durability
+          colour = (255, 165, 0)
         else:
-          color = (255, 0, 0)  # Red for low durability
+          colour = (255, 0, 0)
         
-        # Draw background (dark gray)
         pg.draw.rect(SURF, (50, 50, 50), (bar_x, bar_y, bar_width, bar_height))
-        
-        # Draw actual durability
-        pg.draw.rect(SURF, color, (bar_x, bar_y, int(bar_width * durability_percentage), bar_height))
+        pg.draw.rect(SURF, colour, (bar_x, bar_y, int(bar_width * durability_percentage), bar_height))
 
 @dataclass
 class Section:
@@ -624,33 +618,6 @@ class Tool(Item):
   
   def __post_init__(self):
     self.durability = self.startingDurability
-
-  def drawDurabilityBar(this, x: int, y: int, width: int = 40, height: int = 5):
-    """
-    Draw a durability bar for the tool
-    
-    Args:
-        x (int): X coordinate to draw the bar
-        y (int): Y coordinate to draw the bar
-        width (int): Width of the durability bar
-        height (int): Height of the durability bar
-    """
-    # Calculate durability percentage
-    durability_percentage = this.durability / this.startingDurability
-    
-    # Choose color based on durability
-    if durability_percentage > 0.6:
-      color = (0, 255, 0)  # Green for high durability
-    elif durability_percentage > 0.3:
-      color = (255, 165, 0)  # Orange for medium durability
-    else:
-      color = (255, 0, 0)  # Red for low durability
-    
-    # Draw background (gray)
-    pg.draw.rect(SURF, (100, 100, 100), (x, y, width, height))
-    
-    # Draw actual durability
-    pg.draw.rect(SURF, color, (x, y, int(width * durability_percentage), height))
 
 class Shears(Tool):
   shearsTexture = pg.transform.scale(
