@@ -265,6 +265,7 @@ class BlockType(Enum):
   SHOVEL = 2
   SWORD = 3
   SHEARS = 4
+  FLINTANDSTEEL = 5
 
 @dataclass
 class Block:
@@ -592,35 +593,56 @@ class Inventory:
 @dataclass
 class Tool(Item):
   speed: float
+  startingDurability: int
   blockType: BlockType
+  
+  def __post_init__(self):
+    self.durability = self.startingDurability
 
 class Shears(Tool):
   shearsTexture = pg.transform.scale(
     pg.image.load("shears.png"), (Item.SIZE, Item.SIZE))
   def __init__(this):
-    super().__init__("Shears", this.shearsTexture, 1, 1.5, BlockType.SHEARS)
+    super().__init__("Shears", this.shearsTexture, 1, 1.5, 238, BlockType.SHEARS)
+    
+'''Wooden'''
 class WoodenPickaxe(Tool):
   woodenPickaxeTexture = pg.transform.scale(
     pg.image.load("wooden_pickaxe.png"), (Item.SIZE, Item.SIZE))
   def __init__(this):
-    super().__init__("Wooden Pickaxe", this.woodenPickaxeTexture, 1, 1.5, BlockType.PICKAXE)  
+    super().__init__("Wooden Pickaxe", this.woodenPickaxeTexture, 1, 1.5, 59, BlockType.PICKAXE)  
 class WoodenAxe(Tool):
   woodenAxeTexture = pg.transform.scale(
     pg.image.load("wooden_axe.png"), (Item.SIZE, Item.SIZE)
   )
   def __init__(this):
-    super().__init__("Wooden Axe", this.woodenAxeTexture, 1, 1.5, BlockType.AXE)
+    super().__init__("Wooden Axe", this.woodenAxeTexture, 1, 1.5, 59, BlockType.AXE)
 class WoodenShovel(Tool):
   woodenShovelTexture = pg.transform.scale(
     pg.image.load("wooden_shovel.png"), (Item.SIZE, Item.SIZE)
   )
   def __init__(this):
-    super().__init__("Wooden Shovel", this.woodenShovelTexture, 1, 1.5, BlockType.SHOVEL)
+    super().__init__("Wooden Shovel", this.woodenShovelTexture, 1, 1.5, 59, BlockType.SHOVEL)
 class WoodenSword(Tool):
   woodenSwordTexture = pg.transform.scale(
     pg.image.load("wooden_sword.png"), (Item.SIZE, Item.SIZE))
   def __init__(this):
-    super().__init__("Wooden Sword", this.woodenSwordTexture, 1, 1.5, BlockType.SWORD)
+    super().__init__("Wooden Sword", this.woodenSwordTexture, 1, 1.5, 59, BlockType.SWORD)
+    
+'''Stone'''
+class StonePickaxe(Tool):
+  stonePickaxeTexture = pg.transform.scale(
+    pg.image.load("stone_pickaxe.png"), (Item.SIZE, Item.SIZE))
+  def __init__(this):
+    super().__init__("Stone Pickaxe", this.stonePickaxeTexture, 1, 2.5, 131, BlockType.PICKAXE)
+class StoneAxe(Tool):
+  stoneAxeTexture = pg.transform.scale(
+    pg.image.load("stone_axe.png"), (Item.SIZE, Item.SIZE))
+  def __init__(this):
+    super().__init__("Stone Axe", this.stoneAxeTexture, 1, 2.5, 131, BlockType.AXE)
+    
+'''Gold'''
+
 
 class HasInventory:
   """Parent class for classes than have an inventory"""
@@ -826,7 +848,7 @@ class Player(Entity, HasInventory):
     this.fall_start_y = None
     this.fall_damage_threshold = 6 * BLOCK_SIZE
     this.is_initial_spawn = True
-    this.spawn_protection_timer = 60
+    this.spawn_protection_timer = 120
 
     this.usingItem = False
     this.placingBlock = False
@@ -931,6 +953,8 @@ class Player(Entity, HasInventory):
       slot_y = HOTBAR_Y
       slot = this.hotbar()[col]
       slot.draw(slot_x, slot_y)
+      
+        
 
   def move(this):
     if this.is_initial_spawn:
@@ -965,8 +989,13 @@ class Player(Entity, HasInventory):
     if this.blockFacing:
       if this.blockFacing.amountBroken < this.blockFacing.hardness:
         miningSpeed = 1
-        if this.heldSlot().item and this.heldSlot().item.isTool() and this.heldSlot().item.blockType == this.blockFacing.blockType:
-          miningSpeed = this.heldSlot().item.speed
+        
+        if this.heldSlot().item and this.heldSlot().item.isTool():
+          #Checks if durability is 0
+          if this.heldSlot().item.durability == 0:
+            this.heldSlot().item = None
+            this.heldSlot().count = 0
+            
         this.usingItem = True
         this.blockFacing.amountBroken += miningSpeed / FPS
       else:
@@ -977,6 +1006,13 @@ class Player(Entity, HasInventory):
             this.blockFacing.x, this.blockFacing.y
         )
         item = this.blockFacing.item()
+        
+        if this.heldSlot().item and this.heldSlot().item.isTool():
+          if this.heldSlot().item.blockType == this.blockFacing.blockType:
+            miningSpeed = this.heldSlot().item.speed
+            
+          this.heldSlot().item.durability -= 1
+        
         if item:
           this.inventory.addItem(item())
 
@@ -1359,7 +1395,9 @@ if __name__ == "__main__":
   ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   ASURF.fill((0, 0, 0, 0))
   
-  defaultItems = [WoodenPickaxe(), WoodenAxe(), WoodenShovel(), WoodenSword(), Shears(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)]
+  #Give player items at the beginning of the game
+  defaultItems = [StonePickaxe(), WoodenAxe(), WoodenShovel(), WoodenSword(), Shears(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)]
+  
   player = Player()
   craftingMenu = CraftingMenu()
   
