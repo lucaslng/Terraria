@@ -1183,8 +1183,8 @@ class World:
           
       #Tree pass
       if isinstance(this[y][x], DirtBlock):
-        if random.randint(0, 10) > 8:
-          this.__generateTree(x, y-1)
+        # if random.randint(0, 10) > 8:
+        this.__generateTree(x, y-1)
 
   def generateMask(this):
     for row in this.array:
@@ -1192,8 +1192,8 @@ class World:
         this.mask.draw(block.mask, block.rect.topleft)
         
   def __generateTree(this, x, y):
-    if x < 2: return
-    if x > WORLD_WIDTH - 2: return
+    if x < 3: return
+    if x > WORLD_WIDTH - 3: return
     height = random.randint(3, 7)
     for r in range(y-height-1, y+1):
       for c in range(x-2, x+3):
