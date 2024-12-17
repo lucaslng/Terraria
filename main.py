@@ -415,7 +415,7 @@ class OakLogItem(PlaceableItem):
 class LeavesBlock(Block):
     leavesTexture = pg.transform.scale(pg.image.load("leaves.png"), (BLOCK_SIZE, BLOCK_SIZE))  
     def __init__(self, x, y):
-        super().__init__("Leaves", self.leavesTexture, x, y, 2, BlockType.SHEARS)
+        super().__init__("Leaves", self.leavesTexture, x, y, 1, BlockType.SHEARS)
 
 class StoneBlock(Block):
   stoneTexture = pg.transform.scale(
@@ -594,14 +594,33 @@ class Tool(Item):
   speed: float
   blockType: BlockType
 
-
+class Shears(Tool):
+  shearsTexture = pg.transform.scale(
+    pg.image.load("shears.png"), (Item.SIZE, Item.SIZE))
+  def __init__(this):
+    super().__init__("Shears", this.shearsTexture, 1, 1.5, BlockType.SHEARS)
 class WoodenPickaxe(Tool):
   woodenPickaxeTexture = pg.transform.scale(
     pg.image.load("wooden_pickaxe.png"), (Item.SIZE, Item.SIZE))
-
   def __init__(this):
-    super().__init__("Wooden Pickaxe", this.woodenPickaxeTexture, 1, 1.5, BlockType.PICKAXE)
-
+    super().__init__("Wooden Pickaxe", this.woodenPickaxeTexture, 1, 1.5, BlockType.PICKAXE)  
+class WoodenAxe(Tool):
+  woodenAxeTexture = pg.transform.scale(
+    pg.image.load("wooden_axe.png"), (Item.SIZE, Item.SIZE)
+  )
+  def __init__(this):
+    super().__init__("Wooden Axe", this.woodenAxeTexture, 1, 1.5, BlockType.AXE)
+class WoodenShovel(Tool):
+  woodenShovelTexture = pg.transform.scale(
+    pg.image.load("wooden_shovel.png"), (Item.SIZE, Item.SIZE)
+  )
+  def __init__(this):
+    super().__init__("Wooden Shovel", this.woodenShovelTexture, 1, 1.5, BlockType.SHOVEL)
+class WoodenSword(Tool):
+  woodenSwordTexture = pg.transform.scale(
+    pg.image.load("wooden_sword.png"), (Item.SIZE, Item.SIZE))
+  def __init__(this):
+    super().__init__("Wooden Sword", this.woodenSwordTexture, 1, 1.5, BlockType.SWORD)
 
 class HasInventory:
   """Parent class for classes than have an inventory"""
@@ -1340,7 +1359,7 @@ if __name__ == "__main__":
   ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   ASURF.fill((0, 0, 0, 0))
   
-  defaultItems = [WoodenPickaxe(), CraftingTableItem(), OakLogItem()] + [CobbleStoneItem() for _ in range(64)]
+  defaultItems = [WoodenPickaxe(), WoodenAxe(), WoodenShovel(), WoodenSword(), Shears(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)]
   player = Player()
   craftingMenu = CraftingMenu()
   
