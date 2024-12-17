@@ -776,7 +776,7 @@ class Player(Entity, HasInventory):
         2,
         18,
     )
-    this.mask = pg.mask.Mask((20, 20), True)
+    this.mask = pg.mask.Mask((BLOCK_SIZE, BLOCK_SIZE), True)
 
     HasInventory.__init__(this, 4, 10)
     
@@ -987,7 +987,7 @@ class Sun:
   sunTexture = pg.transform.scale(pg.image.load("sun.png"), (size, size))
   # pg.transform.threshold(sunTexture, sunTexture, (0,0,0,255), (120,120,120,0), (0,0,0,0), 1, inverse_set=True)
   def __init__(this):
-    this.pos = (WORLD_WIDTH*20//2, -100)
+    this.pos = (WORLD_WIDTH*BLOCK_SIZE//2, -100)
   def draw(this):
     ASURF.blit(this.sunTexture, (HEIGHT * 0.1, HEIGHT * 0.1, this.size, this.size))
 
@@ -1014,7 +1014,7 @@ class Edge:
   end: Point
   
   def draw(this, rel: bool = True):
-    if rel: pg.draw.line(SURF,(0,0,0),relativeCoord(this.start.x*20, this.start.y*20),relativeCoord(this.end.x*20, this.end.y*20), 3)
+    if rel: pg.draw.line(SURF,(0,0,0),relativeCoord(this.start.x*20, this.start.y*BLOCK_SIZE),relativeCoord(this.end.x*BLOCK_SIZE, this.end.y*BLOCK_SIZE), 3)
     else: pg.draw.line(SURF,(0,0,0),this.start.tup(),this.end.tup(),3)
     this.start.draw()
     this.end.draw()
