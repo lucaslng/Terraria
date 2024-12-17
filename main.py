@@ -987,7 +987,7 @@ class Sun:
   sunTexture = pg.transform.scale(pg.image.load("sun.png"), (size, size))
   # pg.transform.threshold(sunTexture, sunTexture, (0,0,0,255), (120,120,120,0), (0,0,0,0), 1, inverse_set=True)
   def __init__(this):
-    this.pos = (WORLD_WIDTH*BLOCK_SIZE//2, -100)
+    this.pos = (WORLD_WIDTH*BLOCK_SIZE//2, -1000)
   def draw(this):
     ASURF.blit(this.sunTexture, (HEIGHT * 0.1, HEIGHT * 0.1, this.size, this.size))
 
@@ -1074,8 +1074,11 @@ class KdTree:
       # print("hit leaf")
       if this.point:
         print(this.point.coord())
+        intersects
         pg.draw.circle(SURF,(0,0,0),this.point.coord(),3)
-      return tStart
+        return tStart
+      else:
+        return 1e9
     
     axis = this.depth % 2
     dk = dir[axis]
@@ -1156,7 +1159,7 @@ class KdTree:
     # pg.draw.circle(SURF, (0, 255, 0), (x, y), 3)
 
 class World:
-  litVertices = list()
+  vertices = list()
   edgeVertices = set()
   allBlockPoints: Set[Point] = set()
   edgePool: List[Edge] = list()
@@ -1343,7 +1346,7 @@ class World:
         block = this[y][x]
         if not block.isAir:
           block.drawBlock()
-          this.allBlockPoints.update(block.points)
+          this.allBlockPoints.add(block.points[0])
     # for point in this.allBlockPoints:
     #   point.draw()
   
@@ -1427,8 +1430,8 @@ class World:
               this.edgePool.append(edge)
               cur.edgeExist[Direction.SOUTH] = True
     for i in range(len(this.edgePool)):
-      this.vertices.add(relativeCoord(this.edgePool[i].x*BLOCK_SIZE,this.edgePool[i].y*BLOCK_SIZE))
-      this.vertices.add(relativeCoord(this.edgePool[i].ex*BLOCK_SIZE,this.edgePool[i].ey*BLOCK_SIZE))
+      this.edgeVertices.add((this.edgePool[i].start.x*BLOCK_SIZE,this.edgePool[i].start.y*BLOCK_SIZE))
+      this.edgeVertices.add((this.edgePool[i].end.x*BLOCK_SIZE,this.edgePool[i].end.y*BLOCK_SIZE))
       # this.edgePool[i].draw()
   
   def castRays(this):
