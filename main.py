@@ -80,8 +80,33 @@ sprites = {
       catSheet.get(135, 144, 16, 16),
       catSheet.get(167, 144, 16, 16),
       catSheet.get(200, 144, 16, 16),
-      catSheet.get(232, 144, 16, 16)
-    )
+      catSheet.get(232, 144, 16, 16),
+    ),
+    "run": Animation(
+      catSheet.get(9, 176, 16, 16),
+      catSheet.get(40, 176, 16, 16),
+      catSheet.get(71, 176, 16, 16),
+      catSheet.get(103, 176, 16, 16),
+      catSheet.get(135, 176, 16, 16),
+      catSheet.get(167, 176, 16, 16),
+      catSheet.get(200, 176, 16, 16),
+      catSheet.get(232, 176, 16, 16),
+    ),
+    "jump": Animation(
+      catSheet.get(9, 272, 16, 16),
+      catSheet.get(40, 272, 16, 16),
+      catSheet.get(71, 272, 16, 16),
+      catSheet.get(103, 272, 16, 16),
+      catSheet.get(135, 272, 16, 16),
+      catSheet.get(167, 272, 16, 16),
+      catSheet.get(200, 272, 16, 16),
+    ),
+    "sit": Animation(
+      catSheet.get(8, 16, 16, 16),
+      catSheet.get(40, 16, 16, 16),
+      catSheet.get(72, 16, 16, 16),
+      catSheet.get(104, 16, 16, 16),
+    ),
   },
 }
 
@@ -810,16 +835,23 @@ class Player(Entity, HasInventory):
       )
 
   def draw(this):
+    # print(this.vvelo)
     if this.hvelo < 0:
-      this.thisSprites["walk"].drawAnimated(*relativeRect(this.rect).topleft, flipped=True)
+      if this.vvelo < -4:
+        this.thisSprites["jump"].drawFrame(*relativeRect(this.rect).topleft, 2, flipped=True)
+      else:
+        this.thisSprites["walk"].drawAnimated(*relativeRect(this.rect).topleft, flipped=True)
       this.previousDirection = 0
     elif this.hvelo > 0:
-      this.thisSprites["walk"].drawAnimated(*relativeRect(this.rect).topleft)
+      if this.vvelo < -4:
+        this.thisSprites["jump"].drawFrame(*relativeRect(this.rect).topleft, 2)
+      else:
+        this.thisSprites["walk"].drawAnimated(*relativeRect(this.rect).topleft)
       this.previousDirection = 1
     elif this.previousDirection:
-      this.thisSprites["walk"].drawFrame(*relativeRect(this.rect).topleft)
+      this.thisSprites["sit"].drawAnimated(*relativeRect(this.rect).topleft)
     else:
-      this.thisSprites["walk"].drawFrame(*relativeRect(this.rect).topleft, flipped=True)
+      this.thisSprites["sit"].drawAnimated(*relativeRect(this.rect).topleft, flipped=True)
 
   def hotbar(this) -> list[Slot]:
     '''Returns the first row of the player's inventory'''
