@@ -397,10 +397,26 @@ class DirtVariantGrass(DirtVariant):
 class DirtBlock(Block):
   def __init__(this, x, y, variant: DirtVariant = DirtVariantDirt()):
     super().__init__(variant.name, variant.texture, x, y, 1, BlockType.SHOVEL)
+    
+    this.variant = variant.name.lower()
 class DirtItem(PlaceableItem):
   dirtItemTexture = pg.transform.scale(pg.image.load("dirt.png"), (Item.SIZE, Item.SIZE))
   def __init__(this):
     super().__init__("Dirt", this.dirtItemTexture, 64)
+    
+class OakLogBlock(Block):
+    oakLogTexture = pg.transform.scale(pg.image.load("oak_log.png"), (BLOCK_SIZE, BLOCK_SIZE))  
+    def __init__(self, x, y):
+        super().__init__("Oak Log", self.oakLogTexture, x, y, 2, BlockType.AXE)
+class OakLogItem(PlaceableItem):
+    oakLogItemTexture = pg.transform.scale(pg.image.load("oak_log.png"), (Item.SIZE, Item.SIZE))
+    def __init__(self):
+        super().__init__("Oak Log", self.oakLogItemTexture, 64)
+
+class LeavesBlock(Block):
+    leavesTexture = pg.transform.scale(pg.image.load("leaves.png"), (BLOCK_SIZE, BLOCK_SIZE))  
+    def __init__(self, x, y):
+        super().__init__("Leaves", self.leavesTexture, x, y, 1, BlockType.SHEARS)
 
 class StoneBlock(Block):
   stoneTexture = pg.transform.scale(
@@ -470,6 +486,7 @@ BlockItemRegistry.register(CraftingTableBlock, CraftingTableItem)
 BlockItemRegistry.register(DirtBlock, DirtItem)
 BlockItemRegistry.register(StoneBlock, CobbleStoneItem)
 BlockItemRegistry.register(CobblestoneBlock, CobbleStoneItem)
+BlockItemRegistry.register(OakLogBlock, OakLogItem)
 BlockItemRegistry.register(IronOreBlock, IronOreItem)
 BlockItemRegistry.register(CoalOreBlock, CoalItem)
 
@@ -578,14 +595,33 @@ class Tool(Item):
   speed: float
   blockType: BlockType
 
-
+class Shears(Tool):
+  shearsTexture = pg.transform.scale(
+    pg.image.load("shears.png"), (Item.SIZE, Item.SIZE))
+  def __init__(this):
+    super().__init__("Shears", this.shearsTexture, 1, 1.5, BlockType.SHEARS)
 class WoodenPickaxe(Tool):
   woodenPickaxeTexture = pg.transform.scale(
     pg.image.load("wooden_pickaxe.png"), (Item.SIZE, Item.SIZE))
-
   def __init__(this):
-    super().__init__("Wooden Pickaxe", this.woodenPickaxeTexture, 1, 1.5, BlockType.PICKAXE)
-
+    super().__init__("Wooden Pickaxe", this.woodenPickaxeTexture, 1, 1.5, BlockType.PICKAXE)  
+class WoodenAxe(Tool):
+  woodenAxeTexture = pg.transform.scale(
+    pg.image.load("wooden_axe.png"), (Item.SIZE, Item.SIZE)
+  )
+  def __init__(this):
+    super().__init__("Wooden Axe", this.woodenAxeTexture, 1, 1.5, BlockType.AXE)
+class WoodenShovel(Tool):
+  woodenShovelTexture = pg.transform.scale(
+    pg.image.load("wooden_shovel.png"), (Item.SIZE, Item.SIZE)
+  )
+  def __init__(this):
+    super().__init__("Wooden Shovel", this.woodenShovelTexture, 1, 1.5, BlockType.SHOVEL)
+class WoodenSword(Tool):
+  woodenSwordTexture = pg.transform.scale(
+    pg.image.load("wooden_sword.png"), (Item.SIZE, Item.SIZE))
+  def __init__(this):
+    super().__init__("Wooden Sword", this.woodenSwordTexture, 1, 1.5, BlockType.SWORD)
 
 class HasInventory:
   """Parent class for classes than have an inventory"""
@@ -789,7 +825,7 @@ class Player(Entity, HasInventory):
 
     this.falling = False
     this.fall_start_y = None
-    this.fall_damage_threshold = 4 * BLOCK_SIZE
+    this.fall_damage_threshold = 6 * BLOCK_SIZE
     this.is_initial_spawn = True
     this.spawn_protection_timer = 60
 
@@ -941,7 +977,9 @@ class Player(Entity, HasInventory):
         world[this.blockFacing.y][this.blockFacing.x] = AirBlock(
             this.blockFacing.x, this.blockFacing.y
         )
-        this.inventory.addItem(this.blockFacing.item()())
+        item = this.blockFacing.item()
+        if item:
+          this.inventory.addItem(item())
 
   def place(this):
     if this.heldSlot().item and this.heldSlot().count > 0 and this.heldSlot().item.isPlaceable():
@@ -1330,8 +1368,11 @@ class World:
   def __generateWorld(this):
     grassHeightNoise = this.SimplexNoise(19, 1)
     stoneHeightNoise = this.SimplexNoise(30, 1)
+    treeNoise = this.SimplexNoise(19, 1)
+    
     oresNoise = {}
     cavesNoise = this.SimplexNoise(9, 2)
+    
     for ore in ores:
       oresNoise[ore.__name__] = (this.SimplexNoise(ore.veinSize, 2), ore)
     for x in range(0, WORLD_WIDTH):
@@ -1358,15 +1399,39 @@ class World:
           x, grassHeight, DirtVariantGrass()
       )
 
-      # cave pass
+      # Cave pass
       for y in range(WORLD_HEIGHT - 1, grassHeight - 1, - 1):
         if cavesNoise[y][x] > 0.1:
           this.array[y][x] = AirBlock(x, y)
+          
+      #Tree pass
+      if isinstance(this[y][x], DirtBlock):
+        # if random.randint(0, 10) > 8:
+        this.__generateTree(x, y-1)
 
   def generateMask(this):
     for row in this.array:
       for block in row:
         this.mask.draw(block.mask, block.rect.topleft)
+        
+  def __generateTree(this, x, y):
+    if x < 3: return
+    if x > WORLD_WIDTH - 3: return
+    height = random.randint(3, 7)
+    for r in range(y-height-1, y+1):
+      for c in range(x-2, x+3):
+        if not this[r][c].isAir: return
+    for i in range(height):
+      this[y-i][x] = OakLogBlock(x, y-i)
+    this[y-height][x-2] = LeavesBlock(x-2, y-height)
+    this[y-height][x-1] = LeavesBlock(x-1, y-height)
+    this[y-height][x] = LeavesBlock(x, y-height)
+    this[y-height][x+1] = LeavesBlock(x+1, y-height)
+    this[y-height][x+2] = LeavesBlock(x+2, y-height)
+    this[y-height-1][x-1] = LeavesBlock(x-1, y-height-1)
+    this[y-height-1][x] = LeavesBlock(x, y-height-1)
+    this[y-height-1][x+1] = LeavesBlock(x+1, y-height-1)
+    
   
   def hoveredBlock(this) -> Block:
     mousepos = pg.mouse.get_pos()
@@ -1514,14 +1579,12 @@ class World:
     # this.castRays()
 
 if __name__ == "__main__":
-  
-  
   LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   FRAME = SURF.get_rect()
   ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   ASURF.fill((0, 0, 0, 0))
   
-  defaultItems = [WoodenPickaxe(), CraftingTableItem()]
+  defaultItems = [WoodenPickaxe(), WoodenAxe(), WoodenShovel(), WoodenSword(), Shears(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)]
   player = Player()
   craftingMenu = CraftingMenu()
   
