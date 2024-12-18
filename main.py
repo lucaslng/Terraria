@@ -119,9 +119,6 @@ def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   )
   return coord
 
-def distance(x1: float, y1: float, x2: float, y2: float) -> float:
-  return math.hypot(x1 - x2, y1 - y2)
-
 def relativeRect(rect: pg.rect.Rect) -> pg.rect.Rect:
   """Returns on screen rect relative to the camera"""
   return pg.rect.Rect(
@@ -138,8 +135,7 @@ def check_for_interaction() -> None:
     for x in range(player.camera.left // BLOCK_SIZE, (player.camera.right // BLOCK_SIZE) + 1):
       block = world.blockAt(x, y)
       if isinstance(block, Interactable):
-        dist = distance(player.rect.centerx, player.rect.centery,
-                        block.rect.centerx, block.rect.centery)
+        dist = math.dist(player.rect.center, block.rect.center)
         if dist <= 3 * BLOCK_SIZE:
           block.interact()
           return
@@ -1054,7 +1050,7 @@ class Player(Entity, HasInventory):
     if blockPixel:
       block = world.blockAt(*pixelToCoord(*bresenham(*pg.mouse.get_pos(), *FRAME.center)))
       for vertex in block.vertices:
-        if distance(*relativeCoord(*vertex), *FRAME.center) < this.reach:
+        if math.dist(relativeCoord(*vertex), FRAME.center) < this.reach:
           return block
     return None
 
