@@ -5,6 +5,7 @@ import sys
 from dataclasses import dataclass
 from typing import List
 from random import randint
+sys.setrecursionlimit(10000000)
 
 pg.init()
 clock = pg.time.Clock()
@@ -101,26 +102,24 @@ class KdTree:
     inter =  rectIntersect(this.point, orig, dir)
     if inter <= t: return inter
     
-    near = this.left if orig[axis] <= this.split else this.right
-    far = this.right if near == this.left else this.left
-    
+    if dk > 0:  # Positive direction
+      near, far = this.left, this.right
+    else:       # Negative direction
+        near, far = this.right, this.left
+
+      
     
     if far and t <= tStart:
-      print("far")
-      # pg.draw.rect(surf, blue, (far.x_min, far.y_min, far.x_min+far.x_max, far.y_min+far.y_max), this.depth//2 + 2)
       return far.traverse(orig, dir, tStart, tEnd)
     elif near and t >= tEnd:
       print("near")
-      # pg.draw.rect(surf, red, (near.x_min, near.y_min, near.x_min+near.x_max, near.y_min+near.y_max), this.depth//2 + 2)
       return near.traverse(orig, dir, tStart, tEnd)
     else:
       print("both")
       if near:
-        # pg.draw.rect(surf, red, (near.x_min, near.y_min, near.x_min+near.x_max, near.y_min+near.y_max), this.depth//2 + 2)
         tHit = near.traverse(orig, dir, tStart, t)
         if tHit <= t: return tHit
       if far:
-        # pg.draw.rect(surf, blue, (far.x_min, far.y_min, far.x_min+far.x_max, far.y_min+far.y_max), this.depth//2 + 2)
         return far.traverse(orig, dir, t, tEnd)
       return 1e9
   
@@ -128,8 +127,7 @@ class KdTree:
     '''find t-start and t-end for the bounding box given a line'''
     rox, roy = orig.tup()
     rdx, rdy = dir
-    # print(rdx, rdy)
-    if rdx == rdy == 0: # can happen when user changes the location of the origin using mouse
+    if rdx == rdy == 0: # can happen for one frame when user changes the location of the origin using mouse
       return None
     if rdx != 0:
       t1x = (this.x_min - rox) / rdx
@@ -151,14 +149,7 @@ class KdTree:
     
     start = max(t1x, t1y)
     end = min(t2x, t2y)
-    # if start <= end:
-      # pg.draw.line(
-      #   surf, blue,
-      #   orig.tup(),
-      #   (rox + end * rdx, roy + end * rdy),
-      # )
-      # pg.draw.circle(surf,red,(rox + start * rdx, roy + start * rdy),10)
-      # pg.draw.circle(surf,blue,(rox + end * rdx, roy + end * rdy),10)
+    
     return start, end
   
   def draw(this):
@@ -179,7 +170,7 @@ rects: List[pg.rect.Rect] = []
 
 def normalize(vector):
   magnitude = math.sqrt(vector[0]**2 + vector[1]**2)
-  if magnitude == 0: magnitude = 0.001
+  if magnitude == 0: magnitude = 0.001 # # can happen for one frame when user changes the location of the origin using mouse
   return (vector[0] / magnitude, vector[1] / magnitude)
 
 def rectIntersect(point: Point, orig: Point, dir):
@@ -211,7 +202,7 @@ def rectIntersect(point: Point, orig: Point, dir):
   if start <= end:
     # pg.draw.circle(surf, green, (point.x + t1x * dir[0], point.y + t1y * dir[1]), 3)
     # pg.draw.circle(surf, green, (point.x + t2x * dir[0], point.y + t2y * dir[1]), 3)
-    pg.draw.circle(surf, green, (orig.x + start * dir[0], orig.y + start * dir[1]), 3)
+    pg.draw.circle(surf, red, (orig.x + start * dir[0], orig.y + start * dir[1]), 5)
     # pg.draw.circle(surf, red, (orig.x + end * dir[0], orig.y + end * dir[1]), 3)
     return start
   else: return 1e9
@@ -230,20 +221,18 @@ while 1:
   
   fpstext = font.render(str(round(clock.get_fps(), 2)), True, white)
   pointstext = font.render(str(len(points)), True, white)
-  surf.blit(fpstext, (5, 5))
-  surf.blit(pointstext, (5, 40))
   
   for rect in rects:
     pg.draw.rect(surf, blue, rect, 1)
   
   kdtree = KdTree(points, 0, 800, 0, 800)
   kdtree.draw()
-  orig.draw(color=red,radius=7)
+  orig.draw(color=white,radius=3)
   
   dx = mpos.x - orig.x
   dy = mpos.y - orig.y
   d = dx, dy
-  d = normalize(d)
+  # d = normalize(d)
   inter = kdtree.intersection(orig, d)
   if inter:
     start, end = inter
@@ -268,9 +257,12 @@ while 1:
       points.clear()
       rects.clear()
       kdtree = KdTree(points, 0, 800, 0, 800)
-    # if keys[pg.K_r]:
-    #   for i in range(5):
-    #     points.append(Point(randint(0, 799), randint(0, 799)))
-        
+    if keys[pg.K_r]:
+      for i in range(100):
+        newpoint = Point(randint(0, 799), randint(0, 799))
+        points.append(newpoint)
+        rects.append(newRect(newpoint))
+  surf.blit(fpstext, (5, 5))
+  surf.blit(pointstext, (5, 40))
   pg.display.flip()
   clock.tick(60)
