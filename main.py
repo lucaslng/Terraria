@@ -1102,6 +1102,10 @@ class World:
     this.array = [
         [AirBlock(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
     ]
+    # cannot deepcopy pygame surface
+    this.back = [
+        [AirBlock(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
+    ]
     this.mask = pg.mask.Mask((WORLD_WIDTH*BLOCK_SIZE, WORLD_HEIGHT*BLOCK_SIZE))
     this.__generateWorld()
     this.generateMask()
@@ -1225,6 +1229,7 @@ class World:
       # Stone pass
       for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
         this.array[y][x] = StoneBlock(x, y)
+        this.back[y][x] = StoneBlock(x, y)
 
       # Ore pass
       for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
@@ -1246,6 +1251,9 @@ class World:
       for y in range(WORLD_HEIGHT - 1, grassHeight - 1, - 1):
         if cavesNoise[y][x] > 0.1:
           this.array[y][x] = AirBlock(x, y)
+          if y <= stoneHeight:
+            this.back[y][x] = DirtBlock(x, y)
+          
           
       #Tree pass
       if isinstance(this[y][x], DirtBlock):
@@ -1301,8 +1309,12 @@ class World:
           (player.camera.right // BLOCK_SIZE) + 1,
       ):
         block = this[y][x]
+        backBlock = this.back[y][x]
         if not block.isAir:
           block.drawBlock()
+        elif not backBlock.isAir:
+          backBlock.drawBlock()
+          pg.draw.rect(BACK_TINT, (0,0,0,60), relativeRect(backBlock.rect))
   
   def buildEdgePool(this):
     this.edgePool.clear()
@@ -1404,7 +1416,9 @@ if __name__ == "__main__":
   LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   FRAME = SURF.get_rect()
   ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
+  BACK_TINT = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   ASURF.fill((0, 0, 0, 0))
+  BACK_TINT.fill((0, 0, 0, 0))
   
   #Give player items at the beginning of the game
   defaultItems = [StonePickaxe(), WoodenAxe(), WoodenShovel(), WoodenSword(), Shears(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)]
@@ -1425,11 +1439,13 @@ if __name__ == "__main__":
   while True:
     SURF.fill((255, 255, 255))
     ASURF.fill((0, 0, 0, 0))
+    BACK_TINT.fill((0, 0, 0, 0))
     # LIGHTSURF.fill((0, 0, 0, 240))
     keys = pg.key.get_pressed()
     
     sun.draw()
     world.update()
+    SURF.blit(BACK_TINT, (0,0))
     player.update()
     
     #Temporarily game over logic
