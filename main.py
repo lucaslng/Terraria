@@ -403,7 +403,7 @@ class DirtItem(PlaceableItem):
 class OakLogBlock(Block):
     oakLogTexture = pg.transform.scale(pg.image.load("oak_log.png"), (BLOCK_SIZE, BLOCK_SIZE))  
     def __init__(self, x, y):
-        super().__init__("Oak Log", self.oakLogTexture, x, y, 2, BlockType.AXE)
+        super().__init__("Oak Log", self.oakLogTexture, x, y, 2.5, BlockType.AXE)
 class OakLogItem(PlaceableItem):
     oakLogItemTexture = pg.transform.scale(pg.image.load("oak_log.png"), (Item.SIZE, Item.SIZE))
     def __init__(self):
@@ -650,7 +650,7 @@ class StonePickaxe(Tool):
   stonePickaxeTexture = pg.transform.scale(
     pg.image.load("stone_pickaxe.png"), (Item.SIZE, Item.SIZE))
   def __init__(this):
-    super().__init__("Stone Pickaxe", this.stonePickaxeTexture, 1, 2.5, 131, BlockType.PICKAXE)
+    super().__init__("Stone Pickaxe", this.stonePickaxeTexture, 1, 3.5, 131, BlockType.PICKAXE)
 class StoneAxe(Tool):
   stoneAxeTexture = pg.transform.scale(
     pg.image.load("stone_axe.png"), (Item.SIZE, Item.SIZE))
@@ -1007,6 +1007,8 @@ class Player(Entity, HasInventory):
         
         if this.heldSlot().item and this.heldSlot().item.isTool():
           #Checks if durability is 0
+          if this.heldSlot().item.blockType == this.blockFacing.blockType:
+            miningSpeed = this.heldSlot().item.speed
           if this.heldSlot().item.durability == 0:
             this.heldSlot().item = None
             this.heldSlot().count = 0
