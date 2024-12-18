@@ -494,8 +494,9 @@ class Slot:
   isActive = False
   size = 40
 
-  def draw(this, x: float, y: float, size: float = size) -> None:
-    pg.draw.rect(SURF, (200, 200, 200),
+  def draw(this, x: float, y: float, size: float = size, transparent=False) -> None:
+    if not transparent:
+      pg.draw.rect(SURF, (200, 200, 200),
                  (x, y, size, size))
     if this.isActive:
       pg.draw.rect(SURF, (0, 0, 0),
@@ -556,19 +557,20 @@ class Section:
     this.array = [[Slot() for _ in range(this.cols)] for _ in range(this.rows)]
   def __getitem__(this, i: int) -> list[Slot]:
     return this.array[i]
-  def draw(this) -> None:
+  def draw(this, transparent=False) -> None:
     for r in range(this.rows):
       for c in range(this.cols):
-        this[r][c].draw(this.x+c*this.slotSize, this.y+r*this.slotSize, size = this.slotSize)
+        this[r][c].draw(this.x+c*this.slotSize, this.y+r*this.slotSize, size = this.slotSize, transparent=transparent)
+        
 class Menu:
   '''A menu is effectively a list of Sections. One section is an array of Slots.'''
   def __init__(this, *args: Section, isActive: bool = False):
     this.isActive = isActive
     this.sections = [args[i] for i in range(len(args))]
   
-  def draw(this) -> None:
+  def draw(this, transparent=False) -> None:
     for section in this.sections:
-      section.draw()
+      section.draw(transparent)
 
 class CraftingMenu(Menu):
   def __init__(this):
@@ -579,10 +581,13 @@ class Inventory:
   """Inventory class"""
   rows: int
   cols: int
+  menux: int
+  menuy: int
   
   def __post_init__(this):
     this.inventory = [[Slot() for _ in range(this.cols)]
                       for _ in range(this.rows)]
+    this.menu = Menu(Section(this.rows, this.cols, this.menux, this.menuy))
 
   def addItem(this, item: Item) -> None:
     for r in range(this.rows):
@@ -650,7 +655,7 @@ class StonePickaxe(Tool):
   stonePickaxeTexture = pg.transform.scale(
     pg.image.load("stone_pickaxe.png"), (Item.SIZE, Item.SIZE))
   def __init__(this):
-    super().__init__("Stone Pickaxe", this.stonePickaxeTexture, 1, 3.5, 131, BlockType.PICKAXE)
+    super().__init__("Stone Pickaxe", this.stonePickaxeTexture, 1, 3, 131, BlockType.PICKAXE)
 class StoneAxe(Tool):
   stoneAxeTexture = pg.transform.scale(
     pg.image.load("stone_axe.png"), (Item.SIZE, Item.SIZE))
@@ -663,8 +668,8 @@ class StoneAxe(Tool):
 class HasInventory:
   """Parent class for classes than have an inventory"""
 
-  def __init__(this, rows: int, cols: int):
-    this.inventory = Inventory(rows=rows, cols=cols)
+  def __init__(this, rows: int, cols: int, menux: int, menuy: int):
+    this.inventory = Inventory(rows=rows, cols=cols, menux=menux, menuy=menuy)
 
 
 class Entity:
@@ -851,7 +856,7 @@ class Player(Entity, HasInventory):
     )
     this.mask = pg.mask.Mask((20, 20), True)
 
-    HasInventory.__init__(this, 4, 10)
+    HasInventory.__init__(this, 4, 10, 15, 80)
     
     this.heldSlotIndex = 0  # number from 0 to 9
     this.rect.center = this.camera.center
@@ -862,7 +867,7 @@ class Player(Entity, HasInventory):
 
     this.falling = False
     this.fall_start_y = None
-    this.fall_damage_threshold = 6 * BLOCK_SIZE
+    this.fall_damage_threshold = 10 * BLOCK_SIZE
     this.is_initial_spawn = True
     this.spawn_protection_timer = 120
 
@@ -969,7 +974,12 @@ class Player(Entity, HasInventory):
       slot_x = HOTBAR_X + col * Slot.size
       slot_y = HOTBAR_Y
       slot = this.hotbar()[col]
-      slot.draw(slot_x, slot_y)           
+      slot.draw(slot_x, slot_y)
+      
+  def drawInventory(this) -> None:
+    """Draw the inventory in the top left corner"""
+    this.inventory.menu.draw(transparent=True)
+    
 
   def move(this):
     if this.is_initial_spawn:
@@ -1071,6 +1081,7 @@ class Player(Entity, HasInventory):
   def drawHUD(this):
     this.draw_health()
     this.drawHotbar()
+    this.drawInventory()
 
 class Sun:
   size = BLOCK_SIZE * 5
@@ -1421,7 +1432,7 @@ if __name__ == "__main__":
   BACK_TINT.fill((0, 0, 0, 0))
   
   #Give player items at the beginning of the game
-  defaultItems = [StonePickaxe(), WoodenAxe(), WoodenShovel(), WoodenSword(), Shears(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)]
+  defaultItems = [StonePickaxe(), WoodenAxe(), WoodenShovel(), WoodenSword(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)]
   
   player = Player()
   craftingMenu = CraftingMenu()
@@ -1443,7 +1454,7 @@ if __name__ == "__main__":
     # LIGHTSURF.fill((0, 0, 0, 240))
     keys = pg.key.get_pressed()
     
-    sun.draw()
+    #sun.draw()
     world.update()
     SURF.blit(BACK_TINT, (0,0))
     player.update()
@@ -1506,7 +1517,9 @@ if __name__ == "__main__":
     # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
     # SURF.blit(LIGHTSURF, ((0,0)))
     player.drawHUD()
+    
     SURF.blit(font20.render(str(pixelToCoord(*player.camera.center)), True, (0,0,0)), (20, 50))
+    
     if craftingMenu.isActive: craftingMenu.draw()
 
     pg.display.flip()
