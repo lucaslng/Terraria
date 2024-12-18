@@ -1410,8 +1410,8 @@ class World:
   
   def update(this):
     this.draw()
-    this.buildEdgePool()
-    this.castRays()
+    # this.buildEdgePool()
+    # this.castRays()
 
 if __name__ == "__main__":
   LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
@@ -1438,7 +1438,7 @@ if __name__ == "__main__":
   while True:
     SURF.fill((255, 255, 255))
     ASURF.fill((0, 0, 0, 0))
-    LIGHTSURF.fill((0, 0, 0, 240))
+    # LIGHTSURF.fill((0, 0, 0, 240))
     keys = pg.key.get_pressed()
     
     sun.draw()
