@@ -1132,10 +1132,6 @@ class World:
       return t * t * t * (t * (t * 6 - 15) + 10)
 
     @staticmethod
-    def __lerp(a, b, t):
-      return a + t * (b - a)
-
-    @staticmethod
     def __generatePermutation():
       random.seed(random.randint(0, sys.maxsize))
       p = list(range(256))
@@ -1173,7 +1169,7 @@ class World:
         n0 = g0 * dx0
         n1 = g1 * dx1
 
-        value = this.__lerp(n0, n1, u)
+        value = pg.math.lerp(n0, n1, u)
         noise.append(value)
 
       return noise
@@ -1212,10 +1208,10 @@ class World:
           n01 = g01[0] * dx0 + g01[1] * dy1
           n11 = g11[0] * dx1 + g11[1] * dy1
 
-          nx0 = this.__lerp(n00, n10, u)
-          nx1 = this.__lerp(n01, n11, u)
+          nx0 = pg.math.lerp(n00, n10, u)
+          nx1 = pg.math.lerp(n01, n11, u)
 
-          value = this.__lerp(nx0, nx1, v)
+          value = pg.math.lerp(nx0, nx1, v)
           row.append(value)
         noise.append(row)
 
