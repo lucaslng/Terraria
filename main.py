@@ -535,13 +535,13 @@ class Slot:
         SURF.blit(count_text, text_rect.topleft)
         
       #Draw durability bar
-      if this.item.isTool():
+      if this.item.isTool() and this.item.durability != this.item.startingDurability:
         bar_height = 3
         bar_width = size - 4
         bar_x = x + 2
         bar_y = y + size - bar_height - 1
         
-        tool = this.item
+        tool: Tool = this.item
         durability_percentage = tool.durability / tool.startingDurability
         
         if durability_percentage > 0.6:
