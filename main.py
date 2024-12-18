@@ -1241,6 +1241,7 @@ class World:
       # Dirt pass
       for y in range(stoneHeight, grassHeight, -1):
         this.array[y][x] = DirtBlock(x, y)
+        this.back[y][x] = DirtBlock(x, y)
 
       # Grass Dirt pass
       this.array[grassHeight][x] = DirtBlock(
@@ -1251,9 +1252,6 @@ class World:
       for y in range(WORLD_HEIGHT - 1, grassHeight - 1, - 1):
         if cavesNoise[y][x] > 0.1:
           this.array[y][x] = AirBlock(x, y)
-          if y <= stoneHeight:
-            this.back[y][x] = DirtBlock(x, y)
-          
           
       #Tree pass
       if isinstance(this[y][x], DirtBlock):
