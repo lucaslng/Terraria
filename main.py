@@ -572,9 +572,8 @@ class Menu:
     this.sections = [args[i] for i in range(len(args))]
   
   def draw(this, transparent=False) -> None:
-    if this.isActive:
-      for section in this.sections:
-        section.draw(transparent)
+    for section in this.sections:
+      section.draw(transparent)
 
 class CraftingMenu(Menu):
   def __init__(this):
@@ -884,9 +883,6 @@ class Player(Entity, HasInventory):
 
     this.usingItem = False
     this.placingBlock = False
-    
-    this.previous_e_pressed = False
-    this.inventory.menu.isActive = False
 
     #Add items at the beginning of the game to the player
     for item in defaultItems: this.inventory.addItem(item)
@@ -1080,13 +1076,6 @@ class Player(Entity, HasInventory):
   def update(this):
     super().update()
     
-    keys = pg.key.get_pressed()      
-    e_pressed = keys[pg.K_e]
-    if e_pressed and not this.previous_e_pressed:
-        this.inventory.menu.isActive = not this.inventory.menu.isActive
-    
-    this.previous_e_pressed = e_pressed
-    
     this.blockFacing = this.getBlockFacing()
     this.drawBlockFacing()
     this.drawHeldItem()
@@ -1097,8 +1086,7 @@ class Player(Entity, HasInventory):
   def drawHUD(this):
     this.draw_health()
     this.drawHotbar()
-    if this.inventory.menu.isActive:
-      this.drawInventory()
+    this.drawInventory()
 
 class Sun:
   size = BLOCK_SIZE * 5
@@ -1449,7 +1437,7 @@ if __name__ == "__main__":
   BACK_TINT.fill((0, 0, 0, 0))
   
   #Give player items at the beginning of the game
-  defaultItems = [StonePickaxe(), WoodenAxe(), WoodenShovel(), WoodenSword(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(315)]
+  defaultItems = [StonePickaxe(), WoodenAxe(), WoodenShovel(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)]
   
   player = Player()
   craftingMenu = CraftingMenu()
