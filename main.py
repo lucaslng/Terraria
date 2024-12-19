@@ -392,7 +392,7 @@ class DirtVariantGrass(DirtVariant):
     super().__init__("Grass Block", this.grassTexture)
 class DirtBlock(Block):
   def __init__(this, x, y, variant: DirtVariant = DirtVariantDirt()):
-    super().__init__(variant.name, variant.texture, x, y, 1, BlockType.SHOVEL)
+    super().__init__(variant.name, variant.texture, x, y, 1.5, BlockType.SHOVEL)
     
     this.variant = variant.name.lower()
 class DirtItem(PlaceableItem):
@@ -553,10 +553,13 @@ class Section:
   x: float
   y: float
   slotSize: int = 40
+  
   def __post_init__(this):
     this.array = [[Slot() for _ in range(this.cols)] for _ in range(this.rows)]
+    
   def __getitem__(this, i: int) -> list[Slot]:
     return this.array[i]
+  
   def draw(this, transparent=False) -> None:
     for r in range(this.rows):
       for c in range(this.cols):
@@ -569,8 +572,9 @@ class Menu:
     this.sections = [args[i] for i in range(len(args))]
   
   def draw(this, transparent=False) -> None:
-    for section in this.sections:
-      section.draw(transparent)
+    if this.isActive:
+      for section in this.sections:
+        section.draw(transparent)
 
 class CraftingMenu(Menu):
   def __init__(this):
@@ -589,20 +593,29 @@ class Inventory:
                       for _ in range(this.rows)]
     this.menu = Menu(Section(this.rows, this.cols, this.menux, this.menuy))
 
-  def addItem(this, item: Item) -> None:
+  def addItem(this, item: Item) -> bool:
+    """Attempts to add an item to the inventory"""
+    #add item to stack with existing items
     for r in range(this.rows):
-      for c in range(this.cols):
-        slot = this.inventory[r][c]
-        # if item exist increase by one
-        if slot.item and slot.item == item:
-          if slot.count < slot.item.stackSize:  # stack size limit
-            slot.count += 1
-            return
-        # if slot empty add the item
-        elif slot.item is None:
-          slot.item = item
-          slot.count = 1
-          return
+        for c in range(this.cols):
+            slot = this.inventory[r][c]
+            if slot.item and slot.item == item and slot.count < slot.item.stackSize:
+                slot.count += 1
+                this.menu.draw()
+                return True
+                
+    #find first empty slot if there isn't an existing slot
+    for r in range(this.rows):
+        for c in range(this.cols):
+            slot = this.inventory[r][c]
+            if slot.item is None:
+                slot.item = item
+                slot.count = 1
+                #print('added to inventory')
+                this.menu.draw()
+                return True
+                
+    return False  #inventory full
 
   def isPlaceable(this) -> bool:
     return isinstance(this, PlaceableItem)
@@ -634,14 +647,12 @@ class WoodenPickaxe(Tool):
     super().__init__("Wooden Pickaxe", this.woodenPickaxeTexture, 1, 1.5, 59, BlockType.PICKAXE)  
 class WoodenAxe(Tool):
   woodenAxeTexture = pg.transform.scale(
-    pg.image.load("wooden_axe.png"), (Item.SIZE, Item.SIZE)
-  )
+    pg.image.load("wooden_axe.png"), (Item.SIZE, Item.SIZE))
   def __init__(this):
     super().__init__("Wooden Axe", this.woodenAxeTexture, 1, 1.5, 59, BlockType.AXE)
 class WoodenShovel(Tool):
   woodenShovelTexture = pg.transform.scale(
-    pg.image.load("wooden_shovel.png"), (Item.SIZE, Item.SIZE)
-  )
+    pg.image.load("wooden_shovel.png"), (Item.SIZE, Item.SIZE))
   def __init__(this):
     super().__init__("Wooden Shovel", this.woodenShovelTexture, 1, 1.5, 59, BlockType.SHOVEL)
 class WoodenSword(Tool):
@@ -873,8 +884,12 @@ class Player(Entity, HasInventory):
 
     this.usingItem = False
     this.placingBlock = False
+    
+    this.previous_e_pressed = False
+    this.inventory.menu.isActive = False
 
-    for item in defaultItems: this.inventory.addItem(item) 
+    #Add items at the beginning of the game to the player
+    for item in defaultItems: this.inventory.addItem(item)
 
     # beginning tick, tick length
     this.animations["usingItem"] = pg.time.get_ticks() + 200
@@ -890,28 +905,15 @@ class Player(Entity, HasInventory):
     half_hearts = this.health % 2
     empty_hearts = (this.max_health - this.health) // 2
 
-    # Full hearts
+    #Full hearts
     for i in range(full_hearts):
-      SURF.blit(
-          this.full_heart_texture, (HEART_X_START +
-                                    i * HEART_SPACING, HEART_Y)
-      )
-    # Draw half heart
+      SURF.blit(this.full_heart_texture, (HEART_X_START + i * HEART_SPACING, HEART_Y))   
+    #Half hearts
     if half_hearts:
-      SURF.blit(
-          this.half_heart_texture,
-          (HEART_X_START + full_hearts * HEART_SPACING, HEART_Y),
-      )
-    # Draw empty hearts
+      SURF.blit(this.half_heart_texture,(HEART_X_START + full_hearts * HEART_SPACING, HEART_Y))     
+    #Empty hearts
     for i in range(empty_hearts):
-      SURF.blit(
-          this.empty_heart_texture,
-          (
-              HEART_X_START +
-              (full_hearts + half_hearts + i) * HEART_SPACING,
-              HEART_Y,
-          ),
-      )
+      SURF.blit(this.empty_heart_texture,(HEART_X_START +(full_hearts + half_hearts + i) * HEART_SPACING,HEART_Y))
 
   def draw(this):
     # print(this.vvelo)
@@ -978,8 +980,13 @@ class Player(Entity, HasInventory):
       
   def drawInventory(this) -> None:
     """Draw the inventory in the top left corner"""
-    this.inventory.menu.draw(transparent=True)
-    
+    for r in range(this.inventory.rows):
+      for c in range(this.inventory.cols):
+          slot = this.inventory.inventory[r][c]
+
+          slot_x = this.inventory.menux + (c * Slot.size)
+          slot_y = this.inventory.menuy + (r * Slot.size)
+          slot.draw(slot_x, slot_y)
 
   def move(this):
     if this.is_initial_spawn:
@@ -1072,16 +1079,26 @@ class Player(Entity, HasInventory):
 
   def update(this):
     super().update()
+    
+    keys = pg.key.get_pressed()      
+    e_pressed = keys[pg.K_e]
+    if e_pressed and not this.previous_e_pressed:
+        this.inventory.menu.isActive = not this.inventory.menu.isActive
+    
+    this.previous_e_pressed = e_pressed
+    
     this.blockFacing = this.getBlockFacing()
     this.drawBlockFacing()
     this.drawHeldItem()
+    this.drawHUD()
     if not pg.mouse.get_pressed()[0]:
       this.usingItem = False
   
   def drawHUD(this):
     this.draw_health()
     this.drawHotbar()
-    this.drawInventory()
+    if this.inventory.menu.isActive:
+      this.drawInventory()
 
 class Sun:
   size = BLOCK_SIZE * 5
@@ -1432,7 +1449,7 @@ if __name__ == "__main__":
   BACK_TINT.fill((0, 0, 0, 0))
   
   #Give player items at the beginning of the game
-  defaultItems = [StonePickaxe(), WoodenAxe(), WoodenShovel(), WoodenSword(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)]
+  defaultItems = [StonePickaxe(), WoodenAxe(), WoodenShovel(), WoodenSword(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(315)]
   
   player = Player()
   craftingMenu = CraftingMenu()
