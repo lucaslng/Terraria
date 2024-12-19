@@ -41,11 +41,12 @@ class SpriteSheet:
     this.sheet = pg.image.load(imageName).convert_alpha()
     
   def get(this, x, y, width, height, scale=BLOCK_SIZE, colour=(0,0,0)):
-    image = pg.Surface((width, height)).convert_alpha()
+    image = pg.Surface((width, height), pg.SRCALPHA)
     image.blit(this.sheet, (0, 0), (x, y, width, height))
+    if colour != (0,0,0):
+        image.set_colorkey(colour)
+
     image = pg.transform.scale(image, (scale, scale))
-    image.set_colorkey(colour)
-    
     return image
 
 class Animation:
