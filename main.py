@@ -1,3 +1,4 @@
+from collections import deque
 import sys, math, random, time, pickle          #pickle stores game data onto system
 import pygame as pg
 from pygame.locals import *
@@ -6,6 +7,7 @@ from abc import *
 from dataclasses import dataclass
 from typing import List, TypedDict
 from enum import Enum
+import copy
 
 
 WIDTH = 1000
@@ -1107,8 +1109,8 @@ class Edge:
   def draw(this):
     # if this.x != this.ex and this.y != this.ey: print("diagonal wtf")
     pg.draw.line(SURF,(0,0,0),relativeCoord(this.x*BLOCK_SIZE, this.y*BLOCK_SIZE),relativeCoord(this.ex*BLOCK_SIZE, this.ey*BLOCK_SIZE), 3)
-    pg.draw.circle(SURF,(0,255,0),relativeCoord(this.x*BLOCK_SIZE,this.y*BLOCK_SIZE), 3)
-    pg.draw.circle(SURF,(0,255,0),relativeCoord(this.ex*BLOCK_SIZE,this.ey*BLOCK_SIZE), 3)
+    # pg.draw.circle(SURF,(0,255,0),relativeCoord(this.x*BLOCK_SIZE,this.y*BLOCK_SIZE), 3)
+    # pg.draw.circle(SURF,(0,255,0),relativeCoord(this.ex*BLOCK_SIZE,this.ey*BLOCK_SIZE), 3)
   def __repr__(this):
     return str((this.x, this.y, this.ex, this.ey))
 
@@ -1120,9 +1122,12 @@ class World:
     this.array = [
         [AirBlock(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
     ]
-    # cannot deepcopy pygame surface
+    # cannot deepcopy pygame surface so I have to loop over it again
     this.back = [
         [AirBlock(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
+    ]
+    this.lightmap = [
+      [0 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
     ]
     this.mask = pg.mask.Mask((WORLD_WIDTH*BLOCK_SIZE, WORLD_HEIGHT*BLOCK_SIZE))
     this.__generateWorld()
@@ -1233,7 +1238,6 @@ class World:
   def __generateWorld(this):
     grassHeightNoise = this.SimplexNoise(19, 1)
     stoneHeightNoise = this.SimplexNoise(30, 1)
-    treeNoise = this.SimplexNoise(19, 1)
     
     oresNoise = {}
     cavesNoise = this.SimplexNoise(9, 2)
@@ -1314,23 +1318,24 @@ class World:
     for i in range(0, WORLD_HEIGHT-1):
       if not this[i][x].isAir:
         return this[i][x]
+  
+  def getVisibleBlocks(this):
+    this.visibleBlocks = [
+      [(this[y][x], this.back[y][x]) for x in range(player.camera.left // BLOCK_SIZE,
+          (player.camera.right // BLOCK_SIZE) + 1)]
+            for y in range(player.camera.top // BLOCK_SIZE,
+              (player.camera.bottom // BLOCK_SIZE) + 1)
+    ]
 
   def draw(this):
-    for y in range(
-        player.camera.top // BLOCK_SIZE, (player.camera.bottom //
-                                          BLOCK_SIZE) + 1
-    ):
-      for x in range(
-          player.camera.left // BLOCK_SIZE,
-          (player.camera.right // BLOCK_SIZE) + 1,
-      ):
-        block = this[y][x]
-        backBlock = this.back[y][x]
+    for row in this.visibleBlocks:
+      for blockTuple in row:
+        block, backBlock = blockTuple
         if not block.isAir:
           block.drawBlock()
         elif not backBlock.isAir:
           backBlock.drawBlock()
-          pg.draw.rect(BACK_TINT, (0,0,0,60), relativeRect(backBlock.rect))
+          pg.draw.rect(BACK_TINT, (0,0,0,70), relativeRect(backBlock.rect))
   
   def buildEdgePool(this):
     this.edgePool.clear()
@@ -1410,23 +1415,35 @@ class World:
     for i in range(len(this.edgePool)):
       this.vertices.add(relativeCoord(this.edgePool[i].x*BLOCK_SIZE,this.edgePool[i].y*BLOCK_SIZE))
       this.vertices.add(relativeCoord(this.edgePool[i].ex*BLOCK_SIZE,this.edgePool[i].ey*BLOCK_SIZE))
-      # this.edgePool[i].draw()
+      this.edgePool[i].draw()
+
+  def generateLight(this):
+    lightmap = [
+      [255 if not blockTuple[0].isAir or not blockTuple[1].isAir else 0 for blockTuple in row] for row in this.visibleBlocks]
   
-  def castRays(this):
-    this.litVertices.clear()
-    for vertex in this.vertices:
-      bres = bresenham(*vertex, *sun.pos, True, SHADOW_QUALITY)
-      if bres: 
-        this.litVertices.extend(bres)
-    this.litVertices.extend((FRAME.topleft, FRAME.topright, relativeCoord(*this.topBlock(WORLD_WIDTH-1).rect.topleft), relativeCoord(*this.topBlock(0).rect.topright)))
-    if len(this.litVertices) > 2:
-      this.litVertices.sort(key=lambda a: math.atan2(sun.pos[1]-a[1], sun.pos[0]-a[0]))
-      pg.draw.polygon(LIGHTSURF, (255,255,255,0), [sun.pos] + this.litVertices)
+    for i in range(5):
+      newlightmap = copy.deepcopy(lightmap)
+      for y in range(player.camera.height // BLOCK_SIZE + 1):
+        for x in range(player.camera.width // BLOCK_SIZE + 1):
+          if this.visibleBlocks[y][x][0].isAir and this.visibleBlocks[y][x][1].isAir: continue
+          for r in range(-1, 2):
+            if not 0 <= y + r <= player.camera.height // BLOCK_SIZE: continue
+            for c in range(-1, 2):
+              if not 0 <= x + c <= player.camera.width // BLOCK_SIZE: continue
+              if r == 0 and c == 0: continue
+              lightmap[y][x] = min(lightmap[y][x], newlightmap[y+r][x+c] + i * 50)
+    
+    # lightmap = deepcopy(newlightmap)
+    for y in range(player.camera.height // BLOCK_SIZE + 1):
+      for x in range(player.camera.width // BLOCK_SIZE + 1):
+        pg.draw.rect(LIGHTSURF, (0,0,0,lightmap[y][x]), relativeRect(this.visibleBlocks[y][x][0].rect))
   
   def update(this):
+    this.getVisibleBlocks()
     this.draw()
     # this.buildEdgePool()
-    # this.castRays()
+    this.generateLight()
+    this.visibleBlocks.clear()
 
 if __name__ == "__main__":
   LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
@@ -1456,7 +1473,7 @@ if __name__ == "__main__":
     SURF.fill((255, 255, 255))
     ASURF.fill((0, 0, 0, 0))
     BACK_TINT.fill((0, 0, 0, 0))
-    # LIGHTSURF.fill((0, 0, 0, 240))
+    LIGHTSURF.fill((0, 0, 0, 255))
     keys = pg.key.get_pressed()
     
     #sun.draw()
@@ -1518,9 +1535,9 @@ if __name__ == "__main__":
         # print(world.mask.get_at())
 
     SURF.blit(ASURF, (0, 0))
-    # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
-    # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
-    # SURF.blit(LIGHTSURF, ((0,0)))
+    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
+    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
+    SURF.blit(LIGHTSURF, ((0,0)))
     player.drawHUD()
     
     SURF.blit(font20.render(str(pixelToCoord(*player.camera.center)), True, (0,0,0)), (20, 50))
