@@ -114,18 +114,10 @@ sprites = {
     ),
   },
   
-  "woodenAxe": {
-    woodenToolsSheet.get(0, 0, 16, 16, 200)
-  },
-  "woodenPickaxe": {
-    woodenToolsSheet.get(16, 0, 16, 16, 200)
-  },
-  "woodenShovel": {
-    woodenToolsSheet.get(32, 0, 16, 16, 200)
-  },
-  "woodenSword": {
-    woodenToolsSheet.get(48, 0, 16, 16, 200)
-  }
+  "woodenAxe": woodenToolsSheet.get(0, 0, 16, 16, 200),
+  "woodenPickaxe": woodenToolsSheet.get(16, 0, 16, 16, 200),
+  "woodenShovel":woodenToolsSheet.get(32, 0, 16, 16, 200),
+  "woodenSword": woodenToolsSheet.get(48, 0, 16, 16, 200),
 }
 
 
