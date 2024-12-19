@@ -41,15 +41,11 @@ class SpriteSheet:
     this.sheet = pg.image.load(imageName).convert_alpha()
     
   def get(this, x, y, width, height, scale=BLOCK_SIZE, colour=(0,0,0)):
-    # Create a surface with per-pixel alpha
-    image = pg.Surface((width, height), pg.SRCALPHA)
-    # Copy the region from the source sheet
+    image = pg.Surface((width, height)).convert_alpha()
     image.blit(this.sheet, (0, 0), (x, y, width, height))
-    # Set color key before scaling if needed
-    if colour != (0,0,0):
-        image.set_colorkey(colour)
-    # Scale the image while preserving alpha
     image = pg.transform.scale(image, (scale, scale))
+    image.set_colorkey(colour)
+    
     return image
 
 class Animation:
@@ -117,10 +113,18 @@ sprites = {
     ),
   },
   
-  "woodenAxe": woodenToolsSheet.get(0, 0, 16, 16, 200),
-  "woodenPickaxe": woodenToolsSheet.get(16, 0, 16, 16, 200),
-  "woodenShovel": woodenToolsSheet.get(32, 0, 16, 16, 200),
-  "woodenSword": woodenToolsSheet.get(48, 0, 16, 16, 200),
+  "woodenAxe": {
+    woodenToolsSheet.get(0, 0, 16, 16, 200)
+  },
+  "woodenPickaxe": {
+    woodenToolsSheet.get(16, 0, 16, 16, 200)
+  },
+  "woodenShovel": {
+    woodenToolsSheet.get(32, 0, 16, 16, 200)
+  },
+  "woodenSword": {
+    woodenToolsSheet.get(48, 0, 16, 16, 200)
+  }
 }
 
 
