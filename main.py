@@ -253,6 +253,15 @@ class Interactable(ABC):
     '''To be called when Interactable is interacted with.'''
     pass
 
+@dataclass
+class Light:
+  '''Base class for any object with light except the sun'''
+  radius: int
+  
+  def draw(this, x: float, y: float):
+    '''draw light, takes a position on screen'''
+    pg.draw.circle(SUNLIGHTSURF, (0,0,0,0), (x,y), this.radius)
+
 
 @dataclass
 class Item:
@@ -1327,15 +1336,6 @@ class Edge:
     # pg.draw.circle(SURF,(0,255,0),relativeCoord(this.ex*BLOCK_SIZE,this.ey*BLOCK_SIZE), 3)
   def __repr__(this):
     return str((this.x, this.y, this.ex, this.ey))
-
-@dataclass
-class Light:
-  '''Base class for any object with light except the sun'''
-  radius: int
-  
-  def draw(this, x: float, y: float):
-    '''draw light, takes a position on screen'''
-    pg.draw.circle(SUNLIGHTSURF, (0,0,0,0), (x,y), this.radius)
 
 class World:
   litVertices = list()
