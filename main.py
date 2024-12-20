@@ -1750,7 +1750,6 @@ if __name__ == "__main__":
         if event.type == pg.MOUSEBUTTONDOWN:
           mouse_pos = pg.mouse.get_pos()
           if not craftingMenu.handle_click(mouse_pos, event.button == 3):
-              # If click wasn't in crafting grid, check inventory
               for row in range(player.inventory.rows):
                   for col in range(player.inventory.cols):
                       x = player.inventory.menux + col * Slot.size
@@ -1776,9 +1775,7 @@ if __name__ == "__main__":
     SURF.blit(font20.render(str(pixelToCoord(*player.camera.center)), True, (0,0,0)), (20, 50))
     
     if craftingMenu.isActive: craftingMenu.draw()
-
-    pg.display.flip()
-    frameEndTime = time.time()
-    # print("frame time:", frameEndTime - frameStartTime)
-    clock.tick(FPS)
     
+    frameEndTime = time.time()
+    clock.tick(FPS)
+    pg.display.flip()
