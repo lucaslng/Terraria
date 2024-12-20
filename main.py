@@ -1037,6 +1037,7 @@ class Player(Entity, HasInventory):
         world[this.blockFacing.y][this.blockFacing.x] = AirBlock(
             this.blockFacing.x, this.blockFacing.y
         )
+        if world.back[this.blockFacing.y][this.blockFacing.x].isAir: world.regenerateLight(this.blockFacing.x, this.blockFacing.y)
         item = this.blockFacing.item()
         
         if this.heldSlot().item and this.heldSlot().item.isTool():
@@ -1057,6 +1058,7 @@ class Player(Entity, HasInventory):
         this.heldSlot().count -= 1
         if this.heldSlot().count == 0:
           this.heldSlot().item = None
+        if world.back[y][x].isAir: world.regenerateLight(x, y)
 
   def drawCircle(this):
     pg.draw.circle(ASURF, (0, 0, 0, 120), FRAME.center, BLOCK_SIZE * 4)
@@ -1126,12 +1128,11 @@ class World:
     this.back = [
         [AirBlock(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
     ]
-    this.lightmap = [
-      [0 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
-    ]
+    
     this.mask = pg.mask.Mask((WORLD_WIDTH*BLOCK_SIZE, WORLD_HEIGHT*BLOCK_SIZE))
     this.__generateWorld()
     this.generateMask()
+    this.generateLight()
 
   class SimplexNoise:
     def __init__(this, scale: float, dimension: int, width: int = WORLD_WIDTH, height: int = WORLD_HEIGHT):
@@ -1321,7 +1322,7 @@ class World:
   
   def getVisibleBlocks(this):
     this.visibleBlocks = [
-      [(this[y][x], this.back[y][x]) for x in range(player.camera.left // BLOCK_SIZE,
+      [(this[y][x], this.back[y][x], this.lightmap[y][x]) for x in range(player.camera.left // BLOCK_SIZE,
           (player.camera.right // BLOCK_SIZE) + 1)]
             for y in range(player.camera.top // BLOCK_SIZE,
               (player.camera.bottom // BLOCK_SIZE) + 1)
@@ -1330,12 +1331,13 @@ class World:
   def draw(this):
     for row in this.visibleBlocks:
       for blockTuple in row:
-        block, backBlock = blockTuple
+        block, backBlock, light = blockTuple
         if not block.isAir:
           block.drawBlock()
         elif not backBlock.isAir:
           backBlock.drawBlock()
           pg.draw.rect(BACK_TINT, (0,0,0,70), relativeRect(backBlock.rect))
+        pg.draw.rect(LIGHTSURF, (0,0,0,light), relativeRect(block.rect))
   
   def buildEdgePool(this):
     this.edgePool.clear()
@@ -1419,30 +1421,50 @@ class World:
 
   def generateLight(this):
     lightmap = [
-      [255 if not blockTuple[0].isAir or not blockTuple[1].isAir else 0 for blockTuple in row] for row in this.visibleBlocks]
-  
+      [255 if not this[y][x].isAir or not this.back[y][x].isAir else 0 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
+    
+    lightstarttime = time.time()
     for i in range(5):
       newlightmap = copy.deepcopy(lightmap)
-      for y in range(player.camera.height // BLOCK_SIZE + 1):
-        for x in range(player.camera.width // BLOCK_SIZE + 1):
-          if this.visibleBlocks[y][x][0].isAir and this.visibleBlocks[y][x][1].isAir: continue
+      for y in range(WORLD_HEIGHT):
+        for x in range(WORLD_WIDTH):
+          if this[y][x].isAir and this.back[y][x].isAir: continue
           for r in range(-1, 2):
-            if not 0 <= y + r <= player.camera.height // BLOCK_SIZE: continue
+            if not 0 <= y + r < WORLD_HEIGHT: continue
             for c in range(-1, 2):
-              if not 0 <= x + c <= player.camera.width // BLOCK_SIZE: continue
+              if not 0 <= x + c < WORLD_WIDTH: continue
               if r == 0 and c == 0: continue
               lightmap[y][x] = min(lightmap[y][x], newlightmap[y+r][x+c] + i * 50)
-    
-    # lightmap = deepcopy(newlightmap)
-    for y in range(player.camera.height // BLOCK_SIZE + 1):
-      for x in range(player.camera.width // BLOCK_SIZE + 1):
-        pg.draw.rect(LIGHTSURF, (0,0,0,lightmap[y][x]), relativeRect(this.visibleBlocks[y][x][0].rect))
+    lightendtime = time.time()
+    print("lightmap time:", lightendtime - lightstarttime)
+    this.lightmap = lightmap
   
+  def regenerateLight(this, xcenter: int, ycenter: int):
+    radius = 5
+    count = 0
+    for y in range(ycenter - radius, ycenter + radius + 1):
+        for x in range(xcenter - radius, xcenter + radius + 1):
+          this.lightmap[y][x] = 255 if not this[y][x].isAir or not this.back[y][x].isAir else 0
+          
+    for i in range(5):
+      newlightmap = [row[:] for row in this.lightmap] # copy lightmap array
+      deepcopytime += time.time() - time1
+      for y in range(ycenter - radius, ycenter + radius + 1):
+        for x in range(xcenter - radius, xcenter + radius + 1):
+          if this[y][x].isAir and this.back[y][x].isAir: continue
+          for r in range(-1, 2):
+            if not ycenter - radius <= y + r <= ycenter + radius: continue
+            for c in range(-1, 2):
+              if not xcenter - radius <= x + c <= xcenter + radius: continue
+              if r == 0 and c == 0: continue
+              this.lightmap[y][x] = min(this.lightmap[y][x], newlightmap[y+r][x+c] + i * 50)
+              count += 1
+    
   def update(this):
     this.getVisibleBlocks()
     this.draw()
     # this.buildEdgePool()
-    this.generateLight()
+    
     this.visibleBlocks.clear()
 
 if __name__ == "__main__":
@@ -1470,6 +1492,7 @@ if __name__ == "__main__":
   
   
   while True:
+    frameStartTime = time.time()
     SURF.fill((255, 255, 255))
     ASURF.fill((0, 0, 0, 0))
     BACK_TINT.fill((0, 0, 0, 0))
@@ -1545,4 +1568,7 @@ if __name__ == "__main__":
     if craftingMenu.isActive: craftingMenu.draw()
 
     pg.display.flip()
+    frameEndTime = time.time()
+    # print("frame time:", frameEndTime - frameStartTime)
     clock.tick(FPS)
+    
