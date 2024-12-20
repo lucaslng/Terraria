@@ -1102,6 +1102,8 @@ class Player(Entity, HasInventory):
     # beginning tick, tick length
     this.animations["usingItem"] = pg.time.get_ticks() + 200
     this.animations["placingBlock"] = 250
+    
+    this.light = Light(BLOCK_SIZE//2)
 
   def draw_health(this):
     """Draw health as hearts on the screen"""
@@ -1326,6 +1328,15 @@ class Edge:
   def __repr__(this):
     return str((this.x, this.y, this.ex, this.ey))
 
+@dataclass
+class Light:
+  '''Base class for any object with light except the sun'''
+  radius: int
+  
+  def draw(this, x: float, y: float):
+    '''draw light, takes a position on screen'''
+    pg.draw.circle(SUNLIGHTSURF, (0,0,0,0), (x,y), this.radius)
+
 class World:
   litVertices = list()
   vertices = set()
@@ -1548,7 +1559,7 @@ class World:
         elif not backBlock.isAir:
           backBlock.drawBlock()
           pg.draw.rect(BACK_TINT, (0,0,0,70), relativeRect(backBlock.rect))
-        pg.draw.rect(LIGHTSURF, (0,0,0,light), relativeRect(block.rect))
+        pg.draw.rect(SUNLIGHTSURF, (0,0,0,light), relativeRect(block.rect))
   
   def buildEdgePool(this):
     this.edgePool.clear()
@@ -1680,6 +1691,7 @@ class World:
 
 #Main loop
 if __name__ == "__main__":
+  SUNLIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   FRAME = SURF.get_rect()
   ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
@@ -1708,7 +1720,8 @@ if __name__ == "__main__":
     SURF.fill((255, 255, 255))
     ASURF.fill((0, 0, 0, 0))
     BACK_TINT.fill((0, 0, 0, 0))
-    LIGHTSURF.fill((0, 0, 0, 255))
+    SUNLIGHTSURF.fill((0, 0, 0, 255))
+    LIGHTSURF.fill((0, 0, 0, 0))
     keys = pg.key.get_pressed()
     
     #sun.draw()
@@ -1782,9 +1795,11 @@ if __name__ == "__main__":
         # print(world.mask.get_at())
 
     SURF.blit(ASURF, (0, 0))
-    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
-    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
-    SURF.blit(LIGHTSURF, ((0,0)))
+    player.light.draw(*relativeRect(player.rect).center)
+    SUNLIGHTSURF = pg.transform.smoothscale(SUNLIGHTSURF, (WIDTH//15, HEIGHT//15))
+    SUNLIGHTSURF = pg.transform.smoothscale(SUNLIGHTSURF, (WIDTH, HEIGHT))
+    # SUNLIGHTSURF.blit(LIGHTSURF, (0,0))
+    SURF.blit(SUNLIGHTSURF, ((0,0)))
     player.drawHUD()
     
     SURF.blit(font20.render(str(pixelToCoord(*player.camera.center)), True, (0,0,0)), (20, 50))
