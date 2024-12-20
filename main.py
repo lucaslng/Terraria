@@ -1,3 +1,4 @@
+from collections import deque
 import sys, math, random, time, pickle          #pickle stores game data onto system
 import pygame as pg
 from pygame.locals import *
@@ -8,6 +9,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Dict, List, Set, Tuple
 from enum import Enum
+import copy
 
 
 WIDTH = 1000
@@ -1230,6 +1232,7 @@ class Player(Entity, HasInventory):
         world[this.blockFacing.y][this.blockFacing.x] = AirBlock(
             this.blockFacing.x, this.blockFacing.y
         )
+        if world.back[this.blockFacing.y][this.blockFacing.x].isAir: world.regenerateLight(this.blockFacing.x, this.blockFacing.y)
         item = this.blockFacing.item()
         
         if this.heldSlot().item and this.heldSlot().item.isTool():
@@ -1250,6 +1253,7 @@ class Player(Entity, HasInventory):
         this.heldSlot().count -= 1
         if this.heldSlot().count == 0:
           this.heldSlot().item = None
+        if world.back[y][x].isAir: world.regenerateLight(x, y)
 
   def drawCircle(this):
     pg.draw.circle(ASURF, (0, 0, 0, 120), FRAME.center, BLOCK_SIZE * 4)
@@ -1302,8 +1306,8 @@ class Edge:
   def draw(this):
     # if this.x != this.ex and this.y != this.ey: print("diagonal wtf")
     pg.draw.line(SURF,(0,0,0),relativeCoord(this.x*BLOCK_SIZE, this.y*BLOCK_SIZE),relativeCoord(this.ex*BLOCK_SIZE, this.ey*BLOCK_SIZE), 3)
-    pg.draw.circle(SURF,(0,255,0),relativeCoord(this.x*BLOCK_SIZE,this.y*BLOCK_SIZE), 3)
-    pg.draw.circle(SURF,(0,255,0),relativeCoord(this.ex*BLOCK_SIZE,this.ey*BLOCK_SIZE), 3)
+    # pg.draw.circle(SURF,(0,255,0),relativeCoord(this.x*BLOCK_SIZE,this.y*BLOCK_SIZE), 3)
+    # pg.draw.circle(SURF,(0,255,0),relativeCoord(this.ex*BLOCK_SIZE,this.ey*BLOCK_SIZE), 3)
   def __repr__(this):
     return str((this.x, this.y, this.ex, this.ey))
 
@@ -1315,13 +1319,15 @@ class World:
     this.array = [
         [AirBlock(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
     ]
-    # cannot deepcopy pygame surface
+    # cannot deepcopy pygame surface so I have to loop over it again
     this.back = [
         [AirBlock(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
     ]
+    
     this.mask = pg.mask.Mask((WORLD_WIDTH*BLOCK_SIZE, WORLD_HEIGHT*BLOCK_SIZE))
     this.__generateWorld()
     this.generateMask()
+    this.generateLight()
 
   class SimplexNoise:
     def __init__(this, scale: float, dimension: int, width: int = WORLD_WIDTH, height: int = WORLD_HEIGHT):
@@ -1509,23 +1515,25 @@ class World:
     for i in range(0, WORLD_HEIGHT-1):
       if not this[i][x].isAir:
         return this[i][x]
+  
+  def getVisibleBlocks(this):
+    this.visibleBlocks = [
+      [(this[y][x], this.back[y][x], this.lightmap[y][x]) for x in range(player.camera.left // BLOCK_SIZE,
+          (player.camera.right // BLOCK_SIZE) + 1)]
+            for y in range(player.camera.top // BLOCK_SIZE,
+              (player.camera.bottom // BLOCK_SIZE) + 1)
+    ]
 
   def draw(this):
-    for y in range(
-        player.camera.top // BLOCK_SIZE, (player.camera.bottom //
-                                          BLOCK_SIZE) + 1
-    ):
-      for x in range(
-          player.camera.left // BLOCK_SIZE,
-          (player.camera.right // BLOCK_SIZE) + 1,
-      ):
-        block = this[y][x]
-        backBlock = this.back[y][x]
+    for row in this.visibleBlocks:
+      for blockTuple in row:
+        block, backBlock, light = blockTuple
         if not block.isAir:
           block.drawBlock()
         elif not backBlock.isAir:
           backBlock.drawBlock()
-          pg.draw.rect(BACK_TINT, (0,0,0,60), relativeRect(backBlock.rect))
+          pg.draw.rect(BACK_TINT, (0,0,0,70), relativeRect(backBlock.rect))
+        pg.draw.rect(LIGHTSURF, (0,0,0,light), relativeRect(block.rect))
   
   def buildEdgePool(this):
     this.edgePool.clear()
@@ -1605,23 +1613,54 @@ class World:
     for i in range(len(this.edgePool)):
       this.vertices.add(relativeCoord(this.edgePool[i].x*BLOCK_SIZE,this.edgePool[i].y*BLOCK_SIZE))
       this.vertices.add(relativeCoord(this.edgePool[i].ex*BLOCK_SIZE,this.edgePool[i].ey*BLOCK_SIZE))
-      # this.edgePool[i].draw()
+      this.edgePool[i].draw()
+
+  def generateLight(this):
+    lightmap = [
+      [255 if not this[y][x].isAir or not this.back[y][x].isAir else 0 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
+    
+    lightstarttime = time.time()
+    for i in range(5):
+      newlightmap = copy.deepcopy(lightmap)
+      for y in range(WORLD_HEIGHT):
+        for x in range(WORLD_WIDTH):
+          if this[y][x].isAir and this.back[y][x].isAir: continue
+          for r in range(-1, 2):
+            if not 0 <= y + r < WORLD_HEIGHT: continue
+            for c in range(-1, 2):
+              if not 0 <= x + c < WORLD_WIDTH: continue
+              if r == 0 and c == 0: continue
+              lightmap[y][x] = min(lightmap[y][x], newlightmap[y+r][x+c] + i * 50)
+    lightendtime = time.time()
+    print("lightmap time:", lightendtime - lightstarttime)
+    this.lightmap = lightmap
   
-  def castRays(this):
-    this.litVertices.clear()
-    for vertex in this.vertices:
-      bres = bresenham(*vertex, *sun.pos, True, SHADOW_QUALITY)
-      if bres: 
-        this.litVertices.extend(bres)
-    this.litVertices.extend((FRAME.topleft, FRAME.topright, relativeCoord(*this.topBlock(WORLD_WIDTH-1).rect.topleft), relativeCoord(*this.topBlock(0).rect.topright)))
-    if len(this.litVertices) > 2:
-      this.litVertices.sort(key=lambda a: math.atan2(sun.pos[1]-a[1], sun.pos[0]-a[0]))
-      pg.draw.polygon(LIGHTSURF, (255,255,255,0), [sun.pos] + this.litVertices)
-  
+  def regenerateLight(this, xcenter: int, ycenter: int):
+    radius = 5
+    count = 0
+    for y in range(ycenter - radius, ycenter + radius + 1):
+        for x in range(xcenter - radius, xcenter + radius + 1):
+          this.lightmap[y][x] = 255 if not this[y][x].isAir or not this.back[y][x].isAir else 0
+          
+    for i in range(5):
+      newlightmap = [row[:] for row in this.lightmap] # copy lightmap array
+      for y in range(ycenter - radius, ycenter + radius + 1):
+        for x in range(xcenter - radius, xcenter + radius + 1):
+          if this[y][x].isAir and this.back[y][x].isAir: continue
+          for r in range(-1, 2):
+            if not ycenter - radius <= y + r <= ycenter + radius: continue
+            for c in range(-1, 2):
+              if not xcenter - radius <= x + c <= xcenter + radius: continue
+              if r == 0 and c == 0: continue
+              this.lightmap[y][x] = min(this.lightmap[y][x], newlightmap[y+r][x+c] + i * 50)
+              count += 1
+    
   def update(this):
+    this.getVisibleBlocks()
     this.draw()
     # this.buildEdgePool()
-    # this.castRays()
+    
+    this.visibleBlocks.clear()
 
 
 #Main loop
@@ -1650,11 +1689,11 @@ if __name__ == "__main__":
   
   
   while True:
+    frameStartTime = time.time()
     SURF.fill((255, 255, 255))
     ASURF.fill((0, 0, 0, 0))
     BACK_TINT.fill((0, 0, 0, 0))
-    # LIGHTSURF.fill((0, 0, 0, 240))
-    
+    LIGHTSURF.fill((0, 0, 0, 255))
     keys = pg.key.get_pressed()
     
     #sun.draw()
@@ -1729,9 +1768,9 @@ if __name__ == "__main__":
         # print(world.mask.get_at())
 
     SURF.blit(ASURF, (0, 0))
-    # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
-    # LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
-    # SURF.blit(LIGHTSURF, ((0,0)))
+    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH//15, HEIGHT//15))
+    LIGHTSURF = pg.transform.smoothscale(LIGHTSURF, (WIDTH, HEIGHT))
+    SURF.blit(LIGHTSURF, ((0,0)))
     player.drawHUD()
     
     SURF.blit(font20.render(str(pixelToCoord(*player.camera.center)), True, (0,0,0)), (20, 50))
@@ -1739,4 +1778,7 @@ if __name__ == "__main__":
     if craftingMenu.isActive: craftingMenu.draw()
 
     pg.display.flip()
+    frameEndTime = time.time()
+    # print("frame time:", frameEndTime - frameStartTime)
     clock.tick(FPS)
+    
