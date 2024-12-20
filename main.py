@@ -288,6 +288,9 @@ class Item:
 
   def isTool(this) -> bool:
     return isinstance(this, Tool)
+  
+  def isExecutable(this) -> bool:
+    return isinstance(this, ExecutableItem)
 
 
 class BlockType(Enum):
@@ -387,6 +390,12 @@ class PlaceableItem(Item):
     world[y][x] = this.block()(x, y)
     world.mask.draw(world[y][x].mask, world[y][x].rect.topleft)
 
+@dataclass
+class ExecutableItem(Item, ABC):
+  @abstractmethod
+  def execute(this):
+    '''execute whatever needs to be done'''
+    pass
 
 class AirBlock(Block):
   '''Empty air block'''
@@ -498,6 +507,13 @@ class CoalItem(Item):
     super().__init__("Coal", this.coalItemTexture, 64)
 
 ores = {CoalOreBlock, IronOreBlock}
+
+class TorchItem(ExecutableItem):
+  torchItemTexture = pg.transform.scale(pg.image.load("torch.png"), (Item.SIZE, Item.SIZE))
+  def __init__(this):
+    super().__init__("Torch", this.torchItemTexture, 64)
+  def execute(this):
+    player.light.radius = 100
 
 class BlockItemRegistry:
   block2Item = {}
@@ -1165,6 +1181,12 @@ class Player(Entity, HasInventory):
     else:
       return None
 
+  def executeHeldSlotEffect(this):
+    '''do whatever the heldslot says needs to be done'''
+    this.light.radius = BLOCK_SIZE // 2
+    if this.heldSlot().item.isExecutable():
+      this.heldSlot().item.execute()
+  
   def changeSlot(this, index: int):
     this.heldSlot().isActive = False
     this.heldSlotIndex = index
@@ -1307,6 +1329,7 @@ class Player(Entity, HasInventory):
     this.drawHUD()
     if not pg.mouse.get_pressed()[0]:
       this.usingItem = False
+    this.executeHeldSlotEffect()
   
   def drawHUD(this):
     this.draw_health()
@@ -1700,7 +1723,7 @@ if __name__ == "__main__":
   BACK_TINT.fill((0, 0, 0, 0))
   
   #Give player items at the beginning of the game
-  defaultItems = [IronPickaxe(), StonePickaxe(), IronAxe(), StoneAxe(), WoodenShovel(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)]
+  defaultItems = [IronPickaxe(), IronAxe(), StoneAxe(), WoodenShovel(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)] + [TorchItem() for _ in range(64)]
   
   player = Player()
   craftingMenu = CraftingMenu()
