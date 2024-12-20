@@ -1448,7 +1448,6 @@ class World:
           
     for i in range(5):
       newlightmap = [row[:] for row in this.lightmap] # copy lightmap array
-      deepcopytime += time.time() - time1
       for y in range(ycenter - radius, ycenter + radius + 1):
         for x in range(xcenter - radius, xcenter + radius + 1):
           if this[y][x].isAir and this.back[y][x].isAir: continue
