@@ -4,7 +4,9 @@ from pygame.locals import *
 from pygame import Vector2
 from abc import *
 from dataclasses import dataclass
-from typing import List, TypedDict
+from collections import defaultdict
+from dataclasses import dataclass
+from typing import Dict, List, Set, Tuple
 from enum import Enum
 
 
@@ -21,11 +23,11 @@ gravity = 1
 SEED = time.time()
 random.seed(SEED)
 start = time.time()
+
 pg.init()
 clock = pg.time.Clock()
 
 pg.time.set_timer(101,500)
-
 SURF = pg.display.set_mode((WIDTH, HEIGHT), vsync=1)
 pg.display.set_caption("Terraria")
 
@@ -74,6 +76,7 @@ class Animation:
 
 catSheet = SpriteSheet("cat.png")
 woodenToolsSheet = SpriteSheet("wooden_tools.png")
+stoneToolsSheet = SpriteSheet("stone_tools.png")
 
 sprites = {
   "cat": {
@@ -114,11 +117,17 @@ sprites = {
     ),
   },
   
-  
+  #Wooden
   "woodenAxe": woodenToolsSheet.get(0, 0, 16, 16, 15),
   "woodenPickaxe": woodenToolsSheet.get(16, 0, 16, 16, 15),
-  "woodenShovel":woodenToolsSheet.get(32, 0, 16, 16, 15),
+  "woodenShovel": woodenToolsSheet.get(32, 0, 16, 16, 15),
   "woodenSword": woodenToolsSheet.get(48, 0, 16, 16, 15),
+  
+  #Stone
+  "stoneAxe": stoneToolsSheet.get(0, 0, 16, 16, 15),
+  "stonePickaxe": stoneToolsSheet.get(16, 0, 16, 16, 15),
+  "stoneShovel": stoneToolsSheet.get(32, 0, 16, 16, 15),
+  "stoneSword": stoneToolsSheet.get(48, 0, 16, 16, 15),
 }
 
 
@@ -434,7 +443,7 @@ class CobblestoneBlock(Block):
     pg.image.load("cobblestone.png"), (BLOCK_SIZE, BLOCK_SIZE))
   cobblestoneItemTexture = pg.transform.scale(cobblestoneTexture, (Item.SIZE, Item.SIZE))
   def __init__(this, x, y):
-    super().__init__("Cobblestone", this.cobblestoneTexture, x, y, 2, BlockType.PICKAXE)
+    super().__init__("Cobblestone", this.cobblestoneTexture, x, y, 5.5, BlockType.PICKAXE)
 class CobbleStoneItem(PlaceableItem):
   cobblestoneItemTexture = pg.transform.scale(
     pg.image.load("cobblestone.png"), (Item.SIZE, Item.SIZE))
@@ -589,6 +598,16 @@ class CraftingMenu(Menu):
     
     this.held_item = None
     this.held_count = 0
+    
+  def update_output(this):
+      """Update the output slot based on the crafting grid."""
+      crafted_item = this.crafting_system.craft(this.crafting_grid)
+      if crafted_item:
+          this.output_slot.item = crafted_item
+          this.output_slot.count = 1
+      else:
+          this.output_slot.item = None
+          this.output_slot.count = 0
 
   def handle_click(this, mouse_pos, right_click=False):
     """Mouse clicks in the crafting menu"""
@@ -613,60 +632,87 @@ class CraftingMenu(Menu):
         return True
         
     return False
-
-  def update_output(this):
-      """Update the output slot based on the crafting grid."""
-      crafted_item = this.crafting_system.craft(this.crafting_grid)
-      if crafted_item:
-          this.output_slot.item = crafted_item
-          this.output_slot.count = 1
-      else:
-          this.output_slot.item = None
-          this.output_slot.count = 0
-
-  def handle_input(this, row, col, item):
-      this.crafting_grid[row][col] = item.name if item else None
-      this.update_output()
-
-  def craft_item(this):
-      """Add item to player inventory."""
-      if this.output_slot.item:
-        for r, row in enumerate(this.crafting_grid):
-            for c, cell in enumerate(row):
-              if cell:
-                for slot_row in player.inventory.inventory:
-                    for slot in slot_row:
-                        if slot.item and slot.item.name == cell:
-                            slot.count -= 1
-                            if slot.count == 0:
-                                slot.item = None
-                            break
-
-        player.inventory.addItem(this.output_slot.item)
-        
-        #clear crafting grid
-        this.crafting_grid = [[None for _ in range(3)] for _ in range(3)]
-        this.update_output()
-
-  def draw(this):
-    """Draw crafting menu"""
-    super().draw()
-    # for r, row in enumerate(this.crafting_grid):
-    #     for c, cell in enumerate(row):
-    #         x = this.sections[0].x + c * this.sections[0].slotSize
-    #         y = this.sections[0].y + r * this.sections[0].slotSize
-    #         pg.draw.rect(SURF, (200, 200, 200), (x, y, Slot.size, Slot.size), 2)
-    #         if cell:
-    #             item_texture = [slot.item.texture for slot_row in player.inventory.inventory for slot in slot_row if slot.item and slot.item.name == cell][0]
-    #             scaled_texture = pg.transform.scale(item_texture, (Slot.size - 6, Slot.size - 6))
-    #             texture_rect = scaled_texture.get_rect(center=(x + Slot.size // 2, y + Slot.size // 2))
-    #             SURF.blit(scaled_texture, texture_rect.topleft)
-
+  
+  def handle_grid_click(this, row, col, right_click=False):
+    """Handle clicks in the crafting grid slots"""
+    current_item = this.crafting_grid[row][col]
     
-    # if this.output_slot.item:
-    #     scaled_texture = pg.transform.scale(this.output_slot.item.texture, (Slot.size - 6, Slot.size - 6))
-    #     texture_rect = scaled_texture.get_rect(center=(x + Slot.size // 2, y + Slot.size // 2))
-    #     SURF.blit(scaled_texture, texture_rect.topleft)
+    if this.held_item is None:
+      # Pick up item if there is one
+      if current_item:
+          # Find the actual item instance from inventory
+          item_instance = None
+          for slot_row in player.inventory.inventory:
+              for slot in slot_row:
+                  if slot.item and slot.item.name == current_item:
+                      item_instance = slot.item
+                      break
+          if item_instance:
+              this.held_item = item_instance
+              this.held_count = 1 if right_click else float('inf')
+              this.crafting_grid[row][col] = None
+    else:
+      # Place held item
+      if current_item is None:
+          count = 1 if right_click else this.held_count
+          this.crafting_grid[row][col] = this.held_item.name
+          if count >= this.held_count:
+              this.held_item = None
+              this.held_count = 0
+        
+    this.update_output()
+    
+  def handle_inventory_click(this, slot_row, slot_col, right_click=False):
+    inventory_slot = player.inventory[slot_row][slot_col]
+    
+    if this.held_item is None:
+        # Pick up item from inventory
+        if inventory_slot.item:
+            this.held_item = inventory_slot.item
+            this.held_count = 1 if right_click else inventory_slot.count
+            inventory_slot.count -= this.held_count
+            if inventory_slot.count <= 0:
+                inventory_slot.item = None
+                inventory_slot.count = 0
+    else:
+        # Place held item into inventory
+        if inventory_slot.item is None or inventory_slot.item == this.held_item:
+            count = 1 if right_click else this.held_count
+            if inventory_slot.item is None:
+                inventory_slot.item = this.held_item
+                inventory_slot.count = 0
+            inventory_slot.count += count
+            this.held_count -= count
+            if this.held_count <= 0:
+                this.held_item = None
+
+  def handle_output_click(this):
+    """Handle clicks on the output slot"""
+    if this.output_slot.item and not this.held_item:
+        this.craft_item()
+
+  def draw(this, transparent=False):
+    """Draw crafting menu and held item"""
+    super().draw(transparent)
+    # Draw the held item following the cursor if there is one
+    if this.held_item:
+        mouse_pos = pg.mouse.get_pos()
+        scaled_texture = pg.transform.scale(
+            this.held_item.texture,
+            (Slot.size - 6, Slot.size - 6)
+        )
+        texture_rect = scaled_texture.get_rect(
+            center=mouse_pos
+        )
+        SURF.blit(scaled_texture, texture_rect.topleft)
+        if this.held_count > 1:
+            count_text = font20.render(
+                str(this.held_count), True, (255, 255, 255))
+            text_rect = count_text.get_rect(
+                bottomright=(mouse_pos[0] + Slot.size//2 - 5,
+                            mouse_pos[1] + Slot.size//2 - 5)
+            )
+            SURF.blit(count_text, text_rect.topleft)
     
 class CraftingSystem:
   """Handles crafting logic and recipes."""
@@ -807,20 +853,22 @@ class WoodenShovel(Tool):
     super().__init__("Wooden Shovel", sprites["woodenShovel"], 1, 1.5, 59, BlockType.SHOVEL)
 class WoodenSword(Tool):
   def __init__(this):
-    super().__init__("Wooden Sword", sprites["woodenSword"], 1, 1.5, 59, BlockType.SWORD)
+    super().__init__("Wooden Sword", sprites["woodenSword"], 1, 1, 59, BlockType.SWORD)
     
 '''Stone'''
 class StonePickaxe(Tool):
-  stonePickaxeTexture = pg.transform.scale(
-    pg.image.load("stone_pickaxe.png"), (Item.SIZE, Item.SIZE))
   def __init__(this):
-    super().__init__("Stone Pickaxe", this.stonePickaxeTexture, 1, 3, 131, BlockType.PICKAXE)
+    super().__init__("Stone Pickaxe", sprites["stonePickaxe"], 1, 3, 131, BlockType.PICKAXE)
 class StoneAxe(Tool):
-  stoneAxeTexture = pg.transform.scale(
-    pg.image.load("stone_axe.png"), (Item.SIZE, Item.SIZE))
   def __init__(this):
-    super().__init__("Stone Axe", this.stoneAxeTexture, 1, 2.5, 131, BlockType.AXE)
-
+    super().__init__("Stone Axe", sprites["stoneAxe"], 1, 2.5, 131, BlockType.AXE)
+class StoneShovel(Tool):
+  def __init__(this):
+    super().__init__("Stone Shovel", sprites["stoneShovel"], 1, 2.5, 131, BlockType.SHOVEL)
+class StoneSword(Tool):
+  def __init__(this):
+    super().__init__("Stone Sword", sprites["stoneSword"], 1, 1, 131, BlockType.SWORD)
+    
 
 class HasInventory:
   """Parent class for classes than have an inventory"""
@@ -1378,49 +1426,50 @@ class World:
       return noise
 
   def __generateWorld(this):
+    # Precompute noise
     grassHeightNoise = this.SimplexNoise(19, 1)
     stoneHeightNoise = this.SimplexNoise(30, 1)
-    
-    oresNoise = {}
     cavesNoise = this.SimplexNoise(9, 2)
-    
-    for ore in ores:
-      oresNoise[ore.__name__] = (this.SimplexNoise(ore.veinSize, 2), ore)
-    for x in range(0, WORLD_WIDTH):
+
+    oresNoise = {
+      ore.__name__: (this.SimplexNoise(ore.veinSize, 2), ore)
+      for ore in ores
+    }
+
+    # Generate terrain in batch
+    for x in range(WORLD_WIDTH):
       grassHeight = round(WORLD_HEIGHT * 0.58 + 9 * grassHeightNoise[x])
       stoneHeight = round(grassHeight + 5 + 5 * stoneHeightNoise[x])
 
-      # Stone pass
-      for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
-        this.array[y][x] = StoneBlock(x, y)
-        this.back[y][x] = StoneBlock(x, y)
+      # Stone and Dirt pass in batch
+      for y in range(WORLD_HEIGHT - 1, grassHeight - 1, -1):
+          if y > stoneHeight:
+              this.array[y][x] = StoneBlock(x, y)
+              this.back[y][x] = StoneBlock(x, y)
+          else:
+              this.array[y][x] = DirtBlock(x, y)
+              this.back[y][x] = DirtBlock(x, y)
 
-      # Ore pass
-      for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
-        for _, v in oresNoise.items():
-          oreNoise, ore = v
-          if oreNoise[y][x] > ore.rarity:
-            this.array[y][x] = ore(x, y)
-
-      # Dirt pass
-      for y in range(stoneHeight, grassHeight, -1):
-        this.array[y][x] = DirtBlock(x, y)
-        this.back[y][x] = DirtBlock(x, y)
-
-      # Grass Dirt pass
+      # Grass block
       this.array[grassHeight][x] = DirtBlock(
           x, grassHeight, DirtVariantGrass()
       )
 
       # Cave pass
-      for y in range(WORLD_HEIGHT - 1, grassHeight - 1, - 1):
-        if cavesNoise[y][x] > 0.1:
-          this.array[y][x] = AirBlock(x, y)
-          
-      #Tree pass
-      if isinstance(this[y][x], DirtBlock):
-        # if random.randint(0, 10) > 8:
-        this.__generateTree(x, y-1)
+      for y in range(WORLD_HEIGHT - 1, grassHeight - 1, -1):
+          if cavesNoise[y][x] > 0.1:
+              this.array[y][x] = AirBlock(x, y)
+
+      # Ore pass
+      for ore_name, (oreNoise, ore) in oresNoise.items():
+          for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
+              if oreNoise[y][x] > ore.rarity:
+                  this.array[y][x] = ore(x, y)
+
+      # Tree pass
+      if isinstance(this[grassHeight][x], DirtBlock):
+          if random.random() > 0.8:  # Simplified tree placement
+              this.__generateTree(x, grassHeight - 1)
 
   def generateMask(this):
     for row in this.array:
@@ -1574,6 +1623,8 @@ class World:
     # this.buildEdgePool()
     # this.castRays()
 
+
+#Main loop
 if __name__ == "__main__":
   LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   FRAME = SURF.get_rect()
@@ -1655,7 +1706,20 @@ if __name__ == "__main__":
         pg.quit()
         sys.exit()
       elif event.type == 101:
-        print("fps: ", round(clock.get_fps(), 2))
+        print("fps: ", round(clock.get_fps(), 2))    
+      elif craftingMenu.isActive:
+        if event.type == pg.MOUSEBUTTONDOWN:
+          mouse_pos = pg.mouse.get_pos()
+          if not craftingMenu.handle_click(mouse_pos, event.button == 3):
+              # If click wasn't in crafting grid, check inventory
+              for row in range(player.inventory.rows):
+                  for col in range(player.inventory.cols):
+                      x = player.inventory.menux + col * Slot.size
+                      y = player.inventory.menuy + row * Slot.size
+                      if (x <= mouse_pos[0] <= x + Slot.size and 
+                          y <= mouse_pos[1] <= y + Slot.size):
+                          craftingMenu.handle_inventory_click(row, col, event.button == 3)
+        
       elif event.type == KEYDOWN and event.key == pg.K_e:
         check_for_interaction()
       elif event.type == KEYDOWN and event.key == pg.K_m:

@@ -22,14 +22,15 @@ class SpriteSheet:
     
     return image
 
-
+stoneToolsSheet = SpriteSheet("stone_tools.png")
 
 while sigma:
   surf.fill((50,50,50))
   asurf.fill((0,0,0,0))
   
+  pickaxe = stoneToolsSheet.get(0, 0, 16, 16, 200)
   
-  
+  asurf.blit(pickaxe, (0, 0))
   surf.blit(asurf, (0,0))
   
   pg.draw.rect(surf,(0,0,0),(0,0,200,200),2)
