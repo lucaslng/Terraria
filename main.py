@@ -1184,7 +1184,7 @@ class Player(Entity, HasInventory):
   def executeHeldSlotEffect(this):
     '''do whatever the heldslot says needs to be done'''
     this.light.radius = BLOCK_SIZE // 2
-    if this.heldSlot().item.isExecutable():
+    if this.heldSlot().item and this.heldSlot().item.isExecutable():
       this.heldSlot().item.execute()
   
   def changeSlot(this, index: int):
