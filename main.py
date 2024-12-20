@@ -79,6 +79,7 @@ class Animation:
 catSheet = SpriteSheet("cat.png")
 woodenToolsSheet = SpriteSheet("wooden_tools.png")
 stoneToolsSheet = SpriteSheet("stone_tools.png")
+ironToolsSheet = SpriteSheet("iron_tools.png")
 
 sprites = {
   "cat": {
@@ -130,6 +131,12 @@ sprites = {
   "stonePickaxe": stoneToolsSheet.get(16, 0, 16, 16, 15),
   "stoneShovel": stoneToolsSheet.get(32, 0, 16, 16, 15),
   "stoneSword": stoneToolsSheet.get(48, 0, 16, 16, 15),
+  
+  #Iron
+  "ironAxe": ironToolsSheet.get(0, 0, 16, 16, 15),
+  "ironPickaxe": ironToolsSheet.get(16, 0, 16, 16, 15),
+  # "stoneShovel": stoneToolsSheet.get(32, 0, 16, 16, 15),
+  # "stoneSword": stoneToolsSheet.get(48, 0, 16, 16, 15),
 }
 
 
@@ -871,6 +878,14 @@ class StoneSword(Tool):
   def __init__(this):
     super().__init__("Stone Sword", sprites["stoneSword"], 1, 1, 131, BlockType.SWORD)
     
+'''Iron'''
+class IronPickaxe(Tool):
+  def __init__(this):
+    super().__init__("Iron Pickaxe", sprites["ironPickaxe"], 1, 5, 250, BlockType.PICKAXE)
+class IronAxe(Tool):
+  def __init__(this):
+    super().__init__("Iron Axe", sprites["ironAxe"], 1, 3.5, 250, BlockType.AXE)
+  
 
 class HasInventory:
   """Parent class for classes than have an inventory"""
@@ -1673,7 +1688,7 @@ if __name__ == "__main__":
   BACK_TINT.fill((0, 0, 0, 0))
   
   #Give player items at the beginning of the game
-  defaultItems = [StonePickaxe(), WoodenAxe(), WoodenShovel(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)]
+  defaultItems = [IronPickaxe(), StonePickaxe(), IronAxe(), StoneAxe(), WoodenShovel(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)]
   
   player = Player()
   craftingMenu = CraftingMenu()

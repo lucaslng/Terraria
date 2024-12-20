@@ -22,15 +22,22 @@ class SpriteSheet:
     
     return image
 
-stoneToolsSheet = SpriteSheet("stone_tools.png")
+ironToolsSheet = SpriteSheet("iron_tools.png")
 
 while sigma:
   surf.fill((50,50,50))
   asurf.fill((0,0,0,0))
   
-  pickaxe = stoneToolsSheet.get(0, 0, 16, 16, 200)
+  pickaxe = ironToolsSheet.get(0, 0, 16, 16, 200)
+  axe = ironToolsSheet.get(16, 0, 16, 16, 15)
+  shovel = ironToolsSheet.get(32, 0, 16, 16, 15)
+  sword = ironToolsSheet.get(48, 0, 16, 16, 15)
   
   asurf.blit(pickaxe, (0, 0))
+  # asurf.blit(axe, (0, 0))
+  # asurf.blit(shovel, (0, 0))
+  # asurf.blit(sword, (0, 0))
+  
   surf.blit(asurf, (0,0))
   
   pg.draw.rect(surf,(0,0,0),(0,0,200,200),2)
