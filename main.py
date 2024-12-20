@@ -396,6 +396,11 @@ class ExecutableItem(Item, ABC):
   def execute(this):
     '''execute whatever needs to be done'''
     pass
+  
+  @abstractmethod
+  def unexecute(this):
+    '''unexecute when item is swapped out'''
+    pass
 
 class AirBlock(Block):
   '''Empty air block'''
@@ -514,6 +519,8 @@ class TorchItem(ExecutableItem):
     super().__init__("Torch", this.torchItemTexture, 64)
   def execute(this):
     player.light.radius = 100
+  def unexecute(this):
+    player.light.radius = BLOCK_SIZE//2
 
 class BlockItemRegistry:
   block2Item = {}
@@ -1183,12 +1190,13 @@ class Player(Entity, HasInventory):
 
   def executeHeldSlotEffect(this):
     '''do whatever the heldslot says needs to be done'''
-    this.light.radius = BLOCK_SIZE // 2
     if this.heldSlot().item and this.heldSlot().item.isExecutable():
       this.heldSlot().item.execute()
   
   def changeSlot(this, index: int):
     this.heldSlot().isActive = False
+    if this.heldSlot().item and this.heldSlot().item.isExecutable():
+      this.heldSlot().item.unexecute()
     this.heldSlotIndex = index
     this.heldSlot().isActive = True
 
