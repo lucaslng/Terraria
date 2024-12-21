@@ -273,12 +273,22 @@ class Interactable(ABC):
 @dataclass
 class Light:
   '''Base class for any object with light except the sun'''
-  radius: int
-  
-  def draw(this, x: float, y: float):
-    '''draw light, takes a position on screen'''
-    pg.draw.circle(SUNLIGHTSURF, (0,0,0,0), (x,y), this.radius)
+  lightRadius: int
+  x: float
+  y: float
+  relative: bool = True
+  def __post_init__(this):
+    print("post init light")
+    lights.append(this)
+  def drawLight(this):
+    '''draw light'''
+    if this.relative:
+      print(this.x, this.y, this.x*20, this.y*20, coordWorld2Relative(this.x, this.y))
+      pg.draw.circle(SUNLIGHTSURF, (0,0,0,0), coordWorld2Relative(this.x,this.y), this.lightRadius)
+    else:
+      pg.draw.circle(SUNLIGHTSURF, (0,0,0,0), (this.x,this.y), this.lightRadius)
 
+lights: list[Light] = []
 
 @dataclass
 class Item:
@@ -307,7 +317,7 @@ class Item:
     return isinstance(this, Tool)
   
   def isExecutable(this) -> bool:
-    return isinstance(this, ExecutableItem)
+    return isinstance(this, Executable)
 
 
 class BlockType(Enum):
@@ -370,7 +380,7 @@ class Block:
     return x - this.rect.x, y - this.rect.y
 
   def collides(this, x: int, y: int) -> bool:
-    if this.isAir:
+    if this.isEmpty:
       return False
     if this.mask.overlap(player.mask, this.offset(x, y)):
       # pg.draw.rect(SURF, (255, 0, 0), relativeRect(this.rect), width=3)
@@ -416,7 +426,8 @@ class PlaceableItem(Item):
     world.mask.draw(world[y][x].mask, world[y][x].rect.topleft)
 
 @dataclass
-class ExecutableItem(Item, ABC):
+class Executable(ABC):
+  '''Items that have a special effect to be executed when held'''
   @abstractmethod
   def execute(this):
     '''execute whatever needs to be done'''
@@ -537,14 +548,20 @@ class CoalItem(Item):
 
 ores = {CoalOreBlock, IronOreBlock}
 
-class TorchItem(ExecutableItem):
-  torchItemTexture = pg.transform.scale(pg.image.load("torch.png"), (Item.SIZE, Item.SIZE))
+class TorchBlock(Block, Light):
+  torchTexture = pg.transform.scale(pg.image.load("torch.png").convert_alpha(), (BLOCK_SIZE,BLOCK_SIZE))
+  def __init__(this, x, y, isBack=False):
+    Block.__init__(this, "Torch", this.torchTexture, x, y, 1, BlockType.NONE, isEmpty=True, isBack=isBack)
+    Light.__init__(this, 100, x, y)
+    lights.append(this)
+class TorchItem(PlaceableItem, Executable):
+  torchItemTexture = pg.transform.scale(pg.image.load("torch.png").convert_alpha(), (Item.SIZE, Item.SIZE))
   def __init__(this):
-    super().__init__("Torch", this.torchItemTexture, 64)
+    PlaceableItem.__init__(this, "Torch", this.torchItemTexture, 64)
   def execute(this):
-    player.light.radius = 100
+    player.lightRadius = 100
   def unexecute(this):
-    player.light.radius = BLOCK_SIZE//2
+    player.lightRadius = BLOCK_SIZE//2
 
 class BlockItemRegistry:
   block2Item = {}
@@ -570,6 +587,7 @@ BlockItemRegistry.register(CobblestoneBlock, CobbleStoneItem)
 BlockItemRegistry.register(OakLogBlock, OakLogItem)
 BlockItemRegistry.register(IronOreBlock, IronOreItem)
 BlockItemRegistry.register(CoalOreBlock, CoalItem)
+BlockItemRegistry.register(TorchBlock, TorchItem)
 
 class Slot:
   """Slot class"""
@@ -1112,7 +1130,7 @@ class Entity:
     this.draw()
 
 
-class Player(Entity, HasInventory):
+class Player(Entity, HasInventory, Light):
   texture = sprites["cat"]["walk"][0]
   thisSprites = sprites["cat"]
   reach = 4 * BLOCK_SIZE
@@ -1125,6 +1143,7 @@ class Player(Entity, HasInventory):
   blockFacing = None
 
   def __init__(this):
+    Light.__init__(this, BLOCK_SIZE//2, *FRAME.center, relative=False)
     this.camera = FRAME.copy()
     this.camera.center = (
       BLOCK_SIZE * (WORLD_WIDTH // 2),
@@ -1167,8 +1186,6 @@ class Player(Entity, HasInventory):
     # beginning tick, tick length
     this.animations["usingItem"] = pg.time.get_ticks() + 200
     this.animations["placingBlock"] = 250
-    
-    this.light = Light(BLOCK_SIZE//2)
 
   def draw_health(this):
     """Draw health as hearts on the screen"""
@@ -1620,7 +1637,7 @@ class World:
         block, backBlock, light = blockTuple
         if not backBlock.isAir and block.isEmpty:
           backBlock.drawBlock()
-        if not block.isEmpty:
+        if not block.isAir:
           block.drawBlock()
         pg.draw.rect(SUNLIGHTSURF, (0,0,0,light), relativeRect(block.rect))
   
@@ -1706,14 +1723,14 @@ class World:
 
   def generateLight(this):
     lightmap = [
-      [255 if not this[y][x].isAir or not this.back[y][x].isAir else 0 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
+      [255 if not this[y][x].isEmpty or not this.back[y][x].isEmpty else 0 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
     
     lightstarttime = time.time()
     for i in range(5):
       newlightmap = copy.deepcopy(lightmap)
       for y in range(WORLD_HEIGHT):
         for x in range(WORLD_WIDTH):
-          if this[y][x].isAir and this.back[y][x].isAir: continue
+          if this[y][x].isEmpty and this.back[y][x].isEmpty: continue
           for r in range(-1, 2):
             if not 0 <= y + r < WORLD_HEIGHT: continue
             for c in range(-1, 2):
@@ -1729,13 +1746,13 @@ class World:
     count = 0
     for y in range(ycenter - radius, ycenter + radius + 1):
         for x in range(xcenter - radius, xcenter + radius + 1):
-          this.lightmap[y][x] = 255 if not this[y][x].isAir or not this.back[y][x].isAir else 0
+          this.lightmap[y][x] = 255 if not this[y][x].isEmpty or not this.back[y][x].isEmpty else 0
           
     for i in range(5):
       newlightmap = [row[:] for row in this.lightmap] # copy lightmap array
       for y in range(ycenter - radius, ycenter + radius + 1):
         for x in range(xcenter - radius, xcenter + radius + 1):
-          if this[y][x].isAir and this.back[y][x].isAir: continue
+          if this[y][x].isEmpty and this.back[y][x].isEmpty: continue
           for r in range(-1, 2):
             if not ycenter - radius <= y + r <= ycenter + radius: continue
             for c in range(-1, 2):
@@ -1855,7 +1872,10 @@ if __name__ == "__main__":
         # print(world.mask.get_at())
 
     SURF.blit(ASURF, (0, 0))
-    player.light.draw(*relativeRect(player.rect).center)
+    # print(lights)
+    for light in lights:
+      # print(light)
+      light.drawLight()
     SUNLIGHTSURF = pg.transform.smoothscale(SUNLIGHTSURF, (WIDTH//15, HEIGHT//15))
     SUNLIGHTSURF = pg.transform.smoothscale(SUNLIGHTSURF, (WIDTH, HEIGHT))
     # SUNLIGHTSURF.blit(LIGHTSURF, (0,0))
