@@ -432,7 +432,7 @@ class AirBlock(Block):
   texture = pg.surface.Surface((BLOCK_SIZE, BLOCK_SIZE))
   texture.fill((0, 0, 0, 0))
   def __init__(this, x=-1, y=-1, isBack=False):
-    super().__init__("Air", this.texture, x, y, 0, BlockType.NONE, isAir=True, isBack=isBack)
+    super().__init__("Air", this.texture, x, y, 0, BlockType.NONE, isAir=True, isEmpty=True, isBack=isBack)
 
 class CraftingTableBlock(Block, Interactable):
   craftingTableTexture = pg.transform.scale(
@@ -1618,10 +1618,10 @@ class World:
     for row in this.visibleBlocks:
       for blockTuple in row:
         block, backBlock, light = blockTuple
-        if not block.isAir:
-          block.drawBlock()
-        elif not backBlock.isAir:
+        if not backBlock.isAir and block.isEmpty:
           backBlock.drawBlock()
+        if not block.isEmpty:
+          block.drawBlock()
         pg.draw.rect(SUNLIGHTSURF, (0,0,0,light), relativeRect(block.rect))
   
   def buildEdgePool(this):
