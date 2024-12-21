@@ -157,6 +157,23 @@ def relativeCoord(x: float, y: float) -> tuple[int, int]:
   '''Convert a pixel coordinate relative to the camera. Useful for drawing things and more.'''
   return x - player.camera.x, y - player.camera.y
 
+def coordWorld2Pixel(x: int, y: int) -> tuple[int, int]:
+  '''convert world coordinates to pixel'''
+  return x * BLOCK_SIZE, y * BLOCK_SIZE
+
+def rectWorld2Pixel(rect: pg.rect.Rect) -> pg.rect.Rect:
+  '''convert world rect to pixel rect'''
+  return pg.rect.Rect(rect.left * BLOCK_SIZE, rect.top * BLOCK_SIZE, rect.width * BLOCK_SIZE, rect.height * BLOCK_SIZE)
+
+def coordWorld2Relative(x: int, y: int) -> tuple[int, int]:
+  '''convert world coordinates to pixel on screen'''
+  return relativeCoord(*coordWorld2Pixel(x, y))
+
+def rectWorld2Relative(rect: pg.rect.Rect) -> pg.rect.Rect:
+  '''convert world rect to relative rect'''
+  pixelRect = rectWorld2Pixel(rect)
+  return relativeRect(pixelRect)
+
 def check_for_interaction() -> None:
   '''loops over every visible block to check for interactable blocks'''
   for y in range(player.camera.top // BLOCK_SIZE, (player.camera.bottom // BLOCK_SIZE) + 1):
@@ -307,6 +324,8 @@ class BlockType(Enum):
 class Block:
   '''Base block class'''
   SIZE = BLOCK_SIZE
+  BACK_TINT = pg.surface.Surface((BLOCK_SIZE, BLOCK_SIZE), pg.SRCALPHA)
+  BACK_TINT.fill((0,0,0,70))
   amountBroken = float(0)
   name: str
   texture: pg.surface.Surface
@@ -315,8 +334,11 @@ class Block:
   hardness: float
   blockType: BlockType
   isAir: bool = False
+  isEmpty: bool = False
+  isBack: bool = False
 
   def __post_init__(this):
+    this.texture = this.texture.convert_alpha()
     this.rect = pg.rect.Rect(
       this.x * BLOCK_SIZE, this.y * BLOCK_SIZE, this.SIZE, this.SIZE)
     this.vertices = (
@@ -329,6 +351,9 @@ class Block:
     if this.isAir: this.mask.clear()
     this.edgeExist = [False for _ in range(4)]
     this.edgeId = [0 for _ in range(4)]
+    
+    if this.isBack and not this.isAir:
+      this.texture.blit(this.BACK_TINT, (0,0))
 
   def drawBlockOutline(this, color: pg.color.Color):
     pg.draw.rect(ASURF, color, relativeRect(this.rect), 2)
@@ -406,16 +431,16 @@ class AirBlock(Block):
   '''Empty air block'''
   texture = pg.surface.Surface((BLOCK_SIZE, BLOCK_SIZE))
   texture.fill((0, 0, 0, 0))
-  def __init__(this, x=-1, y=-1):
-    super().__init__("Air", this.texture, x, y, 0, BlockType.NONE, isAir=True)
+  def __init__(this, x=-1, y=-1, isBack=False):
+    super().__init__("Air", this.texture, x, y, 0, BlockType.NONE, isAir=True, isBack=isBack)
 
 class CraftingTableBlock(Block, Interactable):
   craftingTableTexture = pg.transform.scale(
     pg.image.load("crafting_table.png"), (BLOCK_SIZE, BLOCK_SIZE))
   
-  def __init__(this, x, y):
+  def __init__(this, x, y, isBack=False):
     Block.__init__(this, name="Crafting Table", texture=this.craftingTableTexture,
-                   x=x, y=y, hardness=2.5, blockType=BlockType.AXE)
+                   x=x, y=y, hardness=2.5, blockType=BlockType.AXE, isBack=isBack)
 
   def interact(this):
     craftingMenu.isActive = not craftingMenu.isActive
@@ -442,8 +467,8 @@ class DirtVariantGrass(DirtVariant):
   def __init__(this):
     super().__init__("Grass Block", this.grassTexture)
 class DirtBlock(Block):
-  def __init__(this, x, y, variant: DirtVariant = DirtVariantDirt()):
-    super().__init__(variant.name, variant.texture, x, y, 1.5, BlockType.SHOVEL)
+  def __init__(this, x, y, variant: DirtVariant = DirtVariantDirt(), isBack=False):
+    super().__init__(variant.name, variant.texture, x, y, 1.5, BlockType.SHOVEL, isBack=isBack)
     
     this.variant = variant.name.lower()
 class DirtItem(PlaceableItem):
@@ -453,8 +478,8 @@ class DirtItem(PlaceableItem):
     
 class OakLogBlock(Block):
     oakLogTexture = pg.transform.scale(pg.image.load("oak_log.png"), (BLOCK_SIZE, BLOCK_SIZE))  
-    def __init__(this, x, y):
-        super().__init__("Oak Log", this.oakLogTexture, x, y, 2.5, BlockType.AXE)
+    def __init__(this, x, y, isBack=False):
+        super().__init__("Oak Log", this.oakLogTexture, x, y, 2.5, BlockType.AXE, isBack=isBack)
 class OakLogItem(PlaceableItem):
     oakLogItemTexture = pg.transform.scale(pg.image.load("oak_log.png"), (Item.SIZE, Item.SIZE))
     def __init__(this):
@@ -462,20 +487,19 @@ class OakLogItem(PlaceableItem):
 
 class LeavesBlock(Block):
     leavesTexture = pg.transform.scale(pg.image.load("leaves.png"), (BLOCK_SIZE, BLOCK_SIZE))  
-    def __init__(this, x, y):
-        super().__init__("Leaves", this.leavesTexture, x, y, 1, BlockType.SHEARS)
+    def __init__(this, x, y, isBack=False):
+        super().__init__("Leaves", this.leavesTexture, x, y, 1, BlockType.SHEARS, isBack=isBack)
 
 class StoneBlock(Block):
   stoneTexture = pg.transform.scale(
     pg.image.load("stone.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  def __init__(this, x, y):
-    super().__init__("Stone", this.stoneTexture, x, y, 5, BlockType.PICKAXE)
+  def __init__(this, x, y, isBack=False):
+    super().__init__("Stone", this.stoneTexture, x, y, 5, BlockType.PICKAXE, isBack=isBack)
 class CobblestoneBlock(Block):
   cobblestoneTexture = pg.transform.scale(
     pg.image.load("cobblestone.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  cobblestoneItemTexture = pg.transform.scale(cobblestoneTexture, (Item.SIZE, Item.SIZE))
-  def __init__(this, x, y):
-    super().__init__("Cobblestone", this.cobblestoneTexture, x, y, 5.5, BlockType.PICKAXE)
+  def __init__(this, x, y, isBack=False):
+    super().__init__("Cobblestone", this.cobblestoneTexture, x, y, 5.5, BlockType.PICKAXE, isBack=isBack)
 class CobbleStoneItem(PlaceableItem):
   cobblestoneItemTexture = pg.transform.scale(
     pg.image.load("cobblestone.png"), (Item.SIZE, Item.SIZE))
@@ -493,8 +517,8 @@ class IronOreBlock(Block, Generated):
     pg.image.load("iron_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
   veinSize = 3.2
   rarity = 0.38
-  def __init__(this, x, y):
-    Block.__init__(this, "Iron Ore", this.ironOreTexture, x, y, 6, BlockType.PICKAXE)
+  def __init__(this, x, y, isBack=False):
+    Block.__init__(this, "Iron Ore", this.ironOreTexture, x, y, 6, BlockType.PICKAXE, isBack=isBack)
 class IronOreItem(PlaceableItem):
   ironOreItemTexture = pg.transform.scale(pg.image.load("iron_ore.png"), (Item.SIZE, Item.SIZE))
   def __init__(this):
@@ -504,8 +528,8 @@ class CoalOreBlock(Block, Generated):
   coalTexture = pg.transform.scale(pg.image.load("coal_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
   veinSize = 3.9
   rarity = 0.3
-  def __init__(this, x, y):
-    Block.__init__(this, "Coal Ore", this.coalTexture, x, y, 3, BlockType.PICKAXE)
+  def __init__(this, x, y, isBack=False):
+    Block.__init__(this, "Coal Ore", this.coalTexture, x, y, 3, BlockType.PICKAXE, isBack=isBack)
 class CoalItem(Item):
   coalItemTexture = pg.transform.scale(pg.image.load("coal.png"), (Item.SIZE, Item.SIZE))
   def __init__(this):
@@ -954,6 +978,15 @@ class Entity:
     this.health = health
     this.speed = speed
     this.jumpHeight = jumpHeight
+    
+    # kinematic vectors
+    this.position = Vector2(x, y)
+    this.velocity = Vector2()
+    this.accel = Vector2()
+    
+    # kinematic constants
+    this.HORIZONTAL_ACCEL = 1
+    this.HORIZONTAL_FRICTION = 0.2
 
   def moveLeft(this) -> None:
     if this.hvelo > -5:
@@ -1378,7 +1411,7 @@ class World:
     ]
     # cannot deepcopy pygame surface so I have to loop over it again
     this.back = [
-        [AirBlock(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
+        [AirBlock(x, y, isBack=True) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
     ]
     
     this.mask = pg.mask.Mask((WORLD_WIDTH*BLOCK_SIZE, WORLD_HEIGHT*BLOCK_SIZE))
@@ -1508,10 +1541,10 @@ class World:
       for y in range(WORLD_HEIGHT - 1, grassHeight - 1, -1):
           if y > stoneHeight:
               this.array[y][x] = StoneBlock(x, y)
-              this.back[y][x] = StoneBlock(x, y)
+              this.back[y][x] = StoneBlock(x, y, isBack=True)
           else:
               this.array[y][x] = DirtBlock(x, y)
-              this.back[y][x] = DirtBlock(x, y)
+              this.back[y][x] = DirtBlock(x, y, isBack=True)
 
       # Grass block
       this.array[grassHeight][x] = DirtBlock(
@@ -1589,7 +1622,6 @@ class World:
           block.drawBlock()
         elif not backBlock.isAir:
           backBlock.drawBlock()
-          pg.draw.rect(BACK_TINT, (0,0,0,70), relativeRect(backBlock.rect))
         pg.draw.rect(SUNLIGHTSURF, (0,0,0,light), relativeRect(block.rect))
   
   def buildEdgePool(this):
@@ -1726,9 +1758,8 @@ if __name__ == "__main__":
   LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   FRAME = SURF.get_rect()
   ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
-  BACK_TINT = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   ASURF.fill((0, 0, 0, 0))
-  BACK_TINT.fill((0, 0, 0, 0))
+  
   
   #Give player items at the beginning of the game
   defaultItems = [IronPickaxe(), IronAxe(), StoneAxe(), WoodenShovel(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)] + [TorchItem() for _ in range(64)]
@@ -1750,14 +1781,12 @@ if __name__ == "__main__":
     frameStartTime = time.time()
     SURF.fill((255, 255, 255))
     ASURF.fill((0, 0, 0, 0))
-    BACK_TINT.fill((0, 0, 0, 0))
     SUNLIGHTSURF.fill((0, 0, 0, 255))
     LIGHTSURF.fill((0, 0, 0, 0))
     keys = pg.key.get_pressed()
     
     #sun.draw()
     world.update()
-    SURF.blit(BACK_TINT, (0,0))
     player.update()
     
     #Temporarily game over logic
