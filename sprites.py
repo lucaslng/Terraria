@@ -41,10 +41,10 @@ class Animation:
     if flipped: texture = pg.transform.flip(texture, True, False).convert_alpha()
     return SURF.blit(texture, (x, y))
 
-catSheet = SpriteSheet(r"C:\Users\Arcti\Programming\Python\Computer Science Projects\Terraria\textures\cat.png")
-woodenToolsSheet = SpriteSheet(r"C:\Users\Arcti\Programming\Python\Computer Science Projects\Terraria\textures\Tools\wooden_tools.png")
-stoneToolsSheet = SpriteSheet(r"C:\Users\Arcti\Programming\Python\Computer Science Projects\Terraria\textures\Tools\stone_tools.png")
-ironToolsSheet = SpriteSheet(r"C:\Users\Arcti\Programming\Python\Computer Science Projects\Terraria\textures\Tools\iron_tools.png")
+catSheet = SpriteSheet("cat.png")
+woodenToolsSheet = SpriteSheet("wooden_tools.png")
+stoneToolsSheet = SpriteSheet("stone_tools.png")
+ironToolsSheet = SpriteSheet("iron_tools.png")
 
 sprites = {
   "cat": {
