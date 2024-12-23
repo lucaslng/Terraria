@@ -1,26 +1,15 @@
-from collections import deque
-import sys, math, random, time, pickle          #pickle stores game data onto system
+import sys, math, random, time, copy, collections, pickle          #pickle stores game data onto system
 import pygame as pg
 from pygame.locals import *
-from pygame import Vector2
+
+#import code from other files
+from constants import *
+from sprites import *
+
 from abc import *
-from dataclasses import dataclass
-from collections import defaultdict
 from dataclasses import dataclass
 from typing import Dict, List, Set, Tuple
 from enum import Enum
-import copy
-
-
-WIDTH = 1000
-HEIGHT = 600
-FPS = 60
-
-BLOCK_SIZE = 25
-WORLD_HEIGHT = 256
-WORLD_WIDTH = 1000
-SHADOW_QUALITY = 3
-gravity = 1
 
 SEED = time.time()
 random.seed(SEED)
@@ -29,116 +18,12 @@ start = time.time()
 pg.init()
 clock = pg.time.Clock()
 
-pg.time.set_timer(101,500)
-SURF = pg.display.set_mode((WIDTH, HEIGHT), vsync=1)
-pg.display.set_caption("Terraria")
 
 class Direction:
   NORTH=0
   SOUTH=1
   WEST=2
   EAST=3
-
-class SpriteSheet:
-  '''sprite sheet class'''
-  def __init__(this, imageName: str):
-    this.sheet = pg.image.load(imageName).convert_alpha()
-    
-  def get(this, x, y, width, height, scale=BLOCK_SIZE, colour=(0,0,0)):
-    image = pg.Surface((width, height), pg.SRCALPHA)
-    image.blit(this.sheet, (0, 0), (x, y, width, height))
-    if colour != (0,0,0):
-        image.set_colorkey(colour)
-
-    image = pg.transform.scale(image, (scale, scale))
-    return image
-
-class Animation:
-  '''list of frames to cycle between for an animation. unit of duration is in frames'''
-  def __init__(this, *args, duration: int=10, startFrame: int = 0):
-    this.arr: List[pg.surface.Surface] = list(args)
-    this.duration = duration
-    this.frame = startFrame * duration
-  
-  def __getitem__(this, i: int) -> pg.surface.Surface:
-    return this.arr[i]
-  
-  def drawAnimated(this, x: int, y: int, flipped=False):
-    '''draws the the animation, takes a pixel relative to camera'''
-    index = this.frame//this.duration
-    this.frame += 1
-    if this.frame > len(this.arr) * this.duration - 1: this.frame = 0
-    return this.drawFrame(x, y, index, flipped)
-
-  def drawFrame(this, x: int, y: int, index=0, flipped=False):
-    '''draws the frame of the given index, takes a pixel relative to camera'''
-    texture = this[index]
-    if flipped: texture = pg.transform.flip(texture, True, False).convert_alpha()
-    return SURF.blit(texture, (x, y))
-
-catSheet = SpriteSheet("cat.png")
-woodenToolsSheet = SpriteSheet("wooden_tools.png")
-stoneToolsSheet = SpriteSheet("stone_tools.png")
-ironToolsSheet = SpriteSheet("iron_tools.png")
-
-sprites = {
-  "cat": {
-    "walk": Animation(
-      catSheet.get(9, 144, 16, 16),
-      catSheet.get(40, 144, 16, 16),
-      catSheet.get(71, 144, 16, 16),
-      catSheet.get(103, 144, 16, 16),
-      catSheet.get(135, 144, 16, 16),
-      catSheet.get(167, 144, 16, 16),
-      catSheet.get(200, 144, 16, 16),
-      catSheet.get(232, 144, 16, 16),
-    ),
-    "run": Animation(
-      catSheet.get(9, 176, 16, 16),
-      catSheet.get(40, 176, 16, 16),
-      catSheet.get(71, 176, 16, 16),
-      catSheet.get(103, 176, 16, 16),
-      catSheet.get(135, 176, 16, 16),
-      catSheet.get(167, 176, 16, 16),
-      catSheet.get(200, 176, 16, 16),
-      catSheet.get(232, 176, 16, 16),
-    ),
-    "jump": Animation(
-      catSheet.get(9, 272, 16, 16),
-      catSheet.get(40, 272, 16, 16),
-      catSheet.get(71, 272, 16, 16),
-      catSheet.get(103, 272, 16, 16),
-      catSheet.get(135, 272, 16, 16),
-      catSheet.get(167, 272, 16, 16),
-      catSheet.get(200, 272, 16, 16),
-    ),
-    "sit": Animation(
-      catSheet.get(8, 16, 16, 16),
-      catSheet.get(40, 16, 16, 16),
-      catSheet.get(72, 16, 16, 16),
-      catSheet.get(104, 16, 16, 16),
-    ),
-  },
-  
-  #Wooden
-  "woodenAxe": woodenToolsSheet.get(0, 0, 16, 16, 15),
-  "woodenPickaxe": woodenToolsSheet.get(16, 0, 16, 16, 15),
-  "woodenShovel": woodenToolsSheet.get(32, 0, 16, 16, 15),
-  "woodenSword": woodenToolsSheet.get(48, 0, 16, 16, 15),
-  
-  #Stone
-  "stoneAxe": stoneToolsSheet.get(0, 0, 16, 16, 15),
-  "stonePickaxe": stoneToolsSheet.get(16, 0, 16, 16, 15),
-  "stoneShovel": stoneToolsSheet.get(32, 0, 16, 16, 15),
-  "stoneSword": stoneToolsSheet.get(48, 0, 16, 16, 15),
-  
-  #Iron
-  "ironAxe": ironToolsSheet.get(0, 0, 16, 16, 15),
-  "ironPickaxe": ironToolsSheet.get(16, 0, 16, 16, 15),
-  # "stoneShovel": stoneToolsSheet.get(32, 0, 16, 16, 15),
-  # "stoneSword": stoneToolsSheet.get(48, 0, 16, 16, 15),
-}
-
 
 def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   """Returns coordinate based on pixel location"""
@@ -631,147 +516,95 @@ class Menu:
       section.draw(transparent)
 
 class CraftingMenu(Menu):
-  def __init__(this):
-    super().__init__(Section(3, 3, WIDTH * 0.45, HEIGHT * 0.3, 60), Section(1, 1, WIDTH * 0.43 + 240, HEIGHT * 0.3 + 60, 60))
-    this.crafting_grid = [[None for _ in range(3)] for _ in range(3)]
-    this.output_slot = Slot()
-    this.crafting_system = CraftingSystem()
-    
-    this.held_item = None
-    this.held_count = 0
-    
-  def update_output(this):
-      """Update the output slot based on the crafting grid."""
-      crafted_item = this.crafting_system.craft(this.crafting_grid)
-      if crafted_item:
-          this.output_slot.item = crafted_item
-          this.output_slot.count = 1
-      else:
-          this.output_slot.item = None
-          this.output_slot.count = 0
+    def __init__(this):
+        super().__init__(Section(3, 3, WIDTH * 0.45, HEIGHT * 0.3, 60), Section(1, 1, WIDTH * 0.43 + 240, HEIGHT * 0.3 + 60, 60))
+        # Store actual Item objects in the crafting grid instead of just names
+        this.crafting_grid = [[None for _ in range(3)] for _ in range(3)]
+        this.output_slot = Slot()
+        this.crafting_system = CraftingSystem()
+        
+        this.held_item = None
+        this.held_count = 0
+        
+        # Initialize the grid slots to connect them with the crafting grid
+        for row in range(3):
+            for col in range(3):
+                this.sections[0][row][col].item = None
+                this.sections[0][row][col].count = 0
 
-  def handle_click(this, mouse_pos, right_click=False):
-    """Mouse clicks in the crafting menu"""
-    #Check crafting grid slots
-    for row in range(3):
-        for col in range(3):
-            x = this.sections[0].x + col * this.sections[0].slotSize
-            y = this.sections[0].y + row * this.sections[0].slotSize
+    def update_output(this):
+        """Update the output slot based on the crafting grid."""
+        # Convert grid items to names for recipe checking
+        name_grid = [[item.name if item else None for item in row] for row in this.crafting_grid]
+        crafted_item = this.crafting_system.craft(name_grid)
+        if crafted_item:
+            this.output_slot.item = crafted_item
+            this.output_slot.count = 1
+        else:
+            this.output_slot.item = None
+            this.output_slot.count = 0
+
+    def handle_grid_click(this, row, col, right_click=False):
+        """Handle clicks in the crafting grid slots"""
+        current_slot = this.sections[0][row][col]
+        
+        if this.held_item is None:
+            # Pick up item if there is one
+            if this.crafting_grid[row][col]:
+                this.held_item = this.crafting_grid[row][col]
+                this.held_count = 1 if right_click else current_slot.count
+                this.crafting_grid[row][col] = None
+                current_slot.item = None
+                current_slot.count = 0
+        else:
+            # Place held item
+            if this.crafting_grid[row][col] is None:
+                count = 1 if right_click else this.held_count
+                this.crafting_grid[row][col] = this.held_item
+                current_slot.item = this.held_item
+                current_slot.count = count
+                this.held_count -= count
+                if this.held_count <= 0:
+                    this.held_item = None
+                    this.held_count = 0
+        
+        this.update_output()
+
+    def craft_item(this):
+        """Handle crafting when output slot is clicked"""
+        if this.output_slot.item:
+            # Remove one of each item from the grid
+            for row in range(3):
+                for col in range(3):
+                    if this.crafting_grid[row][col]:
+                        slot = this.sections[0][row][col]
+                        slot.count -= 1
+                        if slot.count <= 0:
+                            this.crafting_grid[row][col] = None
+                            slot.item = None
+                            slot.count = 0
             
-            if x <= mouse_pos[0] <= x + this.sections[0].slotSize and \
-                y <= mouse_pos[1] <= y + this.sections[0].slotSize:
-                this.handle_grid_click(row, col, right_click)
-                return True
-              
-    #Check output slot
-    output_x = this.sections[1].x
-    output_y = this.sections[1].y
-    
-    if output_x <= mouse_pos[0] <= output_x + Slot.size and \
-        output_y <= mouse_pos[1] <= output_y + Slot.size:
-        this.handle_output_click()
-        return True
-        
-    return False
-  
-  def handle_grid_click(this, row, col, right_click=False):
-    """Handle clicks in the crafting grid slots"""
-    current_item = this.crafting_grid[row][col]
-    
-    if this.held_item is None:
-      # Pick up item if there is one
-      if current_item:
-          # Find the actual item instance from inventory
-          item_instance = None
-          for slot_row in player.inventory.inventory:
-              for slot in slot_row:
-                  if slot.item and slot.item.name == current_item:
-                      item_instance = slot.item
-                      break
-          if item_instance:
-              this.held_item = item_instance
-              this.held_count = 1 if right_click else float('inf')
-              this.crafting_grid[row][col] = None
-    else:
-      # Place held item
-      if current_item is None:
-          count = 1 if right_click else this.held_count
-          this.crafting_grid[row][col] = this.held_item.name
-          if count >= this.held_count:
-              this.held_item = None
-              this.held_count = 0
-        
-    this.update_output()
-    
-  def handle_inventory_click(this, slot_row, slot_col, right_click=False):
-    inventory_slot = player.inventory[slot_row][slot_col]
-    
-    if this.held_item is None:
-        # Pick up item from inventory
-        if inventory_slot.item:
-            this.held_item = inventory_slot.item
-            this.held_count = 1 if right_click else inventory_slot.count
-            inventory_slot.count -= this.held_count
-            if inventory_slot.count <= 0:
-                inventory_slot.item = None
-                inventory_slot.count = 0
-    else:
-        # Place held item into inventory
-        if inventory_slot.item is None or inventory_slot.item == this.held_item:
-            count = 1 if right_click else this.held_count
-            if inventory_slot.item is None:
-                inventory_slot.item = this.held_item
-                inventory_slot.count = 0
-            inventory_slot.count += count
-            this.held_count -= count
-            if this.held_count <= 0:
-                this.held_item = None
-
-  def handle_output_click(this):
-    """Handle clicks on the output slot"""
-    if this.output_slot.item and not this.held_item:
-        this.craft_item()
-
-  def draw(this, transparent=False):
-    """Draw crafting menu and held item"""
-    super().draw(transparent)
-    # Draw the held item following the cursor if there is one
-    if this.held_item:
-        mouse_pos = pg.mouse.get_pos()
-        scaled_texture = pg.transform.scale(
-            this.held_item.texture,
-            (Slot.size - 6, Slot.size - 6)
-        )
-        texture_rect = scaled_texture.get_rect(
-            center=mouse_pos
-        )
-        SURF.blit(scaled_texture, texture_rect.topleft)
-        if this.held_count > 1:
-            count_text = font20.render(
-                str(this.held_count), True, (255, 255, 255))
-            text_rect = count_text.get_rect(
-                bottomright=(mouse_pos[0] + Slot.size//2 - 5,
-                            mouse_pos[1] + Slot.size//2 - 5)
-            )
-            SURF.blit(count_text, text_rect.topleft)
+            # Add crafted item to player's inventory
+            player.inventory.addItem(this.output_slot.item)
+            this.update_output()
     
 class CraftingSystem:
   """Handles crafting logic and recipes."""
   def __init__(this):
-      #Shaped recipe requires exact match
-      this.shaped_recipes = {
-          #debug recipe 
-          #change later
-          (
-              ("Cobblestone", None, None),
-              (None, None, None),
-              (None, None, None)
-          ): WoodenPickaxe(),
-      }
-      
-      #Shapeless recipes don't care about pattern arrangement
-      this.shapeless_recipes = {
-      }
+    #Shaped recipe requires exact match
+    this.shaped_recipes = {
+        #debug recipe 
+        #change later
+        (
+            ("Cobblestone", None, None),
+            (None, None, None),
+            (None, None, None)
+        ): WoodenPickaxe(),
+    }
+    
+    #Shapeless recipes don't care about pattern arrangement
+    this.shapeless_recipes = {
+    }
 
   def normalize_grid(this, grid):
     grid = [[str(item) if item else "None" for item in row] for row in grid]
@@ -780,12 +613,12 @@ class CraftingSystem:
     min_col, max_col = len(grid[0]), 0
     
     for i, row in enumerate(grid):
-        for j, item in enumerate(row):
-            if item != "None":
-                min_row = min(min_row, i)
-                max_row = max(max_row, i)
-                min_col = min(min_col, j)
-                max_col = max(max_col, j)
+      for j, item in enumerate(row):
+          if item != "None":
+              min_row = min(min_row, i)
+              max_row = max(max_row, i)
+              min_col = min(min_col, j)
+              max_col = max(max_col, j)
     
     if min_row > max_row:
       return ((("None",) * 3),) * 3
@@ -797,6 +630,7 @@ class CraftingSystem:
     
     while len(pattern) < 3:
         pattern = pattern + (("None",) * 3,)
+        
     pattern = tuple(row + ("None",) * (3 - len(row)) for row in pattern)
     
     return pattern
@@ -1082,14 +916,12 @@ class Entity:
 class Player(Entity, HasInventory):
   texture = sprites["cat"]["walk"][0]
   thisSprites = sprites["cat"]
-  reach = 4 * BLOCK_SIZE
-  full_heart_texture = pg.transform.scale(
-      pg.image.load("full_heart.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  half_heart_texture = pg.transform.scale(
-      pg.image.load("half_heart.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  empty_heart_texture = pg.transform.scale(
-      pg.image.load("empty_heart.png"), (BLOCK_SIZE, BLOCK_SIZE))
   blockFacing = None
+  reach = 4 * BLOCK_SIZE
+  
+  full_heart_texture = pg.transform.scale(pg.image.load("full_heart.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  half_heart_texture = pg.transform.scale(pg.image.load("half_heart.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  empty_heart_texture = pg.transform.scale(pg.image.load("empty_heart.png"), (BLOCK_SIZE, BLOCK_SIZE))
 
   def __init__(this):
     this.camera = FRAME.copy()
@@ -1097,6 +929,7 @@ class Player(Entity, HasInventory):
       BLOCK_SIZE * (WORLD_WIDTH // 2),
       BLOCK_SIZE * round(WORLD_HEIGHT * 0.55),
     )
+    
     Entity.__init__(
         this,
         this.camera.centerx - BLOCK_SIZE // 2,
@@ -1808,7 +1641,7 @@ if __name__ == "__main__":
       elif craftingMenu.isActive:
         if event.type == pg.MOUSEBUTTONDOWN:
           mouse_pos = pg.mouse.get_pos()
-          if not craftingMenu.handle_click(mouse_pos, event.button == 3):
+          if not craftingMenu.handle_grid_click(mouse_pos, event.button == 3):
               for row in range(player.inventory.rows):
                   for col in range(player.inventory.cols):
                       x = player.inventory.menux + col * Slot.size
