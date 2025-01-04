@@ -1,6 +1,7 @@
 import sys, math, random, time, copy, collections, pickle          #pickle stores game data onto system
 import pygame as pg
 from pygame.locals import *
+from pygame.math import Vector2
 
 #import code from other files
 from constants import *
@@ -163,12 +164,12 @@ class Light:
   y: float
   relative: bool = True
   def __post_init__(this):
-    print("post init light")
+    # print("post init light")
     lights.append(this)
   def drawLight(this):
     '''draw light'''
     if this.relative:
-      print(this.x, this.y, this.x*20, this.y*20, coordWorld2Relative(this.x, this.y))
+      # print(this.x, this.y, this.x*20, this.y*20, coordWorld2Relative(this.x, this.y))
       pg.draw.circle(SUNLIGHTSURF, (0,0,0,0), coordWorld2Relative(this.x,this.y), this.lightRadius)
     else:
       pg.draw.circle(SUNLIGHTSURF, (0,0,0,0), (this.x,this.y), this.lightRadius)
