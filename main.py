@@ -1,4 +1,4 @@
-import sys, math, random, time, copy, collections, pickle          #pickle stores game data onto system
+import sys, math, random, time, copy, queue, threading, collections, pickle          #pickle stores game data onto system
 import pygame as pg
 from pygame.locals import *
 from pygame.math import Vector2
@@ -17,6 +17,7 @@ random.seed(SEED)
 start = time.time()
 
 pg.init()
+pg.font.init()
 clock = pg.time.Clock()
 
 
@@ -410,27 +411,26 @@ class Generated(ABC):
   rarity: int
   
 class IronOreBlock(Block, Generated):
-  ironOreTexture = pg.transform.scale(
-    pg.image.load("iron_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  ironOreTexture = sprites["ironOre"]
   veinSize = 3.2
   rarity = 0.38
   def __init__(this, x, y, isBack=False):
     Block.__init__(this, "Iron Ore", this.ironOreTexture, x, y, 6, BlockType.PICKAXE, isBack=isBack)
 class IronOreItem(PlaceableItem):
-  ironOreItemTexture = pg.transform.scale(pg.image.load("iron_ore.png"), (Item.SIZE, Item.SIZE))
+  ironOreItemTexture = sprites["ironOre"]
   def __init__(this):
-    super().__init__("Iron Ore", this.ironOreItemTexture, 64)
+    super().__init__(this, "Iron Ore", this.ironOreItemTexture, 64)
 
 class CoalOreBlock(Block, Generated):
-  coalTexture = pg.transform.scale(pg.image.load("coal_ore.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  coalTexture = sprites["coalOre"]
   veinSize = 3.9
   rarity = 0.3
   def __init__(this, x, y, isBack=False):
     Block.__init__(this, "Coal Ore", this.coalTexture, x, y, 3, BlockType.PICKAXE, isBack=isBack)
 class CoalItem(Item):
-  coalItemTexture = pg.transform.scale(pg.image.load("coal.png"), (Item.SIZE, Item.SIZE))
+  coalItemTexture = sprites["coalOre"]
   def __init__(this):
-    super().__init__("Coal", this.coalItemTexture, 64)
+    super().__init__(this, "Coal", this.coalItemTexture, 64)
 
 ores = {CoalOreBlock, IronOreBlock}
 
@@ -1571,8 +1571,9 @@ class World:
               if not 0 <= x + c < WORLD_WIDTH: continue
               if r == 0 and c == 0: continue
               lightmap[y][x] = min(lightmap[y][x], newlightmap[y+r][x+c] + i * 50)
+              
     lightendtime = time.time()
-    print("lightmap time:", lightendtime - lightstarttime)
+    print("lightmap time:", round(lightendtime - lightstarttime, 2))
     this.lightmap = lightmap
   
   def regenerateLight(this, xcenter: int, ycenter: int):
@@ -1601,7 +1602,334 @@ class World:
     # this.buildEdgePool()
     
     this.visibleBlocks.clear()
+    
+    
+'''Menu stuff'''
+class Button:
+    def __init__(this, x, y, width, height, text):
+        this.rect = pg.Rect(x, y, width, height)
+        this.text = text
+        
+        this.hover_animation = 0
+        this.press_animation = 0
+        this.is_pressed = False
+        
+        this.base_colour = (45, 45, 45)
+        this.hover_colour = (75, 75, 75)
+        
+        #Corner roundness
+        this.corner_radius = 15
+        
+    def update(this, mouse_pos):
+        #Hover animation
+        target_hover = 1 if this.rect.collidepoint(mouse_pos) else 0
+        this.hover_animation += (target_hover - this.hover_animation) * 0.15
+        
+        #Click animation
+        if this.is_pressed:
+            this.press_animation += (1 - this.press_animation) * 0.2
+        else:
+            this.press_animation += (0 - this.press_animation) * 0.2
+        
+    def handle_event(this, event, mouse_pos):
+        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+            if this.rect.collidepoint(mouse_pos):
+                this.is_pressed = True
+        elif event.type == pg.MOUSEBUTTONUP:
+            this.is_pressed = False
+        
+    def draw(this, font, text_colour, shadow_colour):
+        current_color = [int(this.base_colour[i] + (this.hover_colour[i] - this.base_colour[i]) * this.hover_animation) for i in range(3)]
+        
+        hover_offset = int(this.hover_animation * 3)
+        press_offset = int(this.press_animation * 2)
+        button_rect = this.rect.copy()
+        button_rect.y -= hover_offset - press_offset
+        
+        this._draw_button(button_rect, current_color)
+        this._draw_text(font, text_colour, shadow_colour, button_rect)
+        
+    def _draw_button(this, button_rect, colour):
+        #Draw shadow
+        shadow_rect = button_rect.copy()
+        shadow_rect.y += 4
+        pg.draw.rect(SURF, (0, 0, 0, 64), shadow_rect, border_radius=this.corner_radius)
+        
+        pg.draw.rect(SURF, colour, button_rect, border_radius=this.corner_radius)
+        
+        #Gradient at the top of the button
+        highlight_rect = button_rect.copy()
+        highlight_rect.height = 8
+        highlight_surface = pg.Surface((highlight_rect.width, highlight_rect.height), pg.SRCALPHA)
+        highlight_color = (255, 255, 255, 30)
+        
+        pg.draw.rect(highlight_surface, highlight_color, highlight_surface.get_rect(), border_radius=this.corner_radius)
+        SURF.blit(highlight_surface, highlight_rect)
+        
+    def _draw_text(this, font, text_colour, shadow_color, button_rect):
+        #Scale text with the hover animation
+        scale_factor = 1 + this.hover_animation * 0.05
+        
+        text_surf = font.render(this.text, True, text_colour)
+        text_surf = pg.transform.scale(text_surf, (int(text_surf.get_width() * scale_factor), int(text_surf.get_height() * scale_factor)))
+        text_rect = text_surf.get_rect(center=button_rect.center)
+        
+        #Text shadow
+        shadow_surf = font.render(this.text, True, shadow_color)
+        shadow_surf = pg.transform.scale(shadow_surf, (int(shadow_surf.get_width() * scale_factor), int(shadow_surf.get_height() * scale_factor)))
+        shadow_rect = shadow_surf.get_rect(center=(text_rect.centerx + 1, text_rect.centery + 1))
+        
+        SURF.blit(shadow_surf, shadow_rect)
+        SURF.blit(text_surf, text_rect)
 
+class MainMenu:
+    def __init__(this, width, height):
+        this.width = width
+        this.height = height
+        this.screen = pg.display.set_mode((width, height))
+        
+        this._create_buttons()
+
+        this.button_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 36)
+        this.splash_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 28)
+        
+        this.button_text_color = (240, 240, 240)
+        this.text_shadow = (20, 20, 20, 160)
+        
+        #Background
+        this.bg_panorama = pg.image.load("title screen background animation.jpg").convert()
+        
+        this.overlay = pg.Surface((this.width, this.height))
+        this.overlay.fill((0, 0, 0))
+        this.overlay.set_alpha(40)
+        
+        this.bg_scroll_speed = 20
+        this.bg_offset = 0
+        
+        #Title
+        this.title_image = pg.image.load("title screen title.png").convert_alpha()
+        this.title_image_rect = this.title_image.get_rect(center=(this.width // 2, this.height // 4))
+        
+        #Splash text stuff
+        this.splash_texts = [
+            "Also try Minecraft!",
+            "Made with Pygame!",
+            "Lorem ipsum!",
+            "Pygame >",
+        ]
+        
+        this.current_splash = random.choice(this.splash_texts)
+        this.splash_angle = -15
+        this.splash_wave_offset = 0
+        this.splash_scale = 1.0
+        
+    def _create_buttons(this):
+        button_width, button_height = 400, 50
+        button_x = (this.width - button_width) // 2
+        spacing = 24  #space between buttons
+        start_y = this.height // 2
+        
+        this.buttons = {
+            'play': Button(button_x, start_y, button_width, button_height, "Play"),
+            'instructions': Button(button_x, start_y + button_height + spacing, button_width, button_height, "Instructions"),
+            'keybinds': Button(button_x, start_y + (button_height + spacing) * 2, button_width, button_height, "Options"),
+            'quit': Button(button_x, start_y + (button_height + spacing) * 3, button_width, button_height, "Quit")
+        }
+        
+    def _update_background(this, time):
+        this.bg_offset = (this.bg_offset + this.bg_scroll_speed * time / 1000.0) % this.bg_panorama.get_width()
+
+    def _draw_all(this):
+        #Draw background
+        this.screen.blit(this.bg_panorama, (-this.bg_offset, 0))
+        this.screen.blit(this.bg_panorama, (this.bg_panorama.get_width() - this.bg_offset, 0))
+        this.screen.blit(this.overlay, (0, 0))
+        
+        #Title
+        this.screen.blit(this.title_image, this.title_image_rect)
+        
+        #Splash text
+        this.splash_wave_offset += 0.03
+        this.splash_scale = 1.0 + math.sin(this.splash_wave_offset * 0.5) * 0.03  #subtle pulse
+        
+        splash_surf = this.splash_font.render(this.current_splash, True, (255, 255, 0))
+        splash_surf = pg.transform.rotate(splash_surf, this.splash_angle)
+        splash_surf = pg.transform.scale(splash_surf, 
+                                       (int(splash_surf.get_width() * this.splash_scale),
+                                        int(splash_surf.get_height() * this.splash_scale)))
+        
+        splash_y_offset = math.sin(this.splash_wave_offset) * 6
+        splash_pos = (this.width // 2 + 180, this.height // 4 + splash_y_offset)
+        this.screen.blit(splash_surf, splash_pos)
+        
+        for button in this.buttons.values():
+            button.draw(this.button_font, this.button_text_color, this.text_shadow)
+
+    def run(this):
+        clock = pg.time.Clock()
+        
+        while True:
+            mouse_pos = pg.mouse.get_pos()           
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    pg.quit()
+                    sys.exit()
+                    
+                if event.type in (pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP):
+                    for button in this.buttons.values():
+                        button.handle_event(event, mouse_pos)
+
+                if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+                    if this.buttons['play'].rect.collidepoint(mouse_pos):
+                        return
+                    elif this.buttons['instructions'].rect.collidepoint(mouse_pos):
+                        show_instructions()
+                    elif this.buttons['keybinds'].rect.collidepoint(mouse_pos):
+                        change_keybinds()
+                    elif this.buttons['quit'].rect.collidepoint(mouse_pos):
+                        pg.quit()
+                        sys.exit()
+
+            for button in this.buttons.values():
+                button.update(mouse_pos)
+            
+            this._update_background(clock.get_time())
+            this._draw_all()
+            
+            pg.display.flip()
+            clock.tick(FPS)
+            
+#TODO will add
+def show_instructions():
+    pass
+def change_keybinds():
+    pass
+
+class LoadingScreen:
+    def __init__(this, width, height):
+        this.width = width
+        this.height = height
+        this.screen = pg.display.set_mode((width, height))
+        
+        this.font = pg.font.Font("MinecraftRegular-Bmg3.otf", 20)
+        this.title_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 40)
+
+        this.loading_messages = [
+            "Generating world...",
+            "Creating caves...",
+            "Growing trees...",
+            "Placing ores...",
+            "Loading terrain...",
+        ]    
+        
+        #?   message change interval is currently not working 😐
+        this.current_message = 0
+        this.message_change_timer = time.time()
+        this.message_change_interval = 1.5    #seconds
+        this.progress = 0.0
+        this.start_time = time.time()
+
+        this.bar_width = 400
+        this.bar_height = 20
+        this.bar_x = (width - this.bar_width) // 2
+        this.bar_y = height // 2 + 30
+        
+    def update(this, progress):
+        this.progress = progress
+        
+        current_time = time.time()
+        if current_time - this.message_change_timer >= this.message_change_interval:
+            this.current_message = (this.current_message + 1) % len(this.loading_messages)
+            this.message_change_timer = current_time
+
+    def draw(this):
+        this.screen.fill((25, 25, 25))
+
+        title = this.title_font.render("Loading world...", True, (255, 255, 255))
+        title_rect = title.get_rect(center=(this.width // 2, this.height // 3))
+        this.screen.blit(title, title_rect)
+
+        #Loading message
+        message = this.font.render(this.loading_messages[this.current_message], True, (200, 200, 200))
+        message_rect = message.get_rect(center=(this.width // 2, this.height // 2 - 20))
+        this.screen.blit(message, message_rect)
+
+        #Progress bar
+        pg.draw.rect(this.screen, (50, 50, 50), (this.bar_x, this.bar_y, this.bar_width, this.bar_height))
+        fill_width = int(this.bar_width * this.progress)
+        pg.draw.rect(this.screen, (106, 176, 76), (this.bar_x, this.bar_y, fill_width, this.bar_height))
+
+        #Percentage
+        percentage = f"{int(this.progress * 100)}%"
+        percent_text = this.font.render(percentage, True, (255, 255, 255))
+        percent_rect = percent_text.get_rect(center=(this.width // 2, this.bar_y + 40))
+        this.screen.blit(percent_text, percent_rect)
+
+        #Elapsed load time
+        elapsed_time = time.time() - this.start_time
+        elapsed_text = this.font.render(f"Time elapsed: {elapsed_time:.1f} seconds", True, (200, 200, 200))
+        elapsed_rect = elapsed_text.get_rect(center=(this.width // 2, this.bar_y + 120))
+        this.screen.blit(elapsed_text, elapsed_rect)
+
+        pg.display.flip()
+        clock.tick(FPS)
+
+class ThreadedWorldGenerator:
+    def __init__(this):
+        this.world = None
+        this.loading_screen = LoadingScreen(WIDTH, HEIGHT)
+        this.generation_thread = None
+        this.progress_queue = queue.Queue()
+        this.is_complete = False
+        this.should_terminate = threading.Event()
+        this.start_time = time.time()
+
+    def generate_world_thread(this):
+        this.world = World()
+        generation_steps = [
+            (this.world._World__generateWorld, 0.6),
+            (this.world.generateMask, 0.2),
+            (this.world.generateLight, 0.2)
+        ]
+        current_progress = 0.0
+        
+        for step_func, step_weight in generation_steps:
+            if this.should_terminate.is_set():
+                return
+                
+            step_func()
+            current_progress += step_weight
+            this.progress_queue.put(current_progress)
+
+        this.progress_queue.put(1.0)
+        this.is_complete = True
+        
+        total_time = time.time() - this.start_time
+        print(f"World generation completed in {total_time:.2f} seconds")
+
+    def start_generation(this):
+        """Start world generation in a separate thread."""
+        this.generation_thread = threading.Thread(target=this.generate_world_thread)
+        this.generation_thread.start()
+        
+    def get_generated_world(this):
+        if not this.is_complete:
+            raise RuntimeError("World generation not complete")
+        return this.world
+
+    def update_loading_screen(this):
+        latest_progress = None
+        while not this.progress_queue.empty():
+            try:
+                latest_progress = this.progress_queue.get_nowait()
+            except queue.Empty:
+                break
+        
+        if latest_progress is not None:
+            this.loading_screen.update(latest_progress)
+        
+        this.loading_screen.draw()
+        
 
 #Main loop
 if __name__ == "__main__":
@@ -1611,9 +1939,23 @@ if __name__ == "__main__":
   ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   ASURF.fill((0, 0, 0, 0))
   
-  
   #Give player items at the beginning of the game
   defaultItems = [IronPickaxe(), IronAxe(), StoneAxe(), WoodenShovel(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)] + [TorchItem() for _ in range(64)]
+  
+  world_generator = ThreadedWorldGenerator()
+  world_generator.start_generation()
+  
+  MainMenu(WIDTH, HEIGHT).run()
+    
+  while not world_generator.is_complete:
+      for event in pg.event.get():
+          if event.type == pg.QUIT:
+              pg.quit()
+              sys.exit()
+      
+      world_generator.update_loading_screen()
+    
+  pg.time.wait(100)
   
   player = Player()
   craftingMenu = CraftingMenu()
@@ -1621,12 +1963,8 @@ if __name__ == "__main__":
   font = pg.font.Font(None, 15)
   font20 = pg.font.Font(None, 20)
   
-  world = World()
+  world = world_generator.get_generated_world()
   sun = Sun()
-  
-  end = time.time()
-  print("Load time:", round(end-start, 2), "seconds")
-  
   
   while True:
     frameStartTime = time.time()

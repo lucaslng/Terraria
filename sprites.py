@@ -42,6 +42,9 @@ class Animation:
         return SURF.blit(texture, (x, y))
 
 catSheet = SpriteSheet("cat.png")
+
+oreSheet = SpriteSheet("ores.png")
+
 woodenToolsSheet = SpriteSheet("wooden_tools.png")
 stoneToolsSheet = SpriteSheet("stone_tools.png")
 ironToolsSheet = SpriteSheet("iron_tools.png")
@@ -84,6 +87,10 @@ sprites = {
         catSheet.get(104, 16, 16, 16),
         ),
     },
+    
+    #Ores
+    "coalOre": oreSheet.get(0, 0, 16, 16, BLOCK_SIZE),
+    "ironOre": oreSheet.get(16, 0, 16, 16, BLOCK_SIZE),
   
     #Wooden
     "woodenAxe": woodenToolsSheet.get(0, 0, 16, 16, 15),
