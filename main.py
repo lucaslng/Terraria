@@ -1650,21 +1650,32 @@ class Button:
         this._draw_text(font, text_colour, shadow_colour, button_rect)
         
     def _draw_button(this, button_rect, colour):
-        #Draw shadow
+        # Draw shadow first
         shadow_rect = button_rect.copy()
         shadow_rect.y += 4
         pg.draw.rect(SURF, (0, 0, 0, 64), shadow_rect, border_radius=this.corner_radius)
         
-        pg.draw.rect(SURF, colour, button_rect, border_radius=this.corner_radius)
+        #Base button
+        button_surface = pg.Surface((button_rect.width, button_rect.height), pg.SRCALPHA)
+        pg.draw.rect(button_surface, colour, button_surface.get_rect(), border_radius=this.corner_radius)
         
-        #Gradient at the top of the button
-        highlight_rect = button_rect.copy()
-        highlight_rect.height = 8
-        highlight_surface = pg.Surface((highlight_rect.width, highlight_rect.height), pg.SRCALPHA)
+        button_mask = pg.mask.from_surface(button_surface)
+        
+        #Highlight surface
+        highlight_surface = pg.Surface((button_rect.width, button_rect.height), pg.SRCALPHA)
         highlight_color = (255, 255, 255, 30)
         
-        pg.draw.rect(highlight_surface, highlight_color, highlight_surface.get_rect(), border_radius=this.corner_radius)
-        SURF.blit(highlight_surface, highlight_rect)
+        highlight_rect = pg.Rect(0, 0, button_rect.width, 8)
+        pg.draw.rect(highlight_surface, highlight_color, highlight_rect)
+        
+        masked_highlight = pg.Surface((button_rect.width, button_rect.height), pg.SRCALPHA)
+        button_mask.to_surface(masked_highlight, setcolor=highlight_color, unsetcolor=(0,0,0,0))
+        
+        final_highlight = pg.Surface((button_rect.width, button_rect.height), pg.SRCALPHA)
+        final_highlight.blit(masked_highlight, (0,0), highlight_rect)
+        
+        SURF.blit(button_surface, button_rect)
+        SURF.blit(final_highlight, button_rect)
         
     def _draw_text(this, font, text_colour, shadow_color, button_rect):
         #Scale text with the hover animation
@@ -1931,7 +1942,7 @@ class ThreadedWorldGenerator:
         this.loading_screen.draw()
         
 
-#Main loop
+'''Main Loop'''
 if __name__ == "__main__":
   SUNLIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
