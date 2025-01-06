@@ -4,6 +4,8 @@ from typing import Dict, List, Set, Tuple
 
 from constants import *
 
+pg.init()
+
 class SpriteSheet:
     '''sprite sheet class'''
     def __init__(this, imageName: str):

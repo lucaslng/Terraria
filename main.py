@@ -1,4 +1,4 @@
-import sys, math, random, time, copy, queue, threading, collections, pickle          #pickle stores game data onto system
+import sys, math, random, time, copy, threading, collections, pickle          #pickle stores game data onto system
 import pygame as pg
 from pygame.locals import *
 from pygame.math import Vector2
@@ -1825,18 +1825,18 @@ class LoadingScreen:
         this.font = pg.font.Font("MinecraftRegular-Bmg3.otf", 20)
         this.title_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 40)
 
-        this.loading_messages = [
+        # Separate progress messages from the final message
+        this.progress_messages = [
             "Generating world...",
             "Creating caves...",
             "Growing trees...",
             "Placing ores...",
-            "Loading terrain...",
         ]    
+        this.ready_message = "Loading terrain..."
         
-        #?   message change interval is currently not working 😐
         this.current_message = 0
         this.message_change_timer = time.time()
-        this.message_change_interval = 1.5    #seconds
+        this.message_change_interval = 2  # seconds
         this.progress = 0.0
         this.start_time = time.time()
 
@@ -1848,11 +1848,20 @@ class LoadingScreen:
     def update(this, progress):
         this.progress = progress
         
-        current_time = time.time()
-        if current_time - this.message_change_timer >= this.message_change_interval:
-            this.current_message = (this.current_message + 1) % len(this.loading_messages)
-            this.message_change_timer = current_time
-
+        # Only cycle through progress messages if we haven't completed loading
+        if progress < 1.0:
+            current_time = time.time()
+            if current_time - this.message_change_timer >= this.message_change_interval:
+                # Cycle only through progress messages
+                this.current_message = (this.current_message + 1) % len(this.progress_messages)
+                this.message_change_timer = current_time
+    
+    def get_current_message(this):
+        # Return the ready message if loading is complete, otherwise return current progress message
+        if this.progress >= 1.0:
+            return this.ready_message
+        return this.progress_messages[this.current_message]
+    
     def draw(this):
         this.screen.fill((25, 25, 25))
 
@@ -1860,23 +1869,23 @@ class LoadingScreen:
         title_rect = title.get_rect(center=(this.width // 2, this.height // 3))
         this.screen.blit(title, title_rect)
 
-        #Loading message
-        message = this.font.render(this.loading_messages[this.current_message], True, (200, 200, 200))
+        # Use get_current_message() to determine which message to display
+        message = this.font.render(this.get_current_message(), True, (200, 200, 200))
         message_rect = message.get_rect(center=(this.width // 2, this.height // 2 - 20))
         this.screen.blit(message, message_rect)
 
-        #Progress bar
+        # Progress bar
         pg.draw.rect(this.screen, (50, 50, 50), (this.bar_x, this.bar_y, this.bar_width, this.bar_height))
         fill_width = int(this.bar_width * this.progress)
         pg.draw.rect(this.screen, (106, 176, 76), (this.bar_x, this.bar_y, fill_width, this.bar_height))
 
-        #Percentage
+        # Percentage
         percentage = f"{int(this.progress * 100)}%"
         percent_text = this.font.render(percentage, True, (255, 255, 255))
         percent_rect = percent_text.get_rect(center=(this.width // 2, this.bar_y + 40))
         this.screen.blit(percent_text, percent_rect)
 
-        #Elapsed load time
+        # Elapsed load time
         elapsed_time = time.time() - this.start_time
         elapsed_text = this.font.render(f"Time elapsed: {elapsed_time:.1f} seconds", True, (200, 200, 200))
         elapsed_rect = elapsed_text.get_rect(center=(this.width // 2, this.bar_y + 120))
@@ -1890,37 +1899,53 @@ class ThreadedWorldGenerator:
         this.world = None
         this.loading_screen = LoadingScreen(WIDTH, HEIGHT)
         this.generation_thread = None
-        this.progress_queue = queue.Queue()
+        
+        this.progress_updates = collections.deque(maxlen=100)
         this.is_complete = False
         this.should_terminate = threading.Event()
         this.start_time = time.time()
+        
+        this.progress_lock = threading.Lock()
+        this.current_progress = 0.0
+
+    def update_progress(this, progress):
+        with this.progress_lock:
+            this.current_progress = progress
+            this.progress_updates.append(progress)
 
     def generate_world_thread(this):
-        this.world = World()
-        generation_steps = [
-            (this.world._World__generateWorld, 0.6),
-            (this.world.generateMask, 0.2),
-            (this.world.generateLight, 0.2)
-        ]
-        current_progress = 0.0
-        
-        for step_func, step_weight in generation_steps:
-            if this.should_terminate.is_set():
-                return
+        try:
+            this.world = World()
+            generation_steps = [
+                (this.world._World__generateWorld, 0.6),
+                (this.world.generateMask, 0.2),
+                (this.world.generateLight, 0.2)
+            ]
+            
+            current_progress = 0.0
+            for step_func, step_weight in generation_steps:
+                if this.should_terminate.is_set():
+                    return
                 
-            step_func()
-            current_progress += step_weight
-            this.progress_queue.put(current_progress)
+                step_func()
+                current_progress += step_weight
+                this.update_progress(current_progress)
+                
+                time.sleep(0.001)
 
-        this.progress_queue.put(1.0)
-        this.is_complete = True
-        
-        total_time = time.time() - this.start_time
-        print(f"World generation completed in {total_time:.2f} seconds")
+            this.update_progress(1.0)
+            this.is_complete = True
+            
+            total_time = time.time() - this.start_time
+            print(f"World generation completed in {total_time:.2f} seconds")
+            
+        except Exception as e:
+            print(f"Error: {e}")
+            this.should_terminate.set()
 
     def start_generation(this):
-        """Start world generation in a separate thread."""
         this.generation_thread = threading.Thread(target=this.generate_world_thread)
+        this.generation_thread.daemon = True
         this.generation_thread.start()
         
     def get_generated_world(this):
@@ -1929,16 +1954,10 @@ class ThreadedWorldGenerator:
         return this.world
 
     def update_loading_screen(this):
-        latest_progress = None
-        while not this.progress_queue.empty():
-            try:
-                latest_progress = this.progress_queue.get_nowait()
-            except queue.Empty:
-                break
+        with this.progress_lock:
+            progress = this.current_progress
         
-        if latest_progress is not None:
-            this.loading_screen.update(latest_progress)
-        
+        this.loading_screen.update(progress)
         this.loading_screen.draw()
         
 
@@ -1968,13 +1987,12 @@ if __name__ == "__main__":
     
   pg.time.wait(100)
   
-  player = Player()
-  craftingMenu = CraftingMenu()
-  
   font = pg.font.Font(None, 15)
   font20 = pg.font.Font(None, 20)
   
-  world = world_generator.get_generated_world()
+  player = Player()
+  craftingMenu = CraftingMenu()
+  world = World()
   sun = Sun()
   
   while True:
