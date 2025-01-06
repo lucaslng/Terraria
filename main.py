@@ -1914,7 +1914,6 @@ class LoadingScreen:
         pg.display.flip()
         clock.tick(FPS)
 
-#TODO merge with main loop
 # class ThreadedWorldGenerator:
 #     def __init__(this):
 #         this.world = None
@@ -2009,7 +2008,7 @@ if __name__ == "__main__":
   sun = Sun()
   
   end = time.time()
-  print(f"{start - end:.2f} seconds")
+  print(f"World generation time: {end - start:.3f} seconds")
   
   while True:
     frameStartTime = time.time()
