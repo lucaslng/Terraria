@@ -1266,7 +1266,7 @@ class World:
     ]
     
     this.mask = pg.mask.Mask((WORLD_WIDTH*BLOCK_SIZE, WORLD_HEIGHT*BLOCK_SIZE))
-    this.__generateWorld()
+    this.generateWorld()
     this.generateMask()
     this.generateLight()
 
@@ -1372,7 +1372,7 @@ class World:
 
       return noise
 
-  def __generateWorld(this):
+  def generateWorld(this):
     # Precompute noise
     grassHeightNoise = this.SimplexNoise(19, 1)
     stoneHeightNoise = this.SimplexNoise(30, 1)
@@ -1410,9 +1410,9 @@ class World:
       # Ore pass
       for ore_name, (oreNoise, ore) in oresNoise.items():
           for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
-              if oreNoise[y][x] > ore.rarity:
+              if oreNoise[y][x] > ore.rarity and not this[y][x].isAir:
                   this.array[y][x] = ore(x, y)
-
+      
       # Tree pass
       if isinstance(this[grassHeight][x], DirtBlock):
           if random.random() > 0.8:  # Simplified tree placement
@@ -1898,7 +1898,7 @@ class ThreadedWorldGenerator:
     def generate_world_thread(this):
         this.world = World()
         generation_steps = [
-            (this.world._World__generateWorld, 0.6),
+            (this.world.generateWorld, 0.6),
             (this.world.generateMask, 0.2),
             (this.world.generateLight, 0.2)
         ]
