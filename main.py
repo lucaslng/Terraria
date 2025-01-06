@@ -1,4 +1,4 @@
-import sys, math, random, time, copy, queue, threading, collections, pickle          #pickle stores game data onto system
+import sys, math, random, time, copy, threading, queue, collections, pickle          #pickle stores game data onto system
 import pygame as pg
 from pygame.locals import *
 from pygame.math import Vector2
@@ -9,6 +9,7 @@ from sprites import *
 
 from abc import *
 from dataclasses import dataclass
+from collections import deque
 from typing import Dict, List, Set, Tuple
 from enum import Enum
 
@@ -342,9 +343,6 @@ class CraftingTableBlock(Block, Interactable):
     Block.__init__(this, name="Crafting Table", texture=this.craftingTableTexture,
                    x=x, y=y, hardness=2.5, blockType=BlockType.AXE, isBack=isBack)
 
-  def interact(this):
-    craftingMenu.isActive = not craftingMenu.isActive
-
 class CraftingTableItem(PlaceableItem):
   craftingTableTexture = pg.transform.scale(pg.image.load("crafting_table.png"), (Item.SIZE, Item.SIZE))
   def __init__(this):
@@ -560,147 +558,6 @@ class Menu:
     for section in this.sections:
       section.draw(transparent)
 
-class CraftingMenu(Menu):
-    def __init__(this):
-        super().__init__(Section(3, 3, WIDTH * 0.45, HEIGHT * 0.3, 60), Section(1, 1, WIDTH * 0.43 + 240, HEIGHT * 0.3 + 60, 60))
-        # Store actual Item objects in the crafting grid instead of just names
-        this.crafting_grid = [[None for _ in range(3)] for _ in range(3)]
-        this.output_slot = Slot()
-        this.crafting_system = CraftingSystem()
-        
-        this.held_item = None
-        this.held_count = 0
-        
-        # Initialize the grid slots to connect them with the crafting grid
-        for row in range(3):
-            for col in range(3):
-                this.sections[0][row][col].item = None
-                this.sections[0][row][col].count = 0
-
-    def update_output(this):
-        """Update the output slot based on the crafting grid."""
-        # Convert grid items to names for recipe checking
-        name_grid = [[item.name if item else None for item in row] for row in this.crafting_grid]
-        crafted_item = this.crafting_system.craft(name_grid)
-        if crafted_item:
-            this.output_slot.item = crafted_item
-            this.output_slot.count = 1
-        else:
-            this.output_slot.item = None
-            this.output_slot.count = 0
-
-    def handle_grid_click(this, row, col, right_click=False):
-        """Handle clicks in the crafting grid slots"""
-        current_slot = this.sections[0][row][col]
-        
-        if this.held_item is None:
-            # Pick up item if there is one
-            if this.crafting_grid[row][col]:
-                this.held_item = this.crafting_grid[row][col]
-                this.held_count = 1 if right_click else current_slot.count
-                this.crafting_grid[row][col] = None
-                current_slot.item = None
-                current_slot.count = 0
-        else:
-            # Place held item
-            if this.crafting_grid[row][col] is None:
-                count = 1 if right_click else this.held_count
-                this.crafting_grid[row][col] = this.held_item
-                current_slot.item = this.held_item
-                current_slot.count = count
-                this.held_count -= count
-                if this.held_count <= 0:
-                    this.held_item = None
-                    this.held_count = 0
-        
-        this.update_output()
-
-    def craft_item(this):
-        """Handle crafting when output slot is clicked"""
-        if this.output_slot.item:
-            # Remove one of each item from the grid
-            for row in range(3):
-                for col in range(3):
-                    if this.crafting_grid[row][col]:
-                        slot = this.sections[0][row][col]
-                        slot.count -= 1
-                        if slot.count <= 0:
-                            this.crafting_grid[row][col] = None
-                            slot.item = None
-                            slot.count = 0
-            
-            # Add crafted item to player's inventory
-            player.inventory.addItem(this.output_slot.item)
-            this.update_output()
-    
-class CraftingSystem:
-  """Handles crafting logic and recipes."""
-  def __init__(this):
-    #Shaped recipe requires exact match
-    this.shaped_recipes = {
-        #debug recipe 
-        #change later
-        (
-            ("Cobblestone", None, None),
-            (None, None, None),
-            (None, None, None)
-        ): WoodenPickaxe(),
-    }
-    
-    #Shapeless recipes don't care about pattern arrangement
-    this.shapeless_recipes = {
-    }
-
-  def normalize_grid(this, grid):
-    grid = [[str(item) if item else "None" for item in row] for row in grid]
-    
-    min_row, max_row = len(grid), 0
-    min_col, max_col = len(grid[0]), 0
-    
-    for i, row in enumerate(grid):
-      for j, item in enumerate(row):
-          if item != "None":
-              min_row = min(min_row, i)
-              max_row = max(max_row, i)
-              min_col = min(min_col, j)
-              max_col = max(max_col, j)
-    
-    if min_row > max_row:
-      return ((("None",) * 3),) * 3
-
-    pattern = tuple(
-        tuple(grid[i][j] for j in range(min_col, max_col + 1))
-        for i in range(min_row, max_row + 1)
-    )
-    
-    while len(pattern) < 3:
-        pattern = pattern + (("None",) * 3,)
-        
-    pattern = tuple(row + ("None",) * (3 - len(row)) for row in pattern)
-    
-    return pattern
-  
-  def get_ingredients_list(this, grid):
-      ingredients = []
-      for row in grid:
-          for item in row:
-              if item:
-                  ingredients.append(item)
-                  
-      return ingredients
-
-  def craft(this, grid):
-    #Shaped
-    normalized_pattern = this.normalize_grid(grid)
-    if normalized_pattern in this.shaped_recipes:
-        return this.shaped_recipes[normalized_pattern]
-    
-    #Shapeless
-    ingredients = frozenset(this.get_ingredients_list(grid))
-    if ingredients in this.shapeless_recipes:
-        return this.shapeless_recipes[ingredients]
-    
-    return None
 
 @dataclass
 class Inventory:
@@ -1819,17 +1676,32 @@ class MainMenu:
             
             pg.display.flip()
             clock.tick(FPS)
-            
-#TODO will add
+    
+#TODO work on these later hopefully        
 class InstructionsScreen:
-  def __init__(this):
+  pass
+          
+def change_keybinds():
     pass
-  
-  def _createButton(this):
-    pass  
+class PauseScreen:
+  def __init__(this, width, height):
+    this.width = width
+    this.height = height
+    this.screen = pg.display.set_mode((width, height))
+
+    this.buttonFont = pg.font.Font("MinecraftRegular-Bmg3.otf", 36)
+   
+    this.buttonTextColour = (240, 240, 240)
+    this.textShadow = (20, 20, 20, 160)
+    
+    resumeButton = Button((this.width - 400) // 2, this.height // 2,  400, 50, "Back to Game")
+    quitButton = Button((this.width - 400) // 2, (this.height // 2) + 100, 400, 50, "Save and Quit") 
+
   
   def run(this):
     clock = pg.time.Clock()
+    white = (255, 255, 255)
+    SURF.fill(white)
     
     while True:
       mousePos = pg.mouse.get_pos()           
@@ -1837,13 +1709,9 @@ class InstructionsScreen:
           if event.type == pg.QUIT:
               pg.quit()
               sys.exit()
-          
-    
-def change_keybinds():
-    pass
-  
-class PauseScreen:
-  pass
+              
+      pg.display.flip()
+      clock.tick(FPS)
 
 class LoadingScreen:
     def __init__(this, width, height):
@@ -1914,61 +1782,61 @@ class LoadingScreen:
         pg.display.flip()
         clock.tick(FPS)
 
-# class ThreadedWorldGenerator:
-#     def __init__(this):
-#         this.world = None
-#         this.loading_screen = LoadingScreen(WIDTH, HEIGHT)
-#         this.generation_thread = None
-#         this.progress_queue = queue.Queue()
-#         this.is_complete = False
-#         this.should_terminate = threading.Event()
-#         this.start_time = time.time()
+class ThreadedWorldGenerator:
+    def __init__(this):
+        this.world = None
+        this.loading_screen = LoadingScreen(WIDTH, HEIGHT)
+        this.generation_thread = None
+        this.progress_queue = queue.Queue()
+        this.is_complete = False
+        this.should_terminate = threading.Event()
+        this.start_time = time.time()
 
-#     def generate_world_thread(this):
-#         this.world = World()
-#         generation_steps = [
-#             (this.world.generateWorld, 0.6),
-#             (this.world.generateMask, 0.2),
-#             (this.world.generateLight, 0.2)
-#         ]
-#         current_progress = 0.0
+    def generate_world_thread(this):
+        this.world = World()
+        generation_steps = [
+            (this.world.generateWorld, 0.6),
+            (this.world.generateMask, 0.2),
+            (this.world.generateLight, 0.2)
+        ]
+        current_progress = 0.0
         
-#         for step_func, step_weight in generation_steps:
-#             if this.should_terminate.is_set():
-#                 return
+        for step_func, step_weight in generation_steps:
+            if this.should_terminate.is_set():
+                return
                 
-#             step_func()
-#             current_progress += step_weight
-#             this.progress_queue.put(current_progress)
+            step_func()
+            current_progress += step_weight
+            this.progress_queue.put(current_progress)
 
-#         this.progress_queue.put(1.0)
-#         this.is_complete = True
+        this.progress_queue.put(1.0)
+        this.is_complete = True
         
-#         total_time = time.time() - this.start_time
-#         print(f"World generation completed in {total_time:.2f} seconds")
+        total_time = time.time() - this.start_time
+        print(f"World generation completed in {total_time:.2f} seconds")
 
-#     def start_generation(this):
-#         """Start world generation in a separate thread."""
-#         this.generation_thread = threading.Thread(target=this.generate_world_thread)
-#         this.generation_thread.start()
+    def start_generation(this):
+        """Start world generation in a separate thread."""
+        this.generation_thread = threading.Thread(target=this.generate_world_thread)
+        this.generation_thread.start()
         
-#     def get_generated_world(this):
-#         if not this.is_complete:
-#             raise RuntimeError("World generation not complete")
-#         return this.world
+    def get_generated_world(this):
+        if not this.is_complete:
+            raise RuntimeError("World generation not complete")
+        return this.world
 
-#     def update_loading_screen(this):
-#         latest_progress = None
-#         while not this.progress_queue.empty():
-#             try:
-#                 latest_progress = this.progress_queue.get_nowait()
-#             except queue.Empty:
-#                 break
+    def update_loading_screen(this):
+        latest_progress = None
+        while not this.progress_queue.empty():
+            try:
+                latest_progress = this.progress_queue.get_nowait()
+            except queue.Empty:
+                break
         
-#         if latest_progress is not None:
-#             this.loading_screen.update(latest_progress)
+        if latest_progress is not None:
+            this.loading_screen.update(latest_progress)
         
-#         this.loading_screen.draw()
+        this.loading_screen.draw()
         
 
 '''Main Loop'''
@@ -1982,28 +1850,20 @@ if __name__ == "__main__":
   #Give player items at the beginning of the game
   defaultItems = [IronPickaxe(), IronAxe(), StoneAxe(), WoodenShovel(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)] + [TorchItem() for _ in range(64)]
   
-  # world_generator = ThreadedWorldGenerator()
-  # world_generator.start_generation()
+  world_generator = ThreadedWorldGenerator()
+  world_generator.start_generation()
   
   MainMenu(WIDTH, HEIGHT).run()
     
-  # while not world_generator.is_complete:
-  #     for event in pg.event.get():
-  #         if event.type == pg.QUIT:
-  #             pg.quit()
-  #             sys.exit()
-      
-  #     world_generator.update_loading_screen()
+  while not world_generator.is_complete:
+      world_generator.update_loading_screen()
     
-  # pg.time.wait(100)
-  
-  player = Player()
-  craftingMenu = CraftingMenu()
+  pg.time.wait(50)
   
   font = pg.font.Font(None, 15)
   font20 = pg.font.Font(None, 20)
   
-  # world = world_generator.get_generated_world()
+  player = Player()
   world = World()
   sun = Sun()
   
@@ -2024,9 +1884,7 @@ if __name__ == "__main__":
     
     #Temporarily game over logic
     if player.health <= 0:
-      print("The skbidi has died")
-      pg.quit()
-      sys.exit()
+      print("The skbidi would have died")
 
     #Player controls
     if keys[pg.K_a]:
@@ -2067,17 +1925,9 @@ if __name__ == "__main__":
         sys.exit()
       elif event.type == 101:
         print("fps: ", round(clock.get_fps(), 2))    
-      elif craftingMenu.isActive:
-        if event.type == pg.MOUSEBUTTONDOWN:
-          mouse_pos = pg.mouse.get_pos()
-          if not craftingMenu.handle_grid_click(mouse_pos, event.button == 3):
-              for row in range(player.inventory.rows):
-                  for col in range(player.inventory.cols):
-                      x = player.inventory.menux + col * Slot.size
-                      y = player.inventory.menuy + row * Slot.size
-                      if (x <= mouse_pos[0] <= x + Slot.size and 
-                          y <= mouse_pos[1] <= y + Slot.size):
-                          craftingMenu.handle_inventory_click(row, col, event.button == 3)
+        
+      elif event.type == KEYDOWN and event.key == pg.K_ESCAPE:
+        PauseScreen(WIDTH, HEIGHT).run()
         
       elif event.type == KEYDOWN and event.key == pg.K_e:
         check_for_interaction()
@@ -2099,8 +1949,6 @@ if __name__ == "__main__":
     player.drawHUD()
     
     SURF.blit(font20.render(str(pixelToCoord(*player.camera.center)), True, (0,0,0)), (20, 50))
-    
-    if craftingMenu.isActive: craftingMenu.draw()
     
     frameEndTime = time.time()
     clock.tick(FPS)
