@@ -1407,7 +1407,7 @@ class World:
               this.back[y][x] = DirtBlock(x, y, isBack=True)
 
       # Grass block
-      this.array[grassHeight][x] = DirtBlock(
+      this[grassHeight][x] = DirtBlock(
           x, grassHeight, DirtVariantGrass()
       )
 
@@ -1423,7 +1423,7 @@ class World:
                   this.array[y][x] = ore(x, y)
       
       # Tree pass
-      if isinstance(this[grassHeight][x], DirtBlock):
+      if isinstance(this[grassHeight][x], DirtBlock) and this[grassHeight][x].variant == "grass block":
           if random.random() > 0.8:  # Simplified tree placement
               this.__generateTree(x, grassHeight - 1)
 
