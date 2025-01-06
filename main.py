@@ -1449,6 +1449,7 @@ class World:
     this[y-height-1][x-1] = LeavesBlock(x-1, y-height-1)
     this[y-height-1][x] = LeavesBlock(x, y-height-1)
     this[y-height-1][x+1] = LeavesBlock(x+1, y-height-1)
+    this[y+1][x] = DirtBlock(x, y+1)
     
   
   def hoveredBlock(this) -> Block:
