@@ -1264,7 +1264,7 @@ class World:
               this.back[y][x] = DirtBlock(x, y, isBack=True)
 
       # Grass block
-      this.array[grassHeight][x] = DirtBlock(
+      this[grassHeight][x] = DirtBlock(
           x, grassHeight, DirtVariantGrass()
       )
 
@@ -1280,7 +1280,7 @@ class World:
                   this.array[y][x] = ore(x, y)
       
       # Tree pass
-      if isinstance(this[grassHeight][x], DirtBlock):
+      if isinstance(this[grassHeight][x], DirtBlock) and this[grassHeight][x].variant == "grass block":
           if random.random() > 0.8:  # Simplified tree placement
               this.__generateTree(x, grassHeight - 1)
 
@@ -1306,6 +1306,7 @@ class World:
     this[y-height-1][x-1] = LeavesBlock(x-1, y-height-1)
     this[y-height-1][x] = LeavesBlock(x, y-height-1)
     this[y-height-1][x+1] = LeavesBlock(x+1, y-height-1)
+    this[y+1][x] = DirtBlock(x, y+1)
     
   
   def hoveredBlock(this) -> Block:
