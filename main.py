@@ -1803,9 +1803,10 @@ class MainMenu:
                     if this.buttons['play'].rect.collidepoint(mousePos):
                         return
                     elif this.buttons['instructions'].rect.collidepoint(mousePos):
-                        show_instructions()
+                        #InstructionsScreen.run()
+                        pass
                     elif this.buttons['keybinds'].rect.collidepoint(mousePos):
-                        change_keybinds()
+                        pass
                     elif this.buttons['quit'].rect.collidepoint(mousePos):
                         pg.quit()
                         sys.exit()
@@ -1820,8 +1821,24 @@ class MainMenu:
             clock.tick(FPS)
             
 #TODO will add
-def show_instructions():
+class InstructionsScreen:
+  def __init__(this):
     pass
+  
+  def _createButton(this):
+    pass  
+  
+  def run(this):
+    clock = pg.time.Clock()
+    
+    while True:
+      mousePos = pg.mouse.get_pos()           
+      for event in pg.event.get():
+          if event.type == pg.QUIT:
+              pg.quit()
+              sys.exit()
+          
+    
 def change_keybinds():
     pass
   
@@ -1898,61 +1915,61 @@ class LoadingScreen:
         clock.tick(FPS)
 
 #TODO merge with main loop
-class ThreadedWorldGenerator:
-    def __init__(this):
-        this.world = None
-        this.loading_screen = LoadingScreen(WIDTH, HEIGHT)
-        this.generation_thread = None
-        this.progress_queue = queue.Queue()
-        this.is_complete = False
-        this.should_terminate = threading.Event()
-        this.start_time = time.time()
+# class ThreadedWorldGenerator:
+#     def __init__(this):
+#         this.world = None
+#         this.loading_screen = LoadingScreen(WIDTH, HEIGHT)
+#         this.generation_thread = None
+#         this.progress_queue = queue.Queue()
+#         this.is_complete = False
+#         this.should_terminate = threading.Event()
+#         this.start_time = time.time()
 
-    def generate_world_thread(this):
-        this.world = World()
-        generation_steps = [
-            (this.world.generateWorld, 0.6),
-            (this.world.generateMask, 0.2),
-            (this.world.generateLight, 0.2)
-        ]
-        current_progress = 0.0
+#     def generate_world_thread(this):
+#         this.world = World()
+#         generation_steps = [
+#             (this.world.generateWorld, 0.6),
+#             (this.world.generateMask, 0.2),
+#             (this.world.generateLight, 0.2)
+#         ]
+#         current_progress = 0.0
         
-        for step_func, step_weight in generation_steps:
-            if this.should_terminate.is_set():
-                return
+#         for step_func, step_weight in generation_steps:
+#             if this.should_terminate.is_set():
+#                 return
                 
-            step_func()
-            current_progress += step_weight
-            this.progress_queue.put(current_progress)
+#             step_func()
+#             current_progress += step_weight
+#             this.progress_queue.put(current_progress)
 
-        this.progress_queue.put(1.0)
-        this.is_complete = True
+#         this.progress_queue.put(1.0)
+#         this.is_complete = True
         
-        total_time = time.time() - this.start_time
-        print(f"World generation completed in {total_time:.2f} seconds")
+#         total_time = time.time() - this.start_time
+#         print(f"World generation completed in {total_time:.2f} seconds")
 
-    def start_generation(this):
-        """Start world generation in a separate thread."""
-        this.generation_thread = threading.Thread(target=this.generate_world_thread)
-        this.generation_thread.start()
+#     def start_generation(this):
+#         """Start world generation in a separate thread."""
+#         this.generation_thread = threading.Thread(target=this.generate_world_thread)
+#         this.generation_thread.start()
         
-    def get_generated_world(this):
-        if not this.is_complete:
-            raise RuntimeError("World generation not complete")
-        return this.world
+#     def get_generated_world(this):
+#         if not this.is_complete:
+#             raise RuntimeError("World generation not complete")
+#         return this.world
 
-    def update_loading_screen(this):
-        latest_progress = None
-        while not this.progress_queue.empty():
-            try:
-                latest_progress = this.progress_queue.get_nowait()
-            except queue.Empty:
-                break
+#     def update_loading_screen(this):
+#         latest_progress = None
+#         while not this.progress_queue.empty():
+#             try:
+#                 latest_progress = this.progress_queue.get_nowait()
+#             except queue.Empty:
+#                 break
         
-        if latest_progress is not None:
-            this.loading_screen.update(latest_progress)
+#         if latest_progress is not None:
+#             this.loading_screen.update(latest_progress)
         
-        this.loading_screen.draw()
+#         this.loading_screen.draw()
         
 
 '''Main Loop'''
@@ -1966,20 +1983,20 @@ if __name__ == "__main__":
   #Give player items at the beginning of the game
   defaultItems = [IronPickaxe(), IronAxe(), StoneAxe(), WoodenShovel(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)] + [TorchItem() for _ in range(64)]
   
-  world_generator = ThreadedWorldGenerator()
-  world_generator.start_generation()
+  # world_generator = ThreadedWorldGenerator()
+  # world_generator.start_generation()
   
   MainMenu(WIDTH, HEIGHT).run()
     
-  while not world_generator.is_complete:
-      for event in pg.event.get():
-          if event.type == pg.QUIT:
-              pg.quit()
-              sys.exit()
+  # while not world_generator.is_complete:
+  #     for event in pg.event.get():
+  #         if event.type == pg.QUIT:
+  #             pg.quit()
+  #             sys.exit()
       
-      world_generator.update_loading_screen()
+  #     world_generator.update_loading_screen()
     
-  pg.time.wait(100)
+  # pg.time.wait(100)
   
   player = Player()
   craftingMenu = CraftingMenu()
@@ -1987,8 +2004,12 @@ if __name__ == "__main__":
   font = pg.font.Font(None, 15)
   font20 = pg.font.Font(None, 20)
   
-  world = world_generator.get_generated_world()
+  # world = world_generator.get_generated_world()
+  world = World()
   sun = Sun()
+  
+  end = time.time()
+  print(f"{start - end:.2f} seconds")
   
   while True:
     frameStartTime = time.time()
