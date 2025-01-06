@@ -164,9 +164,11 @@ class Light:
   x: float
   y: float
   relative: bool = True
+  
   def __post_init__(this):
     # print("post init light")
     lights.append(this)
+    
   def drawLight(this):
     '''draw light'''
     if this.relative:
@@ -419,7 +421,7 @@ class IronOreBlock(Block, Generated):
 class IronOreItem(PlaceableItem):
   ironOreItemTexture = sprites["ironOre"]
   def __init__(this):
-    super().__init__(this, "Iron Ore", this.ironOreItemTexture, 64)
+    super().__init__("Iron Ore", this.ironOreItemTexture, 64)
 
 class CoalOreBlock(Block, Generated):
   coalTexture = sprites["coalOre"]
@@ -430,7 +432,7 @@ class CoalOreBlock(Block, Generated):
 class CoalItem(Item):
   coalItemTexture = sprites["coalOre"]
   def __init__(this):
-    super().__init__(this, "Coal", this.coalItemTexture, 64)
+    super().__init__("Coal", this.coalItemTexture, 64)
 
 ores = {CoalOreBlock, IronOreBlock}
 
@@ -794,6 +796,13 @@ class IronPickaxe(Tool):
 class IronAxe(Tool):
   def __init__(this):
     super().__init__("Iron Axe", sprites["ironAxe"], 1, 3.5, 250, BlockType.AXE)
+class IronShovel(Tool):
+  def __init__(this):
+    super().__init__("Iron Shovel", sprites["ironShovel"], 1, 3.5, 250, BlockType.SHOVEL)
+    
+'''Diamond'''
+class DiamondPickaxe(Tool):
+  pass
   
 
 class HasInventory:
@@ -1815,6 +1824,9 @@ def show_instructions():
     pass
 def change_keybinds():
     pass
+  
+class PauseScreen:
+  pass
 
 class LoadingScreen:
     def __init__(this, width, height):
