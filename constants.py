@@ -12,6 +12,6 @@ pg.display.set_caption("Terraria")
 
 BLOCK_SIZE = 25
 WORLD_HEIGHT = 256
-WORLD_WIDTH = 1000
+WORLD_WIDTH = 300
 SHADOW_QUALITY = 3
 gravity = 1 

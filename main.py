@@ -1708,88 +1708,88 @@ class MainMenu:
         this.height = height
         this.screen = pg.display.set_mode((width, height))
         
-        this._create_buttons()
+        this._createButtons()
 
-        this.button_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 36)
-        this.splash_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 28)
+        this.buttonFont = pg.font.Font("MinecraftRegular-Bmg3.otf", 36)
+        this.splashFont = pg.font.Font("MinecraftRegular-Bmg3.otf", 28)
         
-        this.button_text_color = (240, 240, 240)
-        this.text_shadow = (20, 20, 20, 160)
+        this.buttonTextColour = (240, 240, 240)
+        this.textShadow = (20, 20, 20, 160)
         
         #Background
-        this.bg_panorama = pg.image.load("title screen background animation.jpg").convert()
+        this.bgPanorama = pg.image.load("title screen background animation.jpg").convert()
         
         this.overlay = pg.Surface((this.width, this.height))
         this.overlay.fill((0, 0, 0))
         this.overlay.set_alpha(40)
         
-        this.bg_scroll_speed = 20
-        this.bg_offset = 0
+        this.bgScrollSpeed = 20
+        this.bgOffset = 0
         
         #Title
-        this.title_image = pg.image.load("title screen title.png").convert_alpha()
-        this.title_image_rect = this.title_image.get_rect(center=(this.width // 2, this.height // 4))
+        this.titleImage = pg.image.load("title screen title.png").convert_alpha()
+        this.titleImageRect = this.titleImage.get_rect(center=(this.width // 2, this.height // 4))
         
         #Splash text stuff
-        this.splash_texts = [
-            "Also try Minecraft!",
+        this.splashTexts = [
+            "Dont sue us Minecraft!",
             "Made with Pygame!",
             "Lorem ipsum!",
             "Pygame >",
         ]
         
-        this.current_splash = random.choice(this.splash_texts)
-        this.splash_angle = -15
-        this.splash_wave_offset = 0
-        this.splash_scale = 1.0
+        this.currentSplash = random.choice(this.splashTexts)
+        this.splashAngle = -15
+        this.splashWaveOffset = 0
+        this.splashScale = 1.0
         
-    def _create_buttons(this):
-        button_width, button_height = 400, 50
-        button_x = (this.width - button_width) // 2
+    def _createButtons(this):
+        buttonWidth, buttonHeight = 400, 50
+        buttonX = (this.width - buttonWidth) // 2
         spacing = 24  #space between buttons
-        start_y = this.height // 2
+        startY = this.height // 2
         
         this.buttons = {
-            'play': Button(button_x, start_y, button_width, button_height, "Play"),
-            'instructions': Button(button_x, start_y + button_height + spacing, button_width, button_height, "Instructions"),
-            'keybinds': Button(button_x, start_y + (button_height + spacing) * 2, button_width, button_height, "Options"),
-            'quit': Button(button_x, start_y + (button_height + spacing) * 3, button_width, button_height, "Quit")
+            'play': Button(buttonX, startY, buttonWidth, buttonHeight, "Play"),
+            'instructions': Button(buttonX, startY + buttonHeight + spacing, buttonWidth, buttonHeight, "Instructions"),
+            'keybinds': Button(buttonX, startY + (buttonHeight + spacing) * 2, buttonWidth, buttonHeight, "Options"),
+            'quit': Button(buttonX, startY + (buttonHeight + spacing) * 3, buttonWidth, buttonHeight, "Quit")
         }
         
-    def _update_background(this, time):
-        this.bg_offset = (this.bg_offset + this.bg_scroll_speed * time / 1000.0) % this.bg_panorama.get_width()
+    def _updateBackground(this, time):
+        this.bgOffset = (this.bgOffset + this.bgScrollSpeed * time / 1000.0) % this.bgPanorama.get_width()
 
-    def _draw_all(this):
+    def _draw(this):
         #Draw background
-        this.screen.blit(this.bg_panorama, (-this.bg_offset, 0))
-        this.screen.blit(this.bg_panorama, (this.bg_panorama.get_width() - this.bg_offset, 0))
+        this.screen.blit(this.bgPanorama, (-this.bgOffset, 0))
+        this.screen.blit(this.bgPanorama, (this.bgPanorama.get_width() - this.bgOffset, 0))
         this.screen.blit(this.overlay, (0, 0))
         
         #Title
-        this.screen.blit(this.title_image, this.title_image_rect)
+        this.screen.blit(this.titleImage, this.titleImageRect)
         
         #Splash text
-        this.splash_wave_offset += 0.03
-        this.splash_scale = 1.0 + math.sin(this.splash_wave_offset * 0.5) * 0.03  #subtle pulse
+        this.splashWaveOffset += 0.03
+        this.splashScale = 1.0 + math.sin(this.splashWaveOffset * 0.5) * 0.03  #subtle pulse
         
-        splash_surf = this.splash_font.render(this.current_splash, True, (255, 255, 0))
-        splash_surf = pg.transform.rotate(splash_surf, this.splash_angle)
-        splash_surf = pg.transform.scale(splash_surf, 
-                                       (int(splash_surf.get_width() * this.splash_scale),
-                                        int(splash_surf.get_height() * this.splash_scale)))
+        splashSurf = this.splashFont.render(this.currentSplash, True, (255, 255, 0))
+        splashSurf = pg.transform.rotate(splashSurf, this.splashAngle)
+        splashSurf = pg.transform.scale(splashSurf, 
+                                       (int(splashSurf.get_width() * this.splashScale),
+                                        int(splashSurf.get_height() * this.splashScale)))
         
-        splash_y_offset = math.sin(this.splash_wave_offset) * 6
-        splash_pos = (this.width // 2 + 180, this.height // 4 + splash_y_offset)
-        this.screen.blit(splash_surf, splash_pos)
+        splashYOffset = math.sin(this.splashWaveOffset) * 6
+        splashPos = (this.width // 2 + 180, this.height // 4 + splashYOffset)
+        this.screen.blit(splashSurf, splashPos)
         
         for button in this.buttons.values():
-            button.draw(this.button_font, this.button_text_color, this.text_shadow)
+            button.draw(this.buttonFont, this.buttonTextColour, this.textShadow)
 
     def run(this):
         clock = pg.time.Clock()
         
         while True:
-            mouse_pos = pg.mouse.get_pos()           
+            mousePos = pg.mouse.get_pos()           
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     pg.quit()
@@ -1797,24 +1797,24 @@ class MainMenu:
                     
                 if event.type in (pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP):
                     for button in this.buttons.values():
-                        button.handle_event(event, mouse_pos)
+                        button.handle_event(event, mousePos)
 
                 if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-                    if this.buttons['play'].rect.collidepoint(mouse_pos):
+                    if this.buttons['play'].rect.collidepoint(mousePos):
                         return
-                    elif this.buttons['instructions'].rect.collidepoint(mouse_pos):
+                    elif this.buttons['instructions'].rect.collidepoint(mousePos):
                         show_instructions()
-                    elif this.buttons['keybinds'].rect.collidepoint(mouse_pos):
+                    elif this.buttons['keybinds'].rect.collidepoint(mousePos):
                         change_keybinds()
-                    elif this.buttons['quit'].rect.collidepoint(mouse_pos):
+                    elif this.buttons['quit'].rect.collidepoint(mousePos):
                         pg.quit()
                         sys.exit()
 
             for button in this.buttons.values():
-                button.update(mouse_pos)
+                button.update(mousePos)
             
-            this._update_background(clock.get_time())
-            this._draw_all()
+            this._updateBackground(clock.get_time())
+            this._draw()
             
             pg.display.flip()
             clock.tick(FPS)
@@ -1835,7 +1835,7 @@ class LoadingScreen:
         this.screen = pg.display.set_mode((width, height))
         
         this.font = pg.font.Font("MinecraftRegular-Bmg3.otf", 20)
-        this.title_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 40)
+        this.titleFont = pg.font.Font("MinecraftRegular-Bmg3.otf", 40)
 
         this.loading_messages = [
             "Generating world...",
@@ -1846,41 +1846,41 @@ class LoadingScreen:
         ]    
         
         #?   message change interval is currently not working 😐
-        this.current_message = 0
-        this.message_change_timer = time.time()
-        this.message_change_interval = 1.5    #seconds
+        this.currentMessage = 0
+        this.messageChangeTimer = time.time()
+        this.messageChangeInterval = 1.5    #seconds
         this.progress = 0.0
-        this.start_time = time.time()
+        this.startTime = time.time()
 
-        this.bar_width = 400
-        this.bar_height = 20
-        this.bar_x = (width - this.bar_width) // 2
+        this.barWidth = 400
+        this.barHeight = 20
+        this.barX = (width - this.barWidth) // 2
         this.bar_y = height // 2 + 30
         
     def update(this, progress):
         this.progress = progress
         
         current_time = time.time()
-        if current_time - this.message_change_timer >= this.message_change_interval:
-            this.current_message = (this.current_message + 1) % len(this.loading_messages)
-            this.message_change_timer = current_time
+        if current_time - this.messageChangeTimer >= this.messageChangeInterval:
+            this.currentMessage = (this.currentMessage + 1) % len(this.loading_messages)
+            this.messageChangeTimer = current_time
 
     def draw(this):
         this.screen.fill((25, 25, 25))
 
-        title = this.title_font.render("Loading world...", True, (255, 255, 255))
+        title = this.titleFont.render("Loading world...", True, (255, 255, 255))
         title_rect = title.get_rect(center=(this.width // 2, this.height // 3))
         this.screen.blit(title, title_rect)
 
         #Loading message
-        message = this.font.render(this.loading_messages[this.current_message], True, (200, 200, 200))
+        message = this.font.render(this.loading_messages[this.currentMessage], True, (200, 200, 200))
         message_rect = message.get_rect(center=(this.width // 2, this.height // 2 - 20))
         this.screen.blit(message, message_rect)
 
         #Progress bar
-        pg.draw.rect(this.screen, (50, 50, 50), (this.bar_x, this.bar_y, this.bar_width, this.bar_height))
-        fill_width = int(this.bar_width * this.progress)
-        pg.draw.rect(this.screen, (106, 176, 76), (this.bar_x, this.bar_y, fill_width, this.bar_height))
+        pg.draw.rect(this.screen, (50, 50, 50), (this.barX, this.bar_y, this.barWidth, this.barHeight))
+        fill_width = int(this.barWidth * this.progress)
+        pg.draw.rect(this.screen, (106, 176, 76), (this.barX, this.bar_y, fill_width, this.barHeight))
 
         #Percentage
         percentage = f"{int(this.progress * 100)}%"
@@ -1889,7 +1889,7 @@ class LoadingScreen:
         this.screen.blit(percent_text, percent_rect)
 
         #Elapsed load time
-        elapsed_time = time.time() - this.start_time
+        elapsed_time = time.time() - this.startTime
         elapsed_text = this.font.render(f"Time elapsed: {elapsed_time:.1f} seconds", True, (200, 200, 200))
         elapsed_rect = elapsed_text.get_rect(center=(this.width // 2, this.bar_y + 120))
         this.screen.blit(elapsed_text, elapsed_rect)
@@ -1897,6 +1897,7 @@ class LoadingScreen:
         pg.display.flip()
         clock.tick(FPS)
 
+#TODO merge with main loop
 class ThreadedWorldGenerator:
     def __init__(this):
         this.world = None
