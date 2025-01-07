@@ -307,7 +307,7 @@ class PlaceableItem(Item):
   
   def place(self, x: int, y: int) -> None:
     world[y][x] = self.block()(x, y)
-    world.mask.draw(world[y][x].mask, world[y][x].rect.topleft)
+    # world.mask.draw(world[y][x].mask, world[y][x].rect.topleft)
 
 @dataclass
 class Executable(ABC):
@@ -1028,7 +1028,7 @@ class Player(Entity, HasInventory, Light):
       else:
         # print("mined", self.blockFacing.name,
         #       "got", self.blockFacing.item().name)
-        world.mask.erase(world[self.blockFacing.y][self.blockFacing.x].mask, self.blockFacing.rect.topleft)
+        # world.mask.erase(world[self.blockFacing.y][self.blockFacing.x].mask, self.blockFacing.rect.topleft)
         world[self.blockFacing.y][self.blockFacing.x] = AirBlock(
             self.blockFacing.x, self.blockFacing.y
         )
@@ -1129,7 +1129,7 @@ class World:
     self.lightmap = [ # generate fully lit light map at the beginning
       [0 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
     self.generateWorld()
-    self.generateMask()
+    # self.generateMask()
     self.generateLight()
 
   class SimplexNoise:
@@ -1968,7 +1968,7 @@ if __name__ == "__main__":
         check_for_interaction()
       elif event.type == KEYDOWN and event.key == pg.K_m:
         pixel = tuple(map(lambda a: BLOCK_SIZE*a,pixelToCoord(*pg.mouse.get_pos())))
-        print(pixel, world.mask.get_at(pixel), world.blockAt(*pixelToCoord(*pg.mouse.get_pos())).rect.topleft)
+        # print(pixel, world.mask.get_at(pixel), world.blockAt(*pixelToCoord(*pg.mouse.get_pos())).rect.topleft)
         
         # print(world.mask.get_at())
 
