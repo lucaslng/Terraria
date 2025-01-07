@@ -1420,7 +1420,7 @@ class World:
 
   def generateLight(self, originr=None, originc=None):
     '''Generate lightmap for the entire world or specific part of world'''
-    startTime = time.time()
+    if originr is None and originc is None: startTime = time.time()
     blockMap = [
       [False if not self[y][x].isEmpty or not self.back[y][x].isEmpty else True for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
     
@@ -1493,8 +1493,9 @@ class World:
               visited.add(new)
               bfs.add(new)
     
-    endTime = time.time()
-    print("lightmap time:", round(endTime - startTime, 2))
+    if originr is None and originc is None:
+      endTime = time.time()
+      print("lightmap time:", round(endTime - startTime, 2))
     
   def update(self):
     self.getVisibleBlocks()
