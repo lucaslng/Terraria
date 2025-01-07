@@ -7,6 +7,7 @@ from pygame.math import Vector2
 from constants import *
 from sprites import *
 from customqueue import Queue
+from utils import Direction
 
 from abc import *
 from dataclasses import dataclass
@@ -20,13 +21,6 @@ start = time.time()
 pg.init()
 pg.font.init()
 clock = pg.time.Clock()
-
-
-class Direction:
-  NORTH=0
-  SOUTH=1
-  WEST=2
-  EAST=3
 
 def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   """Returns coordinate based on pixel location"""

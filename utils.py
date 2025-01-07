@@ -1,6 +1,12 @@
 import pygame as pg
 from constants import *
 
+class Direction:
+  NORTH=0
+  SOUTH=1
+  WEST=2
+  EAST=3
+
 """
 def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   '''Returns coordinate based on pixel location'''
