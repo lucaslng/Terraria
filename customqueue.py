@@ -5,26 +5,30 @@ class Queue:
   '''Queue class that uses collections.deque'''
   
   def __init__(self):
-    self.deque = deque()
+    self._deque = deque()
   
-  def pop(self):
-    '''Pop the item at the head of the queue'''
-    return self.deque.popleft()
+  def poll(self):
+    '''Poll the item at the head of the queue'''
+    return self._deque.popleft()
   
   def add(self, x: Any):
     '''Add an item to the tail of the queue'''
-    self.deque.append(x)
+    self._deque.append(x)
   
   def peek(self):
     '''Peek the item at the head of the queue'''
-    return self.deque[0] if self.deque else None
+    return self._deque[0] if self._deque else None
   
   def tail(self):
     '''Peek the item at the tail of the queue'''
-    return self.deque[-1] if self.deque else None
+    return self._deque[-1] if self._deque else None
   
   def size(self):
-    return len(self.deque)
+    '''Returns the length of the queue'''
+    return len(self._deque)
   
-  def empty(self) -> bool:    
-    return len(self.deque) == 0
+  def __len__(self):
+    return len(self._deque)
+  
+  def __repr__(self):
+    return repr(self._deque)

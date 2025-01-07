@@ -1,4 +1,4 @@
-import sys, math, random, time, copy, threading, pickle          #pickle stores game data onto system
+import math, random, time, copy, threading, pickle          #pickle stores game data onto system
 import pygame as pg
 from pygame.locals import *
 from pygame.math import Vector2
@@ -7,6 +7,7 @@ from pygame.math import Vector2
 from constants import *
 from sprites import *
 from customqueue import Queue
+from utils import Direction, sysexit
 
 from abc import *
 from dataclasses import dataclass
@@ -20,13 +21,6 @@ start = time.time()
 pg.init()
 pg.font.init()
 clock = pg.time.Clock()
-
-
-class Direction:
-  NORTH=0
-  SOUTH=1
-  WEST=2
-  EAST=3
 
 def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   """Returns coordinate based on pixel location"""
@@ -313,7 +307,7 @@ class PlaceableItem(Item):
   
   def place(self, x: int, y: int) -> None:
     world[y][x] = self.block()(x, y)
-    world.mask.draw(world[y][x].mask, world[y][x].rect.topleft)
+    # world.mask.draw(world[y][x].mask, world[y][x].rect.topleft)
 
 @dataclass
 class Executable(ABC):
@@ -1034,11 +1028,11 @@ class Player(Entity, HasInventory, Light):
       else:
         # print("mined", self.blockFacing.name,
         #       "got", self.blockFacing.item().name)
-        world.mask.erase(world[self.blockFacing.y][self.blockFacing.x].mask, self.blockFacing.rect.topleft)
+        # world.mask.erase(world[self.blockFacing.y][self.blockFacing.x].mask, self.blockFacing.rect.topleft)
         world[self.blockFacing.y][self.blockFacing.x] = AirBlock(
             self.blockFacing.x, self.blockFacing.y
         )
-        if world.back[self.blockFacing.y][self.blockFacing.x].isAir: world.regenerateLight(self.blockFacing.x, self.blockFacing.y)
+        if world.back[self.blockFacing.y][self.blockFacing.x].isAir: world.generateLight(self.blockFacing.y, self.blockFacing.x)
         item = self.blockFacing.item()
         
         if self.heldSlot().item and self.heldSlot().item.isTool():
@@ -1059,7 +1053,7 @@ class Player(Entity, HasInventory, Light):
         self.heldSlot().count -= 1
         if self.heldSlot().count == 0:
           self.heldSlot().item = None
-        if world.back[y][x].isAir: world.regenerateLight(x, y)
+        if world.back[y][x].isAir: world.generateLight(y, x)
 
   def drawCircle(self):
     pg.draw.circle(ASURF, (0, 0, 0, 120), FRAME.center, BLOCK_SIZE * 4)
@@ -1132,9 +1126,16 @@ class World:
     ]
     
     self.mask = pg.mask.Mask((WORLD_WIDTH*BLOCK_SIZE, WORLD_HEIGHT*BLOCK_SIZE))
+    self.lightmap = [ # generate fully lit light map at the beginning
+      [0 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
+    startTime = time.time()
     self.generateWorld()
-    self.generateMask()
+    print("world time:", round(time.time() - startTime, 2))
+    # self.generateMask()
+    startTime = time.time()
     self.generateLight()
+    print("light time:", round(time.time() - startTime, 2))
+    
 
   class SimplexNoise:
     def __init__(self, scale: float, dimension: int, width: int = WORLD_WIDTH, height: int = WORLD_HEIGHT):
@@ -1154,7 +1155,7 @@ class World:
 
     @staticmethod
     def __generatePermutation():
-      random.seed(random.randint(0, sys.maxsize))
+      random.seed(random.randint(0, BIG))
       p = list(range(256))
       random.shuffle(p)
       random.seed(SEED)
@@ -1422,46 +1423,79 @@ class World:
       self.vertices.add(relativeCoord(self.edgePool[i].ex*BLOCK_SIZE,self.edgePool[i].ey*BLOCK_SIZE))
       self.edgePool[i].draw()
 
-  def generateLight(self):
-    lightmap = [
-      [255 if not self[y][x].isEmpty or not self.back[y][x].isEmpty else 0 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
+  def generateLight(self, originr=None, originc=None):
+    '''Generate lightmap for the entire world or specific part of world'''
+    blockMap = [
+      [False if not self[y][x].isEmpty or not self.back[y][x].isEmpty else True for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
     
-    lightstarttime = time.time()
-    for i in range(5):
-      newlightmap = copy.deepcopy(lightmap)
-      for y in range(WORLD_HEIGHT):
-        for x in range(WORLD_WIDTH):
-          if self[y][x].isEmpty and self.back[y][x].isEmpty: continue
-          for r in range(-1, 2):
-            if not 0 <= y + r < WORLD_HEIGHT: continue
-            for c in range(-1, 2):
-              if not 0 <= x + c < WORLD_WIDTH: continue
-              if r == 0 and c == 0: continue
-              lightmap[y][x] = min(lightmap[y][x], newlightmap[y+r][x+c] + i * 50)
-              
-    lightendtime = time.time()
-    print("lightmap time:", round(lightendtime - lightstarttime, 2))
-    self.lightmap = lightmap
-  
-  def regenerateLight(self, xcenter: int, ycenter: int):
-    radius = 5
-    count = 0
-    for y in range(ycenter - radius, ycenter + radius + 1):
-        for x in range(xcenter - radius, xcenter + radius + 1):
-          self.lightmap[y][x] = 255 if not self[y][x].isEmpty or not self.back[y][x].isEmpty else 0
+    if originr is None and originc is None:
+      startr = startc = 0
+      stopr = WORLD_HEIGHT
+      stopc = WORLD_WIDTH
+    else:
+      startr = max(originr - 6, 0)
+      startc = max(originc - 6, 0)
+      stopr = min(originr + 7, WORLD_HEIGHT)
+      stopc = min(originc + 7, WORLD_WIDTH)
+    
+    # loop over every block in the world
+    for r in range(startr, stopr):
+      for c in range(startc, stopc):
+        # make queue to perform breadth first search to calculate the light at the block at row r and col c
+        bfs = Queue()
+        bfs.add((c, r)) # c is x and r is y
+        bfs.add(None) # use Nones to track the level of the bfs
+        level = 0 # keep track of level of bfs
+        # set to store visited coordinates
+        visited = set()
+        visited.add((c, r))
+        
+        while bfs:
           
-    for i in range(5):
-      newlightmap = [row[:] for row in self.lightmap] # copy lightmap array
-      for y in range(ycenter - radius, ycenter + radius + 1):
-        for x in range(xcenter - radius, xcenter + radius + 1):
-          if self[y][x].isEmpty and self.back[y][x].isEmpty: continue
-          for r in range(-1, 2):
-            if not ycenter - radius <= y + r <= ycenter + radius: continue
-            for c in range(-1, 2):
-              if not xcenter - radius <= x + c <= xcenter + radius: continue
-              if r == 0 and c == 0: continue
-              self.lightmap[y][x] = min(self.lightmap[y][x], newlightmap[y+r][x+c] + i * 50)
-              count += 1
+          if level > 6:
+            self.lightmap[r][c] = 255
+            break # exit after traversing 5 levels
+          
+          cur = bfs.poll()
+          if cur is None:
+            level += 1
+            bfs.add(None)
+            if bfs.peek is None: break
+            else: continue
+          
+          x, y = cur
+          
+          if blockMap[y][x]:
+            self.lightmap[r][c] = max(0, (level - 1) * 51)
+            break
+          
+          # left block
+          if x - 1 >= 0: # if block is inside world bounds
+            new = (x - 1, y)
+            if new not in visited: # if block has not been checked
+              visited.add(new)
+              bfs.add(new)
+
+          # right block
+          if x + 1 < WORLD_WIDTH: # if block is inside world bounds
+            new = (x + 1, y)
+            if new not in visited: # if block has not been checked
+              visited.add(new)
+              bfs.add(new)
+
+          # upper block
+          if y - 1 >= 0: # if block is inside world bounds
+            new = (x, y - 1)
+            if new not in visited: # if block has not been checked
+              visited.add(new)
+              bfs.add(new)
+          
+          # lower block
+          if y + 1 < WORLD_HEIGHT: # if block is inside world bounds
+            new = (x, y + 1)
+            if new not in visited: # if block has not been checked
+              visited.add(new)
+              bfs.add(new)
     
   def update(self):
     self.getVisibleBlocks()
@@ -1650,8 +1684,7 @@ class MainMenu:
             mousePos = pg.mouse.get_pos()           
             for event in pg.event.get():
                 if event.type == pg.QUIT:
-                    pg.quit()
-                    sys.exit()
+                    sysexit()
                     
                 if event.type in (pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP):
                     for button in self.buttons.values():
@@ -1665,8 +1698,7 @@ class MainMenu:
                     elif self.buttons['options'].rect.collidepoint(mousePos):
                         pass
                     elif self.buttons['quit'].rect.collidepoint(mousePos):
-                        pg.quit()
-                        sys.exit()
+                        sysexit()
 
             for button in self.buttons.values():
                 button.update(mousePos)
@@ -1708,8 +1740,7 @@ class PauseScreen:
       mousePos = pg.mouse.get_pos()           
       for event in pg.event.get():
           if event.type == pg.QUIT:
-              pg.quit()
-              sys.exit()
+              sysexit()
               
       pg.display.flip()
       clock.tick(FPS)
@@ -1805,16 +1836,16 @@ class WorldLoader:
 
     def _generateWorld(self):
         try:
-            self._updateProgress("Initializing world", 0.0)
-            time.sleep(0.5)
-            self._updateProgress("Initializing world", 1.0)
+            self._update_progress("Initializing world", 0.0)
+            # time.sleep(0.5)
+            self._update_progress("Initializing world", 1.0)
             
             self.world = World()
             
-            for step, _ in self.generationSteps[1:]:
-                self._updateProgress(step, 0.0)
-                time.sleep(1.0)
-                self._updateProgress(step, 1.0)
+            for step, _ in self.generation_steps[1:]:
+                self._update_progress(step, 0.0)
+                # time.sleep(1.0)
+                self._update_progress(step, 1.0)
             
             self.generationCompleteEvent.set()
         except Exception as e:
@@ -1827,8 +1858,8 @@ class WorldLoader:
         self.generationThread.start()
 
     def update(self):
-      while not self.progressUpdates.empty():
-          self.progress = self.progressUpdates.pop()
+      while self.progress_updates:
+          self.progress = self.progress_updates.poll()
       
       self.loadingScreen.update(self.progress, self.currentStep)
       self.loadingScreen.draw()
@@ -1856,8 +1887,7 @@ if __name__ == "__main__":
   while True:
       for event in pg.event.get():
           if event.type == pg.QUIT:
-              pg.quit()
-              sys.exit()
+              sysexit()
       
       if loader.update():
           if not loader.generationThread.is_alive():
@@ -1928,8 +1958,7 @@ if __name__ == "__main__":
 
     for event in pg.event.get():
       if event.type == QUIT:
-        pg.quit()
-        sys.exit()
+        sysexit()
       elif event.type == 101:
         print("fps: ", round(clock.get_fps(), 2))    
         
@@ -1940,7 +1969,7 @@ if __name__ == "__main__":
         check_for_interaction()
       elif event.type == KEYDOWN and event.key == pg.K_m:
         pixel = tuple(map(lambda a: BLOCK_SIZE*a,pixelToCoord(*pg.mouse.get_pos())))
-        print(pixel, world.mask.get_at(pixel), world.blockAt(*pixelToCoord(*pg.mouse.get_pos())).rect.topleft)
+        # print(pixel, world.mask.get_at(pixel), world.blockAt(*pixelToCoord(*pg.mouse.get_pos())).rect.topleft)
         
         # print(world.mask.get_at())
 

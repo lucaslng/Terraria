@@ -1,6 +1,18 @@
 import pygame as pg
 from constants import *
 
+class Direction:
+  '''Just to make code easier to read'''
+  NORTH=0
+  SOUTH=1
+  WEST=2
+  EAST=3
+
+def sysexit() -> None:
+  '''Helper function to exit the program'''
+  pg.quit()
+  raise SystemExit
+
 """
 def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   '''Returns coordinate based on pixel location'''
