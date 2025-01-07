@@ -42,13 +42,9 @@ class Animation:
         if flipped: texture = pg.transform.flip(texture, True, False).convert_alpha()
         return SURF.blit(texture, (x, y))
 
+
 catSheet = SpriteSheet("cat.png")
-
 everythingSheet = SpriteSheet("everything.png")
-
-woodenToolsSheet = SpriteSheet("wooden_tools.png")
-stoneToolsSheet = SpriteSheet("stone_tools.png")
-ironToolsSheet = SpriteSheet("iron_tools.png")
 
 sprites = {
     "cat": {
@@ -92,9 +88,22 @@ sprites = {
     #Ores
     "coalOre": everythingSheet.get(352, 0, 16, 16, BLOCK_SIZE),
     "ironOre": everythingSheet.get(368, 0, 16, 16, BLOCK_SIZE),
+    "goldOre": everythingSheet.get(384, 0, 16, 16, BLOCK_SIZE),
+    "diamondOre": everythingSheet.get(400, 0, 16, 16, BLOCK_SIZE),
     
-    #Items
+    #---BLOCKS---
+    #Grass
+    "dirt": everythingSheet.get(480, 0, 16, 16, BLOCK_SIZE),
+    "grass": everythingSheet.get(496, 0, 16, 16, BLOCK_SIZE),
+    
+    #Stone
+    "stone": everythingSheet.get(512, 0, 16, 16, BLOCK_SIZE),
+    "cobblestone": everythingSheet.get(528, 0, 16, 16, BLOCK_SIZE),
+    
+    
+    #---ITEMS---
     "coal": everythingSheet.get(416, 0, 16, 16, 15),
+  
   
     #---TOOLS---
     #Wooden
@@ -120,4 +129,14 @@ sprites = {
     "goldPickaxe": everythingSheet.get(208, 0, 16, 16, 15),
     "goldShovel": everythingSheet.get(224, 0, 16, 16, 15),
     "goldSword": everythingSheet.get(240, 0, 16, 16, 15),
+    
+    #Diamond
+    "diamondAxe": everythingSheet.get(256, 0, 16, 16, 15),
+    "diamondPickaxe": everythingSheet.get(272, 0, 16, 16, 15),
+    "diamondShovel": everythingSheet.get(288, 0, 16, 16, 15),
+    "diamondSword": everythingSheet.get(304, 0, 16, 16, 15),
+    
+    #Misc
+    "shears": everythingSheet.get(320, 0, 16, 16, 15),
+    "flintAndSteel": everythingSheet.get(336, 0, 16, 16, 15),
 }

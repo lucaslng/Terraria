@@ -333,10 +333,8 @@ class DirtVariant:
     self.name = name
     self.texture = texture
 class DirtVariantDirt(DirtVariant):
-  dirtTexture = pg.transform.scale(
-    pg.image.load("dirt.png"), (BLOCK_SIZE, BLOCK_SIZE))
   def __init__(self):
-    super().__init__("Dirt", self.dirtTexture)
+    super().__init__("Dirt", sprites["dirt"])
 class DirtVariantGrass(DirtVariant):
   grassTexture = pg.transform.scale(
     pg.image.load("grass_block.png"), (BLOCK_SIZE, BLOCK_SIZE)
@@ -369,10 +367,8 @@ class LeavesBlock(Block):
         super().__init__("Leaves", self.leavesTexture, x, y, 1, BlockType.SHEARS, isBack=isBack)
 
 class StoneBlock(Block):
-  stoneTexture = pg.transform.scale(
-    pg.image.load("stone.png"), (BLOCK_SIZE, BLOCK_SIZE))
   def __init__(self, x, y, isBack=False):
-    super().__init__("Stone", self.stoneTexture, x, y, 5, BlockType.PICKAXE, isBack=isBack)
+    super().__init__("Stone", sprites["stone"], x, y, 5, BlockType.PICKAXE, isBack=isBack)
 class CobblestoneBlock(Block):
   cobblestoneTexture = pg.transform.scale(
     pg.image.load("cobblestone.png"), (BLOCK_SIZE, BLOCK_SIZE))
