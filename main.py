@@ -1128,9 +1128,14 @@ class World:
     self.mask = pg.mask.Mask((WORLD_WIDTH*BLOCK_SIZE, WORLD_HEIGHT*BLOCK_SIZE))
     self.lightmap = [ # generate fully lit light map at the beginning
       [0 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
+    startTime = time.time()
     self.generateWorld()
+    print("world time:", round(time.time() - startTime, 2))
     # self.generateMask()
+    startTime = time.time()
     self.generateLight()
+    print("light time:", round(time.time() - startTime, 2))
+    
 
   class SimplexNoise:
     def __init__(self, scale: float, dimension: int, width: int = WORLD_WIDTH, height: int = WORLD_HEIGHT):
@@ -1420,7 +1425,6 @@ class World:
 
   def generateLight(self, originr=None, originc=None):
     '''Generate lightmap for the entire world or specific part of world'''
-    if originr is None and originc is None: startTime = time.time()
     blockMap = [
       [False if not self[y][x].isEmpty or not self.back[y][x].isEmpty else True for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
     
@@ -1492,10 +1496,6 @@ class World:
             if new not in visited: # if block has not been checked
               visited.add(new)
               bfs.add(new)
-    
-    if originr is None and originc is None:
-      endTime = time.time()
-      print("lightmap time:", round(endTime - startTime, 2))
     
   def update(self):
     self.getVisibleBlocks()
