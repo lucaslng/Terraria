@@ -1585,8 +1585,6 @@ class MainMenu:
         self.width = width
         self.height = height
         self.screen = pg.display.set_mode((width, height))
-        
-        self._createButtons()
 
         self.buttonFont = pg.font.Font("MinecraftRegular-Bmg3.otf", 36)
         self.splashFont = pg.font.Font("MinecraftRegular-Bmg3.otf", 28)
@@ -1620,6 +1618,8 @@ class MainMenu:
         self.splashAngle = -15
         self.splashWaveOffset = 0
         self.splashScale = 1.0
+        
+        self._createButtons()
         
     def _createButtons(self):
         buttonWidth, buttonHeight = 400, 50
@@ -1740,7 +1740,7 @@ class LoadingScreen:
         self.font = pg.font.Font("MinecraftRegular-Bmg3.otf", 20)
         self.titleFont = pg.font.Font("MinecraftRegular-Bmg3.otf", 40)
 
-        self.current_step = "Initializing world..."
+        self.currentStep = "Initializing world..."
         
         self.currentMessage = 0
         self.messageChangeTimer = time.time()
@@ -1751,11 +1751,11 @@ class LoadingScreen:
         self.barWidth = 400
         self.barHeight = 20
         self.barX = (width - self.barWidth) // 2
-        self.bar_y = height // 2 + 30
+        self.barY = height // 2 + 30
         
     def update(self, progress, current_step):
         self.progress = progress
-        self.current_step = current_step
+        self.currentStep = current_step
 
     def draw(self):
         self.screen.fill((25, 25, 25))
@@ -1765,63 +1765,62 @@ class LoadingScreen:
         self.screen.blit(title, title_rect)
 
         #Loading message
-        message = self.font.render(self.current_step, True, (200, 200, 200))
+        message = self.font.render(self.currentStep, True, (200, 200, 200))
         message_rect = message.get_rect(center=(self.width // 2, self.height // 2 - 20))
         self.screen.blit(message, message_rect)
 
         #Progress bar
-        pg.draw.rect(self.screen, (50, 50, 50), (self.barX, self.bar_y, self.barWidth, self.barHeight))
+        pg.draw.rect(self.screen, (50, 50, 50), (self.barX, self.barY, self.barWidth, self.barHeight))
         fill_width = int(self.barWidth * self.progress)
-        pg.draw.rect(self.screen, (106, 176, 76), (self.barX, self.bar_y, fill_width, self.barHeight))
+        pg.draw.rect(self.screen, (106, 176, 76), (self.barX, self.barY, fill_width, self.barHeight))
 
         #Percentage
         percentage = f"{int(self.progress * 100)}%"
         percent_text = self.font.render(percentage, True, (255, 255, 255))
-        percent_rect = percent_text.get_rect(center=(self.width // 2, self.bar_y + 40))
+        percent_rect = percent_text.get_rect(center=(self.width // 2, self.barY + 40))
         self.screen.blit(percent_text, percent_rect)
 
         #Elapsed load time
         elapsed_time = time.time() - self.startTime
         elapsed_text = self.font.render(f"Time elapsed: {elapsed_time:.1f} seconds", True, (200, 200, 200))
-        elapsed_rect = elapsed_text.get_rect(center=(self.width // 2, self.bar_y + 120))
+        elapsed_rect = elapsed_text.get_rect(center=(self.width // 2, self.barY + 120))
         self.screen.blit(elapsed_text, elapsed_rect)
 
         pg.display.flip()
         clock.tick(FPS)
 
-class ThreadedWorldLoader:
+class WorldLoader:
+    '''Generates the world using multithreading while in the loading screen'''
     def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.loading_screen = LoadingScreen(width, height)
+        self.loadingScreen = LoadingScreen(width, height)
         self.world = None
         self.progress = 0.0
-        self.progress_updates = Queue()
-        self.generation_complete_event = threading.Event()
-        self.generation_thread = None
+        self.progressUpdates = Queue()
+        self.generationCompleteEvent = threading.Event()
+        self.generationThread = None
 
-        self.generation_steps = [
+        self.generationSteps = [
             ("Initializing world", 0.1),
-            ("Generating terrain", 0.3),
+            ("Generating terrain", 0.4),
             ("Creating caves", 0.2),
             ("Growing trees", 0.2),
-            ("Placing ores", 0.2)
+            ("Placing ores", 0.1)
         ]
-        self.current_step = ""
+        self.currentStep = ""
         
-    def _update_progress(self, step, step_progress):
-        step_index = next((i for i, (s, _) in enumerate(self.generation_steps) if s == step), -1)
+    def _updateProgress(self, step, step_progress):
+        step_index = next((i for i, (s, _) in enumerate(self.generationSteps) if s == step), -1)
         if step_index == -1:
             return
         
-        completed_progress = sum(weight for _, weight in self.generation_steps[:step_index])
-        current_step_progress = self.generation_steps[step_index][1] * step_progress
-        total_progress = completed_progress + current_step_progress
+        completedProgress = sum(weight for _, weight in self.generationSteps[:step_index])
+        currentStepProgress = self.generationSteps[step_index][1] * step_progress
+        totalProgress = completedProgress + currentStepProgress
         
-        self.progress_updates.add(total_progress)
-        self.current_step = step
+        self.progressUpdates.add(totalProgress)
+        self.currentStep = step
 
-    def _generate_world(self):
+    def _generateWorld(self):
         try:
             self._update_progress("Initializing world", 0.0)
             # time.sleep(0.5)
@@ -1834,24 +1833,24 @@ class ThreadedWorldLoader:
                 # time.sleep(1.0)
                 self._update_progress(step, 1.0)
             
-            self.generation_complete_event.set()
+            self.generationCompleteEvent.set()
         except Exception as e:
             print(f"Error during world generation: {e}")
-            self.generation_complete_event.set()
+            self.generationCompleteEvent.set()
 
-    def start_generation(self):
+    def startGeneration(self):
         """Starts the world generation in a background thread"""
-        self.generation_thread = threading.Thread(target=self._generate_world, daemon=True)
-        self.generation_thread.start()
+        self.generationThread = threading.Thread(target=self._generateWorld, daemon=True)
+        self.generationThread.start()
 
     def update(self):
       while self.progress_updates:
           self.progress = self.progress_updates.poll()
       
-      self.loading_screen.update(self.progress, self.current_step)
-      self.loading_screen.draw()
+      self.loadingScreen.update(self.progress, self.currentStep)
+      self.loadingScreen.draw()
       
-      return self.generation_complete_event.is_set()
+      return self.generationCompleteEvent.is_set()
         
 
 '''Main Loop'''
@@ -1867,8 +1866,8 @@ if __name__ == "__main__":
   
   MainMenu(WIDTH, HEIGHT).run()
   
-  loader = ThreadedWorldLoader(WIDTH, HEIGHT)
-  loader.start_generation()
+  loader = WorldLoader(WIDTH, HEIGHT)
+  loader.startGeneration()
   start_time = time.time()
 
   while True:
@@ -1877,7 +1876,7 @@ if __name__ == "__main__":
               sysexit()
       
       if loader.update():
-          if not loader.generation_thread.is_alive():
+          if not loader.generationThread.is_alive():
               break
   
   world = loader.world
@@ -1906,7 +1905,9 @@ if __name__ == "__main__":
     
     #Temporarily game over logic
     if player.health <= 0:
-      print("The skbidi would have died")
+      print("The skbidi died")
+      pg.exit()
+      sys.quit()
 
     #Player controls
     if keys[pg.K_a]:
