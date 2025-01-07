@@ -67,7 +67,7 @@ def check_for_interaction() -> None:
           block.interact()
           return
 
-def bresenham(x0: int, y0: int, x1: int, y1: int, checkVertices=False, quality: int=1):
+def bresenham(x0: int, y0: int, x1: int, y1: int, quality: int=1):
   """Bresenham's algorithm to detect first non-air block along a line, starting from end point."""
   pointsTouched = list()
   def plotLineLow(x0, y0, x1, y1):
@@ -84,11 +84,7 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, checkVertices=False, quality: 
       # print(x, x0-x1)
       blockTouched = world.blockAt(*pixelToCoord(x, y))
       if not blockTouched.isAir:
-        if checkVertices:
-          pointsTouched.append((x, y))
-          if len(pointsTouched) == 2:
-            return pointsTouched
-        else: return x, y
+        return x, y
       if d > 0:
         y += yi
         d += 2 * (dy - dx)
@@ -100,11 +96,7 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, checkVertices=False, quality: 
       if not nextBlock.isAir:
         xi = xii
         yi = yii
-    if checkVertices:
-      pointsTouched.append((x, y))
-      if len(pointsTouched) == 2:
-        return pointsTouched
-    else: return None
+    return None
 
   def plotLineHigh(x0: int, y0: int, x1: int, y1: int) -> tuple[int, int] | None:
     dx = abs(x1 - x0)
@@ -119,11 +111,7 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, checkVertices=False, quality: 
     while y != y0 - yi:
       blockTouched = world.blockAt(*pixelToCoord(x, y))
       if not blockTouched.isAir:
-        if checkVertices:
-          pointsTouched.append((x, y))
-          # if len(pointsTouched) == 2:
-          return pointsTouched
-        else: return x, y
+        return x, y
       if d > 0:
         x += xi
         d += 2 * (dx - dy)
@@ -135,9 +123,7 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, checkVertices=False, quality: 
       if not nextBlock.isAir:
         xi = xii
         yi = yii
-    if checkVertices:
-      return pointsTouched
-    else: return None
+    return None
 
   if abs(y1 - y0) < abs(x1 - x0):
     return plotLineLow(x0, y0, x1, y1)
