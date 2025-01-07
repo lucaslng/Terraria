@@ -1417,24 +1417,60 @@ class World:
       self.edgePool[i].draw()
 
   def generateLight(self):
-    lightmap = [
-      [255 if not self[y][x].isEmpty or not self.back[y][x].isEmpty else 0 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
+    '''Generate lightmap for the entire world'''
+    blockMap = [
+      [True if not self[y][x].isEmpty or not self.back[y][x].isEmpty else False for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
+    lightmap = [ # generate fully lit light map at the beginning
+      [0 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
     
-    lightstarttime = time.time()
-    for i in range(5):
-      newlightmap = copy.deepcopy(lightmap)
-      for y in range(WORLD_HEIGHT):
-        for x in range(WORLD_WIDTH):
-          if self[y][x].isEmpty and self.back[y][x].isEmpty: continue
-          for r in range(-1, 2):
-            if not 0 <= y + r < WORLD_HEIGHT: continue
-            for c in range(-1, 2):
-              if not 0 <= x + c < WORLD_WIDTH: continue
-              if r == 0 and c == 0: continue
-              lightmap[y][x] = min(lightmap[y][x], newlightmap[y+r][x+c] + i * 50)
-              
-    lightendtime = time.time()
-    print("lightmap time:", round(lightendtime - lightstarttime, 2))
+    startTime = time.time()
+    
+    # loop over every block in the world
+    for r in range(WORLD_HEIGHT):
+      for c in range(WORLD_WIDTH):
+        # make queue to perform breadth first search to calculate the light at the block at row r and col c
+        bfs = Queue()
+        bfs.add((c, r)) # c is x and r is y
+        depth = 0 # keep track of depth of bfs
+        # set to store visited coordinates
+        visited = set()
+        visited.add((c, r))
+        
+        while bfs:
+          cur = x, y = bfs.poll()
+          
+          
+          
+          # left block
+          if x - 1 >= 0: # if block is inside world bounds
+            new = (x - 1, y)
+            if new not in visited: # if block has not been checked
+              visited.add(new)
+              bfs.add(new)
+
+          # right block
+          if x + 1 < WORLD_WIDTH: # if block is inside world bounds
+            new = (x + 1, y)
+            if new not in visited: # if block has not been checked
+              visited.add(new)
+              bfs.add(new)
+
+          # upper block
+          if y - 1 >= 0: # if block is inside world bounds
+            new = (x, y - 1)
+            if new not in visited: # if block has not been checked
+              visited.add(new)
+              bfs.add(new)
+          
+          # lower block
+          if y + 1 < WORLD_HEIGHT: # if block is inside world bounds
+            new = (x, y + 1)
+            if new not in visited: # if block has not been checked
+              visited.add(new)
+              bfs.add(new)
+
+    endTime = time.time()
+    print("lightmap time:", round(endTime - startTime, 2))
     self.lightmap = lightmap
   
   def regenerateLight(self, xcenter: int, ycenter: int):
@@ -1820,7 +1856,7 @@ class ThreadedWorldLoader:
 
     def update(self):
       while self.progress_updates:
-          self.progress = self.progress_updates.pop()
+          self.progress = self.progress_updates.poll()
       
       self.loading_screen.update(self.progress, self.current_step)
       self.loading_screen.draw()

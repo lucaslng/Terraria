@@ -7,7 +7,7 @@ class Queue:
   def __init__(self):
     self._deque = deque()
   
-  def pop(self):
+  def poll(self):
     '''Pop the item at the head of the queue'''
     return self._deque.popleft()
   
