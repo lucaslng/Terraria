@@ -1610,7 +1610,7 @@ class MainMenu:
         self.buttons = {
             'play': Button(buttonX, startY, buttonWidth, buttonHeight, "Play"),
             'instructions': Button(buttonX, startY + buttonHeight + spacing, buttonWidth, buttonHeight, "Instructions"),
-            'keybinds': Button(buttonX, startY + (buttonHeight + spacing) * 2, buttonWidth, buttonHeight, "Options"),
+            'options': Button(buttonX, startY + (buttonHeight + spacing) * 2, buttonWidth, buttonHeight, "Options"),
             'quit': Button(buttonX, startY + (buttonHeight + spacing) * 3, buttonWidth, buttonHeight, "Quit")
         }
         
@@ -1661,9 +1661,8 @@ class MainMenu:
                     if self.buttons['play'].rect.collidepoint(mousePos):
                         return
                     elif self.buttons['instructions'].rect.collidepoint(mousePos):
-                        #InstructionsScreen.run()
                         pass
-                    elif self.buttons['keybinds'].rect.collidepoint(mousePos):
+                    elif self.buttons['options'].rect.collidepoint(mousePos):
                         pass
                     elif self.buttons['quit'].rect.collidepoint(mousePos):
                         pg.quit()
@@ -1679,11 +1678,12 @@ class MainMenu:
             clock.tick(FPS)
     
 #TODO work on these later hopefully        
-class InstructionsScreen:
+def instructionsScreen():
   pass
           
-def change_keybinds():
+def changeKeybinds():
     pass
+  
 class PauseScreen:
   def __init__(self, width, height):
     self.width = width
