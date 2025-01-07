@@ -28,3 +28,6 @@ class Queue:
   
   def __len__(self):
     return len(self.deque)
+  
+  def __repr__(self):
+    return repr(self.deque)
