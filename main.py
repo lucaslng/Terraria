@@ -322,6 +322,9 @@ class CraftingTableBlock(Block, Interactable):
   def __init__(self, x, y, isBack=False):
     Block.__init__(self, name="Crafting Table", texture=self.craftingTableTexture,
                    x=x, y=y, hardness=2.5, blockType=BlockType.AXE, isBack=isBack)
+  
+  def interact(self):
+    pass
 
 class CraftingTableItem(PlaceableItem):
   craftingTableTexture = pg.transform.scale(pg.image.load("crafting_table.png"), (Item.SIZE, Item.SIZE))
@@ -519,9 +522,23 @@ class Section:
   
   def __post_init__(self):
     self.array = [[Slot() for _ in range(self.cols)] for _ in range(self.rows)]
+    self.rect = pg.Rect(self.x, self.y, self.x + self.cols * self.slotSize, self.y + self.rows * self.slotSize)
     
   def __getitem__(self, i: int) -> list[Slot]:
     return self.array[i]
+  
+  def isHovered(self) -> bool:
+    return self.rect.collidepoint(*pg.mouse.get_pos())
+  
+  def hoveredSlot(self):
+    '''returns the location of the slot that is hovered'''
+    for r in range(self.rows):
+      for c in range(self.cols):
+        slotRect = pg.Rect(self.x + c * self.slotSize, self.y + r * self.slotSize, self.slotSize, self.slotSize)
+        if slotRect.collidepoint(*pg.mouse.get_pos()):
+          pg.draw.rect(SURF, (255,0,0), slotRect, 4)
+          return r, c
+    return None
   
   def draw(self, transparent=False) -> None:
     for r in range(self.rows):
@@ -533,11 +550,40 @@ class Menu:
   def __init__(self, *args: Section, isActive: bool = False):
     self.isActive = isActive
     self.sections = [args[i] for i in range(len(args))]
+    minx = miny = BIG
+    maxx = maxy = 0
+    for section in self.sections:
+      minx = min(minx, section.x)
+      miny = min(miny, section.y)
+      maxx = max(maxx, section.x + section.cols * section.slotSize)
+      maxy = max(maxy, section.y + section.rows * section.slotSize)
+    self.rect = pg.Rect(minx, miny, maxx - minx, maxy - miny)
+    self.hoveredSlot: None | Slot = None
   
   def draw(self, transparent=False) -> None:
     for section in self.sections:
-      section.draw(transparent)
-
+      section.draw(transparent=transparent)
+  
+  def isHovered(self) -> bool:
+    return self.rect.collidepoint(*pg.mouse.get_pos())
+  
+  def getHoveredSlot(self):
+    '''
+    returns the location of the hovered slot in a tuple \n
+    the 0th index is the section index within the menu \n
+    the 1st index is the location of the slot in the section in a tuple (x, y) \n
+    '''
+    if self.isHovered():
+      for i in range(len(self.sections)):
+        section = self.sections[i]
+        if section.isHovered():
+          return i, section.hoveredSlot()
+    return None
+  
+  def pickUpItem(self):
+    if self.hoveredSlot is not None:
+      ...
+      
 
 @dataclass
 class Inventory:
@@ -1068,6 +1114,7 @@ class Player(Entity, HasInventory, Light):
     if not pg.mouse.get_pressed()[0]:
       self.usingItem = False
     self.executeHeldSlotEffect()
+    self.inventory.menu.getHoveredSlot()
   
   def drawHUD(self):
     self.draw_health()
