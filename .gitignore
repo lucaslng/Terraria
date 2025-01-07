@@ -1,5 +1,5 @@
-/.venv
+.venv
 .DS_Store
 desktop.ini
-/.vscode
-/__pycache__
+.vscode
+__pycache__/
