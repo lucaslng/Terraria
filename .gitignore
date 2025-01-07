@@ -1,6 +1,6 @@
 /.venv
 .DS_Store
 desktop.ini
-.vscode/settings.json
+/.vscode
 
 *.pyc
