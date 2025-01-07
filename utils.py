@@ -13,6 +13,22 @@ def sysexit() -> None:
   pg.quit()
   raise SystemExit
 
+def gaussianBlur(surf: pg.surface.Surface):
+  '''apply gaussian blur on the alpha value of a surface'''
+  pxarr = pg.PixelArray(surf)
+  arr = [[pg.Color(pxarr[x][y]).r for x in range(pxarr.shape[0])] for y in range(pxarr.shape[1])] # not sure why it gets put into the r value but it works
+  filter = 1 / 9
+  for y in range(1, pxarr.shape[1] - 1):
+    for x in range(1, pxarr.shape[0] - 1):
+      pass
+  
+  return arr
+
+s = pg.Surface((10, 10), pg.SRCALPHA)
+pg.draw.rect(s, (5,8,0,255), (0,0,5,5))
+
+print(gaussianBlur(s))
+
 """
 def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   '''Returns coordinate based on pixel location'''
