@@ -1,5 +1,5 @@
 import pygame as pg
-from typing import Dict, List, Set, Tuple
+from typing import *
 
 from constants import *
 
@@ -44,7 +44,7 @@ class Animation:
 
 catSheet = SpriteSheet("cat.png")
 
-oreSheet = SpriteSheet("ores.png")
+everythingSheet = SpriteSheet("everything.png")
 
 woodenToolsSheet = SpriteSheet("wooden_tools.png")
 stoneToolsSheet = SpriteSheet("stone_tools.png")
@@ -90,24 +90,34 @@ sprites = {
     },
     
     #Ores
-    "coalOre": oreSheet.get(0, 0, 16, 16, BLOCK_SIZE),
-    "ironOre": oreSheet.get(16, 0, 16, 16, BLOCK_SIZE),
+    "coalOre": everythingSheet.get(352, 0, 16, 16, BLOCK_SIZE),
+    "ironOre": everythingSheet.get(368, 0, 16, 16, BLOCK_SIZE),
+    
+    #Items
+    "coal": everythingSheet.get(416, 0, 16, 16, 15),
   
+    #---TOOLS---
     #Wooden
-    "woodenAxe": woodenToolsSheet.get(0, 0, 16, 16, 15),
-    "woodenPickaxe": woodenToolsSheet.get(16, 0, 16, 16, 15),
-    "woodenShovel": woodenToolsSheet.get(32, 0, 16, 16, 15),
-    "woodenSword": woodenToolsSheet.get(48, 0, 16, 16, 15),
+    "woodenAxe": everythingSheet.get(0, 0, 16, 16, 15),
+    "woodenPickaxe": everythingSheet.get(16, 0, 16, 16, 15),
+    "woodenShovel": everythingSheet.get(32, 0, 16, 16, 15),
+    "woodenSword": everythingSheet.get(48, 0, 16, 16, 15),
   
     #Stone
-    "stoneAxe": stoneToolsSheet.get(0, 0, 16, 16, 15),
-    "stonePickaxe": stoneToolsSheet.get(16, 0, 16, 16, 15),
-    "stoneShovel": stoneToolsSheet.get(32, 0, 16, 16, 15),
-    "stoneSword": stoneToolsSheet.get(48, 0, 16, 16, 15),
+    "stoneAxe": everythingSheet.get(64, 0, 16, 16, 15),
+    "stonePickaxe": everythingSheet.get(80, 0, 16, 16, 15),
+    "stoneShovel": everythingSheet.get(96, 0, 16, 16, 15),
+    "stoneSword": everythingSheet.get(112, 0, 16, 16, 15),
     
     #Iron
-    "ironAxe": ironToolsSheet.get(0, 0, 16, 16, 15),
-    "ironPickaxe": ironToolsSheet.get(16, 0, 16, 16, 15),
-    "ironShovel": ironToolsSheet.get(32, 0, 16, 16, 15),
-    "ironSword": ironToolsSheet.get(48, 0, 16, 16, 15),
+    "ironAxe": everythingSheet.get(128, 0, 16, 16, 15),
+    "ironPickaxe": everythingSheet.get(144, 0, 16, 16, 15),
+    "ironShovel": everythingSheet.get(160, 0, 16, 16, 15),
+    "ironSword": everythingSheet.get(176, 0, 16, 16, 15),
+    
+    #Gold
+    "goldAxe": everythingSheet.get(192, 0, 16, 16, 15),
+    "goldPickaxe": everythingSheet.get(208, 0, 16, 16, 15),
+    "goldShovel": everythingSheet.get(224, 0, 16, 16, 15),
+    "goldSword": everythingSheet.get(240, 0, 16, 16, 15),
 }

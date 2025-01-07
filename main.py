@@ -408,7 +408,7 @@ class CoalOreBlock(Block, Generated):
   def __init__(self, x, y, isBack=False):
     Block.__init__(self, "Coal Ore", self.coalTexture, x, y, 3, BlockType.PICKAXE, isBack=isBack)
 class CoalItem(Item):
-  coalItemTexture = sprites["coalOre"]
+  coalItemTexture = sprites["coal"]
   def __init__(self):
     super().__init__("Coal", self.coalItemTexture, 64)
 
@@ -637,10 +637,10 @@ class IronShovel(Tool):
   def __init__(self):
     super().__init__("Iron Shovel", sprites["ironShovel"], 1, 3.5, 250, BlockType.SHOVEL)
     
-'''Diamond'''
-class DiamondPickaxe(Tool):
-  pass
-  
+'''Gold'''
+class GoldPickaxe(Tool):
+  def __init__(self):
+    super().__init__("Gold Pickaxe", sprites["goldPickaxe"], 1, 8.5, 32, BlockType.PICKAXE)
 
 class HasInventory:
   """Parent class for classes than have an inventory"""
@@ -1860,7 +1860,7 @@ if __name__ == "__main__":
   ASURF.fill((0, 0, 0, 0))
   
   #Give player items at the beginning of the game
-  defaultItems = [IronPickaxe(), IronAxe(), StoneAxe(), WoodenShovel(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)] + [TorchItem() for _ in range(64)]
+  defaultItems = [GoldPickaxe(), IronAxe(), StoneAxe(), WoodenShovel(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)] + [TorchItem() for _ in range(64)]
   
   MainMenu(WIDTH, HEIGHT).run()
   
