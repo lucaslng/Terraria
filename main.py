@@ -1836,16 +1836,14 @@ class WorldLoader:
 
     def _generateWorld(self):
         try:
-            self._update_progress("Initializing world", 0.0)
-            # time.sleep(0.5)
-            self._update_progress("Initializing world", 1.0)
+            self._updateProgress("Initializing world", 0.0)
+            self._updateProgress("Initializing world", 1.0)
             
             self.world = World()
             
-            for step, _ in self.generation_steps[1:]:
-                self._update_progress(step, 0.0)
-                # time.sleep(1.0)
-                self._update_progress(step, 1.0)
+            for step, _ in self.generationSteps[1:]:
+                self._updateProgress(step, 0.0)
+                self._updateProgress(step, 1.0)
             
             self.generationCompleteEvent.set()
         except Exception as e:
@@ -1858,8 +1856,8 @@ class WorldLoader:
         self.generationThread.start()
 
     def update(self):
-      while self.progress_updates:
-          self.progress = self.progress_updates.poll()
+      while self.progressUpdates:
+          self.progress = self.progressUpdates.poll()
       
       self.loadingScreen.update(self.progress, self.currentStep)
       self.loadingScreen.draw()
@@ -1920,8 +1918,7 @@ if __name__ == "__main__":
     #Temporarily game over logic
     if player.health <= 0:
       print("The skbidi died")
-      pg.exit()
-      sys.quit()
+      sysexit()
 
     #Player controls
     if keys[pg.K_a]:
