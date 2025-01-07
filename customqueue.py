@@ -24,6 +24,7 @@ class Queue:
     return self.deque[-1] if self.deque else None
   
   def size(self):
+    '''Returns the length of the queue'''
     return len(self.deque)
   
   def __len__(self):
