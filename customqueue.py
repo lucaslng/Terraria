@@ -26,8 +26,5 @@ class Queue:
   def size(self):
     return len(self.deque)
   
-  def empty(self) -> bool:    
-    return len(self.deque) == 0
-  
   def __len__(self):
     return len(self.deque)

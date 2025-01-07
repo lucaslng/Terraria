@@ -1828,7 +1828,7 @@ class ThreadedWorldLoader:
         self.generation_thread.start()
 
     def update(self):
-      while not self.progress_updates.empty():
+      while not self.progress_updates:
           self.progress = self.progress_updates.pop()
       
       self.loading_screen.update(self.progress, self.current_step)
