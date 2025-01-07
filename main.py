@@ -336,10 +336,8 @@ class DirtVariant:
     self.name = name
     self.texture = texture
 class DirtVariantDirt(DirtVariant):
-  dirtTexture = pg.transform.scale(
-    pg.image.load("dirt.png"), (BLOCK_SIZE, BLOCK_SIZE))
   def __init__(self):
-    super().__init__("Dirt", self.dirtTexture)
+    super().__init__("Dirt", sprites["dirt"])
 class DirtVariantGrass(DirtVariant):
   grassTexture = pg.transform.scale(
     pg.image.load("grass_block.png"), (BLOCK_SIZE, BLOCK_SIZE)
@@ -372,10 +370,8 @@ class LeavesBlock(Block):
         super().__init__("Leaves", self.leavesTexture, x, y, 1, BlockType.SHEARS, isBack=isBack)
 
 class StoneBlock(Block):
-  stoneTexture = pg.transform.scale(
-    pg.image.load("stone.png"), (BLOCK_SIZE, BLOCK_SIZE))
   def __init__(self, x, y, isBack=False):
-    super().__init__("Stone", self.stoneTexture, x, y, 5, BlockType.PICKAXE, isBack=isBack)
+    super().__init__("Stone", sprites["stone"], x, y, 5, BlockType.PICKAXE, isBack=isBack)
 class CobblestoneBlock(Block):
   cobblestoneTexture = pg.transform.scale(
     pg.image.load("cobblestone.png"), (BLOCK_SIZE, BLOCK_SIZE))
@@ -411,7 +407,7 @@ class CoalOreBlock(Block, Generated):
   def __init__(self, x, y, isBack=False):
     Block.__init__(self, "Coal Ore", self.coalTexture, x, y, 3, BlockType.PICKAXE, isBack=isBack)
 class CoalItem(Item):
-  coalItemTexture = sprites["coalOre"]
+  coalItemTexture = sprites["coal"]
   def __init__(self):
     super().__init__("Coal", self.coalItemTexture, 64)
 
@@ -683,10 +679,10 @@ class IronShovel(Tool):
   def __init__(self):
     super().__init__("Iron Shovel", sprites["ironShovel"], 1, 3.5, 250, BlockType.SHOVEL)
     
-'''Diamond'''
-class DiamondPickaxe(Tool):
-  pass
-  
+'''Gold'''
+class GoldPickaxe(Tool):
+  def __init__(self):
+    super().__init__("Gold Pickaxe", sprites["goldPickaxe"], 1, 8.5, 32, BlockType.PICKAXE)
 
 class HasInventory:
   """Parent class for classes than have an inventory"""
@@ -1907,7 +1903,7 @@ if __name__ == "__main__":
   ASURF.fill((0, 0, 0, 0))
   
   #Give player items at the beginning of the game
-  defaultItems = [IronPickaxe(), IronAxe(), StoneAxe(), WoodenShovel(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)] + [TorchItem() for _ in range(64)]
+  defaultItems = [GoldPickaxe(), IronAxe(), StoneAxe(), WoodenShovel(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)] + [TorchItem() for _ in range(64)]
   
   MainMenu(WIDTH, HEIGHT).run()
   
