@@ -1838,14 +1838,14 @@ class ThreadedWorldLoader:
     def _generate_world(self):
         try:
             self._update_progress("Initializing world", 0.0)
-            time.sleep(0.5)
+            # time.sleep(0.5)
             self._update_progress("Initializing world", 1.0)
             
             self.world = World()
             
             for step, _ in self.generation_steps[1:]:
                 self._update_progress(step, 0.0)
-                time.sleep(1.0)
+                # time.sleep(1.0)
                 self._update_progress(step, 1.0)
             
             self.generation_complete_event.set()
