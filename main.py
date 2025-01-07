@@ -1148,7 +1148,7 @@ class World:
 
     @staticmethod
     def __generatePermutation():
-      random.seed(random.randint(0, sys.maxsize))
+      random.seed(random.randint(0, BIG))
       p = list(range(256))
       random.shuffle(p)
       random.seed(SEED)
@@ -1848,8 +1848,7 @@ if __name__ == "__main__":
   while True:
       for event in pg.event.get():
           if event.type == pg.QUIT:
-              pg.quit()
-              sys.exit()
+              sysexit()
       
       if loader.update():
           if not loader.generation_thread.is_alive():
@@ -1918,8 +1917,7 @@ if __name__ == "__main__":
 
     for event in pg.event.get():
       if event.type == QUIT:
-        pg.quit()
-        sys.exit()
+        sysexit()
       elif event.type == 101:
         print("fps: ", round(clock.get_fps(), 2))    
         

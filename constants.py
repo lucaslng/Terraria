@@ -15,3 +15,6 @@ WORLD_HEIGHT = 256
 WORLD_WIDTH = 200     #default is 2500
 SHADOW_QUALITY = 3
 gravity = 1 
+
+# other helpful stuff
+BIG = 2147483647
