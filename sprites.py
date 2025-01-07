@@ -1,5 +1,4 @@
 import pygame as pg
-import time
 from typing import Dict, List, Set, Tuple
 
 from constants import *
