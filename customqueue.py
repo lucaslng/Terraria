@@ -25,3 +25,6 @@ class Queue:
   
   def size(self):
     return len(self.deque)
+  
+  def __len__(self):
+    return len(self.deque)
