@@ -1,4 +1,4 @@
-import sys, math, random, time, copy, threading, pickle          #pickle stores game data onto system
+import math, random, time, copy, threading, pickle          #pickle stores game data onto system
 import pygame as pg
 from pygame.locals import *
 from pygame.math import Vector2
@@ -7,7 +7,7 @@ from pygame.math import Vector2
 from constants import *
 from sprites import *
 from customqueue import Queue
-from utils import Direction
+from utils import Direction, sysexit
 
 from abc import *
 from dataclasses import dataclass
@@ -1644,8 +1644,7 @@ class MainMenu:
             mousePos = pg.mouse.get_pos()           
             for event in pg.event.get():
                 if event.type == pg.QUIT:
-                    pg.quit()
-                    sys.exit()
+                    sysexit()
                     
                 if event.type in (pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP):
                     for button in self.buttons.values():
@@ -1659,8 +1658,7 @@ class MainMenu:
                     elif self.buttons['options'].rect.collidepoint(mousePos):
                         pass
                     elif self.buttons['quit'].rect.collidepoint(mousePos):
-                        pg.quit()
-                        sys.exit()
+                        sysexit()
 
             for button in self.buttons.values():
                 button.update(mousePos)
@@ -1702,8 +1700,7 @@ class PauseScreen:
       mousePos = pg.mouse.get_pos()           
       for event in pg.event.get():
           if event.type == pg.QUIT:
-              pg.quit()
-              sys.exit()
+              sysexit()
               
       pg.display.flip()
       clock.tick(FPS)

@@ -7,6 +7,10 @@ class Direction:
   WEST=2
   EAST=3
 
+def sysexit() -> None:
+  pg.quit()
+  raise SystemExit
+
 """
 def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   '''Returns coordinate based on pixel location'''
