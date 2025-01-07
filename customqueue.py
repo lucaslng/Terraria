@@ -8,7 +8,7 @@ class Queue:
     self._deque = deque()
   
   def poll(self):
-    '''Pop the item at the head of the queue'''
+    '''Poll the item at the head of the queue'''
     return self._deque.popleft()
   
   def add(self, x: Any):
