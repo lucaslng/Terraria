@@ -46,6 +46,7 @@ class Animation:
 
 catSheet = SpriteSheet("cat.png")
 everythingSheet = SpriteSheet("everything.png")
+weirdBlocksSheet = SpriteSheet("weird block spritesheet.png")
 
 sprites = {
     "cat": {
@@ -104,6 +105,7 @@ sprites = {
     #Wood
     "oak plank": everythingSheet.get(544, 0, 16, 16),
     "oak log": everythingSheet.get(560, 0, 16, 16,),
+    "oak leaves": weirdBlocksSheet.get(30, 5, 360, 360),
     
     #Misc
     "torch": everythingSheet.get(576, 0, 16, 16),
@@ -146,4 +148,9 @@ sprites = {
     #Misc
     "shears": everythingSheet.get(320, 0, 16, 16, 15),
     "flintAndSteel": everythingSheet.get(336, 0, 16, 16, 15),
+    
+    #---HEARTS---
+    "empty heart": weirdBlocksSheet.get(0, 0, 9, 9),
+    "half heart": weirdBlocksSheet.get(18, 0, 9, 9),
+    "full heart": weirdBlocksSheet.get(9, 0, 9, 9),
 }

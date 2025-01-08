@@ -361,9 +361,8 @@ class OakLogItem(PlaceableItem):
         super().__init__("Oak Log", self.oakLogItemTexture, 64)
 
 class LeavesBlock(Block):
-    leavesTexture = pg.transform.scale(pg.image.load("leaves.png"), (BLOCK_SIZE, BLOCK_SIZE))  
     def __init__(self, x, y, isBack=False):
-        super().__init__("Leaves", self.leavesTexture, x, y, 1, BlockType.SHEARS, isBack=isBack)
+        super().__init__("Leaves", sprites["oak leaves"], x, y, 1, BlockType.SHEARS, isBack=isBack)
 
 class StoneBlock(Block):
   def __init__(self, x, y, isBack=False):
@@ -885,9 +884,9 @@ class Player(Entity, HasInventory, Light):
   blockFacing = None
   reach = 4 * BLOCK_SIZE
   
-  full_heart_texture = pg.transform.scale(pg.image.load("full_heart.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  half_heart_texture = pg.transform.scale(pg.image.load("half_heart.png"), (BLOCK_SIZE, BLOCK_SIZE))
-  empty_heart_texture = pg.transform.scale(pg.image.load("empty_heart.png"), (BLOCK_SIZE, BLOCK_SIZE))
+  full_heart_texture = sprites["full heart"]
+  half_heart_texture = sprites["half heart"]
+  empty_heart_texture = sprites["empty heart"]
 
   def __init__(self):
     Light.__init__(self, BLOCK_SIZE//2, *FRAME.center, relative=False)
