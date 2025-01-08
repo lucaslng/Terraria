@@ -24,10 +24,10 @@ def gaussianBlur(surf: pg.surface.Surface):
   
   return arr
 
-s = pg.Surface((10, 10), pg.SRCALPHA)
-pg.draw.rect(s, (5,8,0,255), (0,0,5,5))
+# s = pg.Surface((10, 10), pg.SRCALPHA)
+# pg.draw.rect(s, (5,8,0,255), (0,0,5,5))
 
-print(gaussianBlur(s))
+# print(gaussianBlur(s))
 
 """
 def pixelToCoord(x: float, y: float) -> tuple[int, int]:
