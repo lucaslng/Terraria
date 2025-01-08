@@ -325,11 +325,10 @@ class CraftingTableBlock(Block, Interactable):
   
   def interact(self):
     pass
-
 class CraftingTableItem(PlaceableItem):
-  craftingTableTexture = pg.transform.scale(pg.image.load("crafting_table.png"), (Item.SIZE, Item.SIZE))
+  texture = pg.transform.scale(pg.image.load("crafting_table.png"), (Item.SIZE, Item.SIZE))
   def __init__(self):
-    super().__init__("Crafting Table", self.craftingTableTexture, 64)
+    super().__init__("Crafting Table", self.texture, 64)
 
 class DirtVariant:
   def __init__(self, name: str, texture):
@@ -339,9 +338,7 @@ class DirtVariantDirt(DirtVariant):
   def __init__(self):
     super().__init__("Dirt", sprites["dirt"])
 class DirtVariantGrass(DirtVariant):
-  grassTexture = pg.transform.scale(
-    pg.image.load("grass_block.png"), (BLOCK_SIZE, BLOCK_SIZE)
-  )
+  grassTexture = pg.transform.scale(sprites["grass"], (BLOCK_SIZE, BLOCK_SIZE))
   grassItemTexture = pg.transform.scale(grassTexture, (Item.SIZE, Item.SIZE))
   def __init__(self):
     super().__init__("Grass Block", self.grassTexture)
@@ -351,16 +348,15 @@ class DirtBlock(Block):
     
     self.variant = variant.name.lower()
 class DirtItem(PlaceableItem):
-  dirtItemTexture = pg.transform.scale(pg.image.load("dirt.png"), (Item.SIZE, Item.SIZE))
+  dirtItemTexture = pg.transform.scale(sprites["dirt"], (Item.SIZE, Item.SIZE))
   def __init__(self):
     super().__init__("Dirt", self.dirtItemTexture, 64)
     
 class OakLogBlock(Block):
-    oakLogTexture = pg.transform.scale(pg.image.load("oak_log.png"), (BLOCK_SIZE, BLOCK_SIZE))  
     def __init__(self, x, y, isBack=False):
-        super().__init__("Oak Log", self.oakLogTexture, x, y, 2.5, BlockType.AXE, isBack=isBack)
+        super().__init__("Oak Log", sprites["oak log"], x, y, 2.5, BlockType.AXE, isBack=isBack)
 class OakLogItem(PlaceableItem):
-    oakLogItemTexture = pg.transform.scale(pg.image.load("oak_log.png"), (Item.SIZE, Item.SIZE))
+    oakLogItemTexture = pg.transform.scale(sprites["oak log"], (Item.SIZE, Item.SIZE))
     def __init__(self):
         super().__init__("Oak Log", self.oakLogItemTexture, 64)
 
@@ -373,13 +369,10 @@ class StoneBlock(Block):
   def __init__(self, x, y, isBack=False):
     super().__init__("Stone", sprites["stone"], x, y, 5, BlockType.PICKAXE, isBack=isBack)
 class CobblestoneBlock(Block):
-  cobblestoneTexture = pg.transform.scale(
-    pg.image.load("cobblestone.png"), (BLOCK_SIZE, BLOCK_SIZE))
   def __init__(self, x, y, isBack=False):
-    super().__init__("Cobblestone", self.cobblestoneTexture, x, y, 5.5, BlockType.PICKAXE, isBack=isBack)
+    super().__init__("Cobblestone", sprites["cobblestone"], x, y, 5.5, BlockType.PICKAXE, isBack=isBack)
 class CobbleStoneItem(PlaceableItem):
-  cobblestoneItemTexture = pg.transform.scale(
-    pg.image.load("cobblestone.png"), (Item.SIZE, Item.SIZE))
+  cobblestoneItemTexture = pg.transform.scale(sprites["cobblestone"], (Item.SIZE, Item.SIZE))
   def __init__(self):
     super().__init__("Cobblestone", self.cobblestoneItemTexture, 64)
 
@@ -414,13 +407,13 @@ class CoalItem(Item):
 ores = {CoalOreBlock, IronOreBlock}
 
 class TorchBlock(Block, Light):
-  torchTexture = pg.transform.scale(pg.image.load("torch.png").convert_alpha(), (BLOCK_SIZE,BLOCK_SIZE))
+  torchTexture = pg.transform.scale(sprites["torch"].convert_alpha(), (BLOCK_SIZE,BLOCK_SIZE))
   def __init__(self, x, y, isBack=False):
     Block.__init__(self, "Torch", self.torchTexture, x, y, 1, BlockType.NONE, isEmpty=True, isBack=isBack)
     Light.__init__(self, 100, x, y)
     lights.append(self)
 class TorchItem(PlaceableItem, Executable):
-  torchItemTexture = pg.transform.scale(pg.image.load("torch.png").convert_alpha(), (Item.SIZE, Item.SIZE))
+  torchItemTexture = pg.transform.scale(sprites["torch"].convert_alpha(), (Item.SIZE, Item.SIZE))
   def __init__(self):
     PlaceableItem.__init__(self, "Torch", self.torchItemTexture, 64)
   def execute(self):
@@ -669,8 +662,7 @@ class Tool(Item):
     self.durability = self.startingDurability
 
 class Shears(Tool):
-  shearsTexture = pg.transform.scale(
-    pg.image.load("shears.png"), (Item.SIZE, Item.SIZE))
+  shearsTexture = pg.transform.scale(sprites["shears"], (Item.SIZE, Item.SIZE))
   def __init__(self):
     super().__init__("Shears", self.shearsTexture, 1, 1.5, 238, BlockType.SHEARS)
     
@@ -1931,8 +1923,8 @@ class WorldLoader:
         try:
             progress_tracker = ProgressTracker(self._updateProgress)
             self.world = World(progress_tracker)
-            if self.world is None:
-                raise Exception("World creation failed - world object is None")
+            # if self.world is None:
+            #     raise Exception("object is none")
             self.generationCompleteEvent.set()
             
         except Exception as e:
@@ -1954,6 +1946,7 @@ class WorldLoader:
             self.targetProgress = progress
             self.currentStep = step
 
+        #Loading bar smoothing
         smoothing_speed = 5.0
         smoothing_factor = 1.0 - math.exp(-smoothing_speed * delta_time)
         self.progress += (self.targetProgress - self.progress) * smoothing_factor
@@ -1974,13 +1967,14 @@ if __name__ == "__main__":
   OVERLAY = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   
   #Give player items at the beginning of the game
-  defaultItems = [GoldPickaxe(), IronAxe(), StoneAxe(), WoodenShovel(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)] + [TorchItem() for _ in range(64)]
-  
-  MainMenu(WIDTH, HEIGHT).run()
+  defaultItems = [GoldPickaxe(), IronAxe(), StoneAxe(), WoodenShovel(), CraftingTableItem()] + [
+    CobbleStoneItem() for _ in range(192)] + [TorchItem() for _ in range(64)]
   
   loader = WorldLoader(WIDTH, HEIGHT)
   loader.startGeneration()
   start_time = time.time()
+  
+  MainMenu(WIDTH, HEIGHT).run()
 
   while True:
       for event in pg.event.get():
@@ -1991,8 +1985,8 @@ if __name__ == "__main__":
           if not loader.generationThread.is_alive():
               break
             
-  generation_time = time.time() - start_time
-  print(f"World generation completed in {generation_time:.2f} seconds")
+  # generation_time = time.time() - start_time
+  # print(f"World generation completed in {generation_time:.2f} seconds")
   
   world = loader.world
   

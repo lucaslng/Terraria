@@ -16,8 +16,9 @@ class SpriteSheet:
         if colour != (0, 0, 0):
             image.set_colorkey(colour)
 
-        image = pg.transform.scale(image, (scale, scale))
+        image = pg.transform.scale(image, (scale, scale))     
         return image
+            
 
 class Animation:
     '''list of frames to cycle between for an animation. unit of duration is in frames'''
@@ -86,20 +87,26 @@ sprites = {
     },
     
     #Ores
-    "coalOre": everythingSheet.get(352, 0, 16, 16, BLOCK_SIZE),
-    "ironOre": everythingSheet.get(368, 0, 16, 16, BLOCK_SIZE),
-    "goldOre": everythingSheet.get(384, 0, 16, 16, BLOCK_SIZE),
-    "diamondOre": everythingSheet.get(400, 0, 16, 16, BLOCK_SIZE),
+    "coalOre": everythingSheet.get(352, 0, 16, 16),
+    "ironOre": everythingSheet.get(368, 0, 16, 16),
+    "goldOre": everythingSheet.get(384, 0, 16, 16),
+    "diamondOre": everythingSheet.get(400, 0, 16, 16),
     
     #---BLOCKS---
     #Grass
-    "dirt": everythingSheet.get(480, 0, 16, 16, BLOCK_SIZE),
-    "grass": everythingSheet.get(496, 0, 16, 16, BLOCK_SIZE),
+    "dirt": everythingSheet.get(480, 0, 16, 16),
+    "grass": everythingSheet.get(496, 0, 16, 16),
     
     #Stone
-    "stone": everythingSheet.get(512, 0, 16, 16, BLOCK_SIZE),
-    "cobblestone": everythingSheet.get(528, 0, 16, 16, BLOCK_SIZE),
+    "stone": everythingSheet.get(512, 0, 16, 16),
+    "cobblestone": everythingSheet.get(528, 0, 16, 16),
     
+    #Wood
+    "oak plank": everythingSheet.get(544, 0, 16, 16),
+    "oak log": everythingSheet.get(560, 0, 16, 16,),
+    
+    #Misc
+    "torch": everythingSheet.get(576, 0, 16, 16),
     
     #---ITEMS---
     "coal": everythingSheet.get(416, 0, 16, 16, 15),
