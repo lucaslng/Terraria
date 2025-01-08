@@ -1101,15 +1101,13 @@ class ProgressTracker:
         self.current_step = ""
         
     def update(self, step: str, progress: float):
-        self.current_step = step
-        self.callback(step, progress)
+        self.current_step = str(step)
+        self.callback(self.current_step, progress)
 
 class World:
   def __init__(self, progress_tracker=None):
     self.progress_tracker = progress_tracker
-    
-    self.generateWorld()
-    self.generateLight()
+    self.progress_tracker.update("Generating terrain noise...", 0.0)
     
     self.array = [
         [AirBlock(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
@@ -1123,6 +1121,9 @@ class World:
     self.mask = pg.mask.Mask((WORLD_WIDTH*BLOCK_SIZE, WORLD_HEIGHT*BLOCK_SIZE))
     self.lightmap = [
         [0 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
+
+    self.generateWorld()
+    self.generateLight()
 
   class SimplexNoise:
     def __init__(self, scale: float, dimension: int, width: int = WORLD_WIDTH, height: int = WORLD_HEIGHT):
@@ -1235,10 +1236,6 @@ class World:
             'ores': 0.2, 
             'trees': 0.2
         }
-        
-    current_progress = 0.0
-    if self.progress_tracker:
-      self.progress_tracker.update("Generating terrain noise...", current_progress)
     
     # Precompute noise
     grassHeightNoise = self.SimplexNoise(19, 1)
@@ -1250,16 +1247,17 @@ class World:
       for ore in ores
     }
     
-    current_progress += phases['noise']       
+    baseProgress = 0.0        
     if self.progress_tracker:
-        self.progress_tracker.update("Creating base terrain...", current_progress)
-
+        baseProgress = phases['noise']
+        self.progress_tracker.update("Creating base terrain...", baseProgress)
 
     # Generate terrain in batch
     for x in range(WORLD_WIDTH):     
       if self.progress_tracker and x % (WORLD_WIDTH // 20) == 0:
-        progress = current_progress + (x / WORLD_WIDTH) * phases['terrain']
-        self.progress_tracker.update("Creating base terrain...", progress)
+            terrain_progress = (x / WORLD_WIDTH) * phases['terrain']
+            total_progress = min(baseProgress + terrain_progress, 1.0)
+            self.progress_tracker.update("Creating base terrain...", total_progress)
       
       grassHeight = round(WORLD_HEIGHT * 0.58 + 9 * grassHeightNoise[x])
       stoneHeight = round(grassHeight + 5 + 5 * stoneHeightNoise[x])
@@ -1278,53 +1276,48 @@ class World:
           x, grassHeight, DirtVariantGrass()
       )
       
-      current_progress += phases['terrain']      
-      if self.progress_tracker:
-          self.progress_tracker.update("Carving caves...", current_progress)
+      baseProgress += phases["terrain"]
 
       #Cave pass
       for y in range(WORLD_HEIGHT - 1, grassHeight - 1, -1):         
           if self.progress_tracker and x % (WORLD_WIDTH // 20) == 0:
-            progress = current_progress + (x / WORLD_WIDTH) * phases['caves']
-            self.progress_tracker.update("Carving caves...", progress)
+            cave_progress = (x / WORLD_WIDTH) * phases['caves']
+            total_progress = min(baseProgress + cave_progress, 1.0)
+            self.progress_tracker.update("Carving caves...", total_progress)
           
           if cavesNoise[y][x] > 0.1:
               self.array[y][x] = AirBlock(x, y)
 
-      current_progress += phases['caves']
-      if self.progress_tracker:
-          self.progress_tracker.update("Placing ores...", current_progress)
+      baseProgress += phases['caves']
           
-      total_ores = len(oresNoise)
-      
       #Ore pass
-      for ore_name, (oreNoise, ore) in oresNoise.items():   
-          if self.progress_tracker and x % (WORLD_WIDTH // 10) == 0:
-            sub_progress = (ore_name + x / WORLD_WIDTH) / total_ores
-            progress = current_progress + sub_progress * phases['ores']
-            self.progress_tracker.update(f"Placing {ore_name}...", progress)
+      total_ores = len(oresNoise)
+      for ore_idx, (ore_name, (oreNoise, ore)) in enumerate(oresNoise.items()):   
+        if self.progress_tracker and x % (WORLD_WIDTH // 10) == 0:
+                # Calculate ore progress as a combination of current ore and position
+                ore_portion = (ore_idx + (x / WORLD_WIDTH)) / total_ores
+                ore_progress = ore_portion * phases['ores']
+                total_progress = min(baseProgress + ore_progress, 1.0)
+                self.progress_tracker.update(f"Placing {ore_name}...", total_progress)
           
-          for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
+        for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
               if oreNoise[y][x] > ore.rarity and not self[y][x].isAir:
                   self.array[y][x] = ore(x, y)
 
-      current_progress += phases['ores']
-      if self.progress_tracker:
-          self.progress_tracker.update("Growing trees...", current_progress)
+      baseProgress += phases['ores']
       
       # Tree pass
-      for x in range(WORLD_WIDTH):
-        if self.progress_tracker and x % (WORLD_WIDTH // 20) == 0:
-                progress = current_progress + (x / WORLD_WIDTH) * phases['trees']
-                self.progress_tracker.update("Growing trees...", progress)
-        
-        if isinstance(self[grassHeight][x], DirtBlock) and self[grassHeight][x].variant == "grass block":           
-            if random.random() > 0.8:  # Simplified tree placement
-                self.__generateTree(x, grassHeight - 1)
-                
-      if self.progress_tracker:
-            self.progress_tracker.update("World generation complete!", 1.0)
+      if self.progress_tracker and x % (WORLD_WIDTH // 20) == 0:
+            tree_progress = (x / WORLD_WIDTH) * phases['trees']
+            total_progress = min(baseProgress + tree_progress, 1.0)
+            self.progress_tracker.update("Growing trees...", total_progress)
+      
+      if isinstance(self[grassHeight][x], DirtBlock) and self[grassHeight][x].variant == "grass block":           
+          if random.random() > 0.8:  # Simplified tree placement
+              self.__generateTree(x, grassHeight - 1)
               
+    if self.progress_tracker:
+          self.progress_tracker.update("Almost", 1.0)           
 
   def generateMask(self):
     for row in self.array:
@@ -1863,11 +1856,13 @@ class WorldLoader:
         try:
             progress_tracker = ProgressTracker(self._updateProgress)
             self.world = World(progress_tracker)
+            if self.world is None:
+                raise Exception("World creation failed - world object is None")
             self.generationCompleteEvent.set()
             
         except Exception as e:
-            print(f"Error during world generation: {e}")
-            self.generationCompleteEvent.set()
+            print(f"Error during world generation: {str(e)}")
+            raise
 
     def startGeneration(self):
       self.generationCompleteEvent.clear()
@@ -1879,7 +1874,6 @@ class WorldLoader:
         delta_time = current_time - self.lastUpdateTime
         self.lastUpdateTime = current_time
 
-        # Get latest update if available
         while self.progressUpdates:
             step, progress = self.progressUpdates.poll()
             self.targetProgress = progress
@@ -1925,7 +1919,7 @@ if __name__ == "__main__":
   generation_time = time.time() - start_time
   print(f"World generation completed in {generation_time:.2f} seconds")
   
-  world = World()
+  world = loader.world
   
   font = pg.font.Font(None, 15)
   font20 = pg.font.Font(None, 20)
