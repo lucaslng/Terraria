@@ -1094,30 +1094,35 @@ class Edge:
   def __repr__(self):
     return str((self.x, self.y, self.ex, self.ey))
 
+
+class ProgressTracker:
+    def __init__(self, callback):
+        self.callback = callback
+        self.current_step = ""
+        
+    def update(self, step: str, progress: float):
+        self.current_step = step
+        self.callback(step, progress)
+
 class World:
-  litVertices = list()
-  vertices = set()
-  edgePool: List[Edge] = list()
-  def __init__(self):
+  def __init__(self, progress_tracker=None):
+    self.progress_tracker = progress_tracker
+    
+    self.generateWorld()
+    self.generateLight()
+    
     self.array = [
         [AirBlock(x, y) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
     ]
-    # cannot deepcopy pygame surface so I have to loop over it again
+    
+    #cannot deepcopy pygame surface so I have to loop over it again
     self.back = [
         [AirBlock(x, y, isBack=True) for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)
     ]
     
     self.mask = pg.mask.Mask((WORLD_WIDTH*BLOCK_SIZE, WORLD_HEIGHT*BLOCK_SIZE))
-    self.lightmap = [ # generate fully lit light map at the beginning
-      [0 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
-    startTime = time.time()
-    self.generateWorld()
-    print("world time:", round(time.time() - startTime, 2))
-    # self.generateMask()
-    startTime = time.time()
-    self.generateLight()
-    print("light time:", round(time.time() - startTime, 2))
-    
+    self.lightmap = [
+        [0 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
 
   class SimplexNoise:
     def __init__(self, scale: float, dimension: int, width: int = WORLD_WIDTH, height: int = WORLD_HEIGHT):
@@ -1221,7 +1226,20 @@ class World:
 
       return noise
 
+
   def generateWorld(self):
+    phases = {
+            'noise': 0.1,
+            'terrain': 0.3,
+            'caves': 0.2,
+            'ores': 0.2, 
+            'trees': 0.2
+        }
+        
+    current_progress = 0.0
+    if self.progress_tracker:
+      self.progress_tracker.update("Generating terrain noise...", current_progress)
+    
     # Precompute noise
     grassHeightNoise = self.SimplexNoise(19, 1)
     stoneHeightNoise = self.SimplexNoise(30, 1)
@@ -1231,9 +1249,18 @@ class World:
       ore.__name__: (self.SimplexNoise(ore.veinSize, 2), ore)
       for ore in ores
     }
+    
+    current_progress += phases['noise']       
+    if self.progress_tracker:
+        self.progress_tracker.update("Creating base terrain...", current_progress)
+
 
     # Generate terrain in batch
-    for x in range(WORLD_WIDTH):
+    for x in range(WORLD_WIDTH):     
+      if self.progress_tracker and x % (WORLD_WIDTH // 20) == 0:
+        progress = current_progress + (x / WORLD_WIDTH) * phases['terrain']
+        self.progress_tracker.update("Creating base terrain...", progress)
+      
       grassHeight = round(WORLD_HEIGHT * 0.58 + 9 * grassHeightNoise[x])
       stoneHeight = round(grassHeight + 5 + 5 * stoneHeightNoise[x])
 
@@ -1250,22 +1277,54 @@ class World:
       self[grassHeight][x] = DirtBlock(
           x, grassHeight, DirtVariantGrass()
       )
+      
+      current_progress += phases['terrain']      
+      if self.progress_tracker:
+          self.progress_tracker.update("Carving caves...", current_progress)
 
-      # Cave pass
-      for y in range(WORLD_HEIGHT - 1, grassHeight - 1, -1):
+      #Cave pass
+      for y in range(WORLD_HEIGHT - 1, grassHeight - 1, -1):         
+          if self.progress_tracker and x % (WORLD_WIDTH // 20) == 0:
+            progress = current_progress + (x / WORLD_WIDTH) * phases['caves']
+            self.progress_tracker.update("Carving caves...", progress)
+          
           if cavesNoise[y][x] > 0.1:
               self.array[y][x] = AirBlock(x, y)
 
-      # Ore pass
-      for ore_name, (oreNoise, ore) in oresNoise.items():
+      current_progress += phases['caves']
+      if self.progress_tracker:
+          self.progress_tracker.update("Placing ores...", current_progress)
+          
+      total_ores = len(oresNoise)
+      
+      #Ore pass
+      for ore_name, (oreNoise, ore) in oresNoise.items():   
+          if self.progress_tracker and x % (WORLD_WIDTH // 10) == 0:
+            sub_progress = (ore_name + x / WORLD_WIDTH) / total_ores
+            progress = current_progress + sub_progress * phases['ores']
+            self.progress_tracker.update(f"Placing {ore_name}...", progress)
+          
           for y in range(WORLD_HEIGHT - 1, stoneHeight, -1):
               if oreNoise[y][x] > ore.rarity and not self[y][x].isAir:
                   self.array[y][x] = ore(x, y)
+
+      current_progress += phases['ores']
+      if self.progress_tracker:
+          self.progress_tracker.update("Growing trees...", current_progress)
       
       # Tree pass
-      if isinstance(self[grassHeight][x], DirtBlock) and self[grassHeight][x].variant == "grass block":
-          if random.random() > 0.8:  # Simplified tree placement
-              self.__generateTree(x, grassHeight - 1)
+      for x in range(WORLD_WIDTH):
+        if self.progress_tracker and x % (WORLD_WIDTH // 20) == 0:
+                progress = current_progress + (x / WORLD_WIDTH) * phases['trees']
+                self.progress_tracker.update("Growing trees...", progress)
+        
+        if isinstance(self[grassHeight][x], DirtBlock) and self[grassHeight][x].variant == "grass block":           
+            if random.random() > 0.8:  # Simplified tree placement
+                self.__generateTree(x, grassHeight - 1)
+                
+      if self.progress_tracker:
+            self.progress_tracker.update("World generation complete!", 1.0)
+              
 
   def generateMask(self):
     for row in self.array:
@@ -1786,65 +1845,55 @@ class LoadingScreen:
         clock.tick(FPS)
 
 class WorldLoader:
-    '''Generates the world using multithreading while in the loading screen'''
     def __init__(self, width, height):
         self.loadingScreen = LoadingScreen(width, height)
         self.world = None
         self.progress = 0.0
+        self.targetProgress = 0.0
         self.progressUpdates = Queue()
         self.generationCompleteEvent = threading.Event()
         self.generationThread = None
-
-        self.generationSteps = [
-            ("Initializing world", 0.1),
-            ("Generating terrain", 0.4),
-            ("Creating caves", 0.2),
-            ("Growing trees", 0.2),
-            ("Placing ores", 0.1)
-        ]
         self.currentStep = ""
-        
+        self.lastUpdateTime = time.time()
+
     def _updateProgress(self, step, step_progress):
-        step_index = next((i for i, (s, _) in enumerate(self.generationSteps) if s == step), -1)
-        if step_index == -1:
-            return
-        
-        completedProgress = sum(weight for _, weight in self.generationSteps[:step_index])
-        currentStepProgress = self.generationSteps[step_index][1] * step_progress
-        totalProgress = completedProgress + currentStepProgress
-        
-        self.progressUpdates.add(totalProgress)
-        self.currentStep = step
+        self.progressUpdates.add((step, step_progress))
 
     def _generateWorld(self):
         try:
-            self._updateProgress("Initializing world", 0.0)
-            self._updateProgress("Initializing world", 1.0)
-            
-            self.world = World()
-            
-            for step, _ in self.generationSteps[1:]:
-                self._updateProgress(step, 0.0)
-                self._updateProgress(step, 1.0)
-            
+            progress_tracker = ProgressTracker(self._updateProgress)
+            self.world = World(progress_tracker)
             self.generationCompleteEvent.set()
+            
         except Exception as e:
             print(f"Error during world generation: {e}")
             self.generationCompleteEvent.set()
 
     def startGeneration(self):
-        """Starts the world generation in a background thread"""
-        self.generationThread = threading.Thread(target=self._generateWorld, daemon=True)
-        self.generationThread.start()
+      self.generationCompleteEvent.clear()
+      self.generationThread = threading.Thread(target=self._generateWorld, daemon=True)
+      self.generationThread.start()
 
     def update(self):
-      while self.progressUpdates:
-          self.progress = self.progressUpdates.poll()
-      
-      self.loadingScreen.update(self.progress, self.currentStep)
-      self.loadingScreen.draw()
-      
-      return self.generationCompleteEvent.is_set()
+        current_time = time.time()
+        delta_time = current_time - self.lastUpdateTime
+        self.lastUpdateTime = current_time
+
+        # Get latest update if available
+        while self.progressUpdates:
+            step, progress = self.progressUpdates.poll()
+            self.targetProgress = progress
+            self.currentStep = step
+
+        smoothing_speed = 5.0
+        smoothing_factor = 1.0 - math.exp(-smoothing_speed * delta_time)
+        self.progress += (self.targetProgress - self.progress) * smoothing_factor
+
+        self.loadingScreen.update(self.progress, self.currentStep)
+        self.loadingScreen.draw()
+
+        progress_complete = abs(self.progress - self.targetProgress) < 0.01
+        return self.generationCompleteEvent.is_set() and progress_complete
         
 
 '''Main Loop'''
@@ -1872,16 +1921,16 @@ if __name__ == "__main__":
       if loader.update():
           if not loader.generationThread.is_alive():
               break
+            
+  generation_time = time.time() - start_time
+  print(f"World generation completed in {generation_time:.2f} seconds")
   
-  world = loader.world
-  end_time = time.time()
-  print(f"World generation time: {end_time - start_time:.2f} seconds")
+  world = World()
   
   font = pg.font.Font(None, 15)
   font20 = pg.font.Font(None, 20)
   
   player = Player()
-  world = loader.world
   sun = Sun()
 
   
