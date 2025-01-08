@@ -468,51 +468,69 @@ class Slot:
 
   def draw(self, x: float, y: float, size: float = size, transparent=False) -> None:
     if not transparent:
-      pg.draw.rect(SURF, (200, 200, 200), (x, y, size, size))
+      pg.draw.rect(OVERLAY, (200, 200, 200), (x, y, size, size))
     else:
-      pg.draw.rect(ASURF, (200, 200, 200, 160), (x, y, size, size))
+      pg.draw.rect(OVERLAY, (200, 200, 200, 160), (x, y, size, size))
       
     if self.isActive:
-      pg.draw.rect(SURF, (0, 0, 0), (x, y, size, size), 2)
+      pg.draw.rect(OVERLAY, (0, 0, 0), (x, y, size, size), 2)
     else:
-      pg.draw.rect(SURF, (90, 90, 90), (x, y, size, size), 2)
+      pg.draw.rect(OVERLAY, (90, 90, 90), (x, y, size, size), 2)
 
-    if self.item is not None:
-      item_texture = self.item.texture
-      scaled_texture = pg.transform.scale(item_texture, (size - 6, size - 6))
+    if self.item:
+      texture = pg.transform.scale(self.item.texture, (size - 6, size - 6))
       
       #center texture in the slot
-      texture_rect = scaled_texture.get_rect()
-      texture_rect.center = (x + size / 2, y + size / 2)
-      SURF.blit(scaled_texture, texture_rect.topleft)
+      textureRect = texture.get_rect()
+      textureRect.center = (x + size / 2, y + size / 2)
+      OVERLAY.blit(texture, textureRect.topleft)
 
       if self.count > 1:
         count_text = font20.render(str(self.count), True, (255, 255, 255))
         
         #item counter in the bottom right of the slot
-        text_rect = count_text.get_rect(bottomright= (x + size - 5, y + size - 5))
-        SURF.blit(count_text, text_rect.topleft)
+        text_rect = count_text.get_rect(topleft=textureRect.center)
+        OVERLAY.blit(count_text, text_rect.topleft)
         
       #Draw durability bar
       if self.item.isTool() and self.item.durability != self.item.startingDurability:
-        bar_height = 3
-        bar_width = size - 4
-        bar_x = x + 2
-        bar_y = y + size - bar_height - 1
+        barHeight = 3
+        barWidth = size - 4
+        barx = x + 2
+        bary = y + size - barHeight - 1
         
         tool: Tool = self.item
-        durability_percentage = tool.durability / tool.startingDurability
+        durabilityPercent = tool.durability / tool.startingDurability
         
-        if durability_percentage > 0.6:
+        if durabilityPercent > 0.6:
           colour = (0, 255, 0)
-        elif durability_percentage > 0.3:
+        elif durabilityPercent > 0.3:
           colour = (255, 165, 0)
         else:
           colour = (255, 0, 0)
         
-        pg.draw.rect(SURF, (50, 50, 50), (bar_x, bar_y, bar_width, bar_height))
-        pg.draw.rect(SURF, colour, (bar_x, bar_y, int(bar_width * durability_percentage), bar_height))
+        pg.draw.rect(OVERLAY, (50, 50, 50), (barx, bary, barWidth, barHeight))
+        pg.draw.rect(OVERLAY, colour, (barx, bary, int(barWidth * durabilityPercent), barHeight))
 
+  def drawBare(self, x: float, y: float, size: float = size):
+    '''draw without the box around it, just the item and the number, location is the center instead of topleft'''
+    if self.item:
+      texture = pg.transform.scale(self.item.texture, (size - 6, size - 6))
+    
+      #center texture in the slot
+      textureRect = texture.get_rect()
+      textureRect.center = x, y
+      OVERLAY.blit(texture, textureRect.topleft)
+
+      if self.count > 1:
+        count_text = font20.render(str(self.count), True, (255, 255, 255))
+        
+        #item counter in the bottom right of the slot
+        text_rect = count_text.get_rect(topleft=textureRect.center)
+        OVERLAY.blit(count_text, text_rect.topleft)
+        
+        
+        
 @dataclass
 class Section:
   rows: int
@@ -938,13 +956,13 @@ class Player(Entity, HasInventory, Light):
 
     #Full hearts
     for i in range(full_hearts):
-      SURF.blit(self.full_heart_texture, (HEART_X_START + i * HEART_SPACING, HEART_Y))   
+      OVERLAY.blit(self.full_heart_texture, (HEART_X_START + i * HEART_SPACING, HEART_Y))   
     #Half hearts
     if half_hearts:
-      SURF.blit(self.half_heart_texture,(HEART_X_START + full_hearts * HEART_SPACING, HEART_Y))     
+      OVERLAY.blit(self.half_heart_texture,(HEART_X_START + full_hearts * HEART_SPACING, HEART_Y))     
     #Empty hearts
     for i in range(empty_hearts):
-      SURF.blit(self.empty_heart_texture,(HEART_X_START +(full_hearts + half_hearts + i) * HEART_SPACING,HEART_Y))
+      OVERLAY.blit(self.empty_heart_texture,(HEART_X_START +(full_hearts + half_hearts + i) * HEART_SPACING,HEART_Y))
 
   def draw(self):
     # print(self.vvelo)
@@ -1120,6 +1138,7 @@ class Player(Entity, HasInventory, Light):
       self.usingItem = False
     self.executeHeldSlotEffect()
     self.inventory.menu.getHoveredSlot()
+    self.cursorSlot.drawBare(*pg.mouse.get_pos(), self.inventory.menu[0].slotSize)
   
   def drawHUD(self):
     self.draw_health()
@@ -1909,7 +1928,7 @@ if __name__ == "__main__":
   LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   FRAME = SURF.get_rect()
   ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
-  ASURF.fill((0, 0, 0, 0))
+  OVERLAY = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   
   #Give player items at the beginning of the game
   defaultItems = [GoldPickaxe(), IronAxe(), StoneAxe(), WoodenShovel(), CraftingTableItem()] + [CobbleStoneItem() for _ in range(192)] + [TorchItem() for _ in range(64)]
@@ -1945,6 +1964,7 @@ if __name__ == "__main__":
     frameStartTime = time.time()
     SURF.fill((255, 255, 255))
     ASURF.fill((0, 0, 0, 0))
+    OVERLAY.fill((0, 0, 0, 0))
     SUNLIGHTSURF.fill((0, 0, 0, 255))
     LIGHTSURF.fill((0, 0, 0, 0))
     keys = pg.key.get_pressed()
@@ -2020,8 +2040,7 @@ if __name__ == "__main__":
     SUNLIGHTSURF = pg.transform.smoothscale(SUNLIGHTSURF, (WIDTH, HEIGHT))
     # SUNLIGHTSURF.blit(LIGHTSURF, (0,0))
     SURF.blit(SUNLIGHTSURF, ((0,0)))
-    player.drawHUD()
-    
+    SURF.blit(OVERLAY, (0,0))
     SURF.blit(font20.render(str(pixelToCoord(*player.camera.center)), True, (0,0,0)), (20, 50))
     
     frameEndTime = time.time()
