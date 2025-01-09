@@ -4,7 +4,8 @@ from customqueue import Queue
 from constants import *
 from blocks import *
 from sprites import *
-from utils import *
+from utils.direction import direction
+from utils.utils import *
 from entities import *
 from menus import LoadingScreen
 
@@ -336,54 +337,54 @@ class World:
         if not cur.isAir:
           # west
           if x-1 >= 0 and self[y][x-1].isAir:
-            if y-1 >= 0 and self[y-1][x].edgeExist[Direction.WEST] and self[y-1][x].edgeId[Direction.WEST]<len(self.edgePool):
+            if y-1 >= 0 and self[y-1][x].edgeExist[direction.WEST] and self[y-1][x].edgeId[direction.WEST]<len(self.edgePool):
               # print("edge exists")
-              self.edgePool[self[y-1][x].edgeId[Direction.WEST]].ey += 1
+              self.edgePool[self[y-1][x].edgeId[direction.WEST]].ey += 1
               # print(self.edgePool[self[y-1][x].edgeId[Direction.WEST]])
-              cur.edgeId[Direction.WEST] = self[y-1][x].edgeId[Direction.WEST]
-              cur.edgeExist[Direction.WEST] = True
+              cur.edgeId[direction.WEST] = self[y-1][x].edgeId[direction.WEST]
+              cur.edgeExist[direction.WEST] = True
             else:
               edge = Edge(x, y, x, y+1)
               edgeId = len(self.edgePool)
-              cur.edgeId[Direction.WEST] = edgeId
+              cur.edgeId[direction.WEST] = edgeId
               self.edgePool.append(edge)
-              cur.edgeExist[Direction.WEST] = True
+              cur.edgeExist[direction.WEST] = True
           # east
-          if x+1 < (player.camera.right // BLOCK_SIZE) + 1 and self[y][x+1].isAir and self[y-1][x].edgeId[Direction.EAST]<len(self.edgePool):
-            if y-1 >= 0 and self[y-1][x].edgeExist[Direction.EAST]:
-              self.edgePool[self[y-1][x].edgeId[Direction.EAST]].ey += 1
-              cur.edgeId[Direction.EAST] = self[y-1][x].edgeId[Direction.EAST]
-              cur.edgeExist[Direction.EAST] = True
+          if x+1 < (player.camera.right // BLOCK_SIZE) + 1 and self[y][x+1].isAir and self[y-1][x].edgeId[direction.EAST]<len(self.edgePool):
+            if y-1 >= 0 and self[y-1][x].edgeExist[direction.EAST]:
+              self.edgePool[self[y-1][x].edgeId[direction.EAST]].ey += 1
+              cur.edgeId[direction.EAST] = self[y-1][x].edgeId[direction.EAST]
+              cur.edgeExist[direction.EAST] = True
             else:
               edge = Edge(x+1, y, x+1, y+1)
               edgeId = len(self.edgePool)
-              cur.edgeId[Direction.EAST] = edgeId
+              cur.edgeId[direction.EAST] = edgeId
               self.edgePool.append(edge)
-              cur.edgeExist[Direction.EAST] = True
+              cur.edgeExist[direction.EAST] = True
           # north
           if y-1 >= 0 and self[y-1][x].isAir:
-            if x-1 >= 0 and self[y][x-1].edgeExist[Direction.NORTH] and self[y][x-1].edgeId[Direction.NORTH]<len(self.edgePool):
-              self.edgePool[self[y][x-1].edgeId[Direction.NORTH]].ex += 1
-              cur.edgeId[Direction.NORTH] = self[y][x-1].edgeId[Direction.NORTH]
-              cur.edgeExist[Direction.NORTH] = True
+            if x-1 >= 0 and self[y][x-1].edgeExist[direction.NORTH] and self[y][x-1].edgeId[direction.NORTH]<len(self.edgePool):
+              self.edgePool[self[y][x-1].edgeId[direction.NORTH]].ex += 1
+              cur.edgeId[direction.NORTH] = self[y][x-1].edgeId[direction.NORTH]
+              cur.edgeExist[direction.NORTH] = True
             else:
               edge = Edge(x, y, x+1, y)
               edgeId = len(self.edgePool)
-              cur.edgeId[Direction.NORTH] = edgeId
+              cur.edgeId[direction.NORTH] = edgeId
               self.edgePool.append(edge)
-              cur.edgeExist[Direction.NORTH] = True
+              cur.edgeExist[direction.NORTH] = True
           # south
-          if y+1 < player.camera.bottom // BLOCK_SIZE + 1 and self[y+1][x].isAir and self[y][x-1].edgeId[Direction.SOUTH]<len(self.edgePool):
-            if x-1 >= 0 and self[y][x-1].edgeExist[Direction.SOUTH]:
-              self.edgePool[self[y][x-1].edgeId[Direction.SOUTH]].ex += 1
-              cur.edgeId[Direction.SOUTH] = self[y][x-1].edgeId[Direction.SOUTH]
-              cur.edgeExist[Direction.SOUTH] = True
+          if y+1 < player.camera.bottom // BLOCK_SIZE + 1 and self[y+1][x].isAir and self[y][x-1].edgeId[direction.SOUTH]<len(self.edgePool):
+            if x-1 >= 0 and self[y][x-1].edgeExist[direction.SOUTH]:
+              self.edgePool[self[y][x-1].edgeId[direction.SOUTH]].ex += 1
+              cur.edgeId[direction.SOUTH] = self[y][x-1].edgeId[direction.SOUTH]
+              cur.edgeExist[direction.SOUTH] = True
             else:
               edge = Edge(x, y+1, x+1, y+1)
               edgeId = len(self.edgePool)
-              cur.edgeId[Direction.SOUTH] = edgeId
+              cur.edgeId[direction.SOUTH] = edgeId
               self.edgePool.append(edge)
-              cur.edgeExist[Direction.SOUTH] = True
+              cur.edgeExist[direction.SOUTH] = True
     for i in range(len(self.edgePool)):
       self.vertices.add(relativeCoord(self.edgePool[i].x*BLOCK_SIZE,self.edgePool[i].y*BLOCK_SIZE))
       self.vertices.add(relativeCoord(self.edgePool[i].ex*BLOCK_SIZE,self.edgePool[i].ey*BLOCK_SIZE))

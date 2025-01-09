@@ -7,7 +7,7 @@ from sprites import sprites
 from items import *
 from blocks import *
 from inventory import *
-from utils import pixelToCoord, relativeRect, relativeCoord, bresenham
+from utils.utils import pixelToCoord, relativeRect, relativeCoord, bresenham
 from world import WorldLoader
 
 loader = WorldLoader(WIDTH, HEIGHT)

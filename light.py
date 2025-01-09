@@ -1,7 +1,7 @@
 import pygame as pg
 from dataclasses import dataclass
 from constants import SUNLIGHTSURF
-from utils import coordWorld2Relative
+from utils.utils import coordWorld2Relative
 
 @dataclass
 class Light:

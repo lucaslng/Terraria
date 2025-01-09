@@ -7,7 +7,7 @@ from enum import Enum
 from constants import SURF, WIDTH, HEIGHT
 from sprites import sprites
 from world import WorldLoader
-from utils import Executable
+from utils.utils import Executable
 from blocks import BlockItemRegistry
 
 loader = WorldLoader(WIDTH, HEIGHT)

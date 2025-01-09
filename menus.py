@@ -2,7 +2,7 @@ import pygame as pg, math, time, threading, random
 from queue import Queue
 
 from constants import SURF, WIDTH, HEIGHT, FPS, clock
-from utils import sysexit
+from utils.utils import sysexit
 
 
 class Button:
