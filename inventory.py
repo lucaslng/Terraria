@@ -8,15 +8,6 @@ from entities import Player
 
 player = Player()
 
-
-class Interactable(ABC):
-  '''Abstract class for something that can be interacted with (press e key when near)'''
-
-  def interact(self):
-    '''To be called when Interactable is interacted with.'''
-    pass
-
-
 class Slot:
   """Slot class"""
   item: Item | None = None

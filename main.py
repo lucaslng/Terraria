@@ -6,6 +6,8 @@ from pygame.math import Vector2
 #Import code from other files
 # from blocks import *
 # from block_item_registry import *
+from blocks.executable import Executable
+from blocks.interactable import Interactable
 from constants import *
 from customqueue import Queue
 # from entities import *
@@ -109,14 +111,6 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, quality: int=1):
     return plotLineLow(x0, y0, x1, y1)
   else:
     return plotLineHigh(x0, y0, x1, y1)
-
-
-class Interactable(ABC):
-  '''Abstract class for something that can be interacted with (press e key when near)'''
-
-  def interact(self):
-    '''To be called when Interactable is interacted with.'''
-    pass
 
 @dataclass
 class Light:
@@ -274,19 +268,6 @@ class PlaceableItem(Item):
   def place(self, x: int, y: int) -> None:
     world[y][x] = self.block()(x, y)
     # world.mask.draw(world[y][x].mask, world[y][x].rect.topleft)
-
-@dataclass
-class Executable(ABC):
-  '''Items that have a special effect to be executed when held'''
-  @abstractmethod
-  def execute(self):
-    '''execute whatever needs to be done'''
-    pass
-  
-  @abstractmethod
-  def unexecute(self):
-    '''unexecute when item is swapped out'''
-    pass
 
 class AirBlock(Block):
   '''Empty air block'''
