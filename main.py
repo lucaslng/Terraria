@@ -3,24 +3,42 @@ import pygame as pg
 from pygame.locals import *
 from pygame.math import Vector2
 
-#import code from other files
+#Import code from other files
+# from blocks import *
+# from block_item_registry import *
 from constants import *
-from sprites import *
 from customqueue import Queue
-from utils import Direction, sysexit
+# from entities import *
+# from inventory import *
+# from items import *
+# from light import *
+# from menus import *
+from sprites import *
+# from utils import *
+# from world import *
 
 from abc import *
 from dataclasses import dataclass
 from typing import *
 from enum import Enum
 
-SEED = time.time()
-random.seed(SEED)
+
 start = time.time()
 
 pg.init()
 pg.font.init()
-clock = pg.time.Clock()
+
+class Direction:
+  '''Just to make code easier to read'''
+  NORTH=0
+  SOUTH=1
+  WEST=2
+  EAST=3
+
+def sysexit() -> None:
+  '''Helper function to exit the program'''
+  pg.quit()
+  raise SystemExit
 
 def pixelToCoord(x: float, y: float) -> tuple[int, int]:
   """Returns coordinate based on pixel location"""
@@ -522,8 +540,7 @@ class Slot:
         
         #item counter in the bottom right of the slot
         text_rect = count_text.get_rect(topleft=textureRect.center)
-        OVERLAY.blit(count_text, text_rect.topleft)
-        
+        OVERLAY.blit(count_text, text_rect.topleft)       
         
         
 @dataclass
@@ -1885,9 +1902,7 @@ class LoadingScreen:
 
         self.currentStep = "Initializing world..."
         
-        self.currentMessage = 0
-        self.messageChangeTimer = time.time()
-        self.messageChangeInterval = 1.5    #seconds
+        self.currentMessage = 0   #seconds
         self.progress = 0.0
         self.startTime = time.time()
 
@@ -1951,8 +1966,6 @@ class WorldLoader:
         try:
             progress_tracker = ProgressTracker(self._updateProgress)
             self.world = World(progress_tracker)
-            # if self.world is None:
-            #     raise Exception("object is none")
             self.generationCompleteEvent.set()
             
         except Exception as e:
@@ -2012,15 +2025,8 @@ if __name__ == "__main__":
       if loader.update():
           if not loader.generationThread.is_alive():
               break
-            
-  # generation_time = time.time() - start_time
-  # print(f"World generation completed in {generation_time:.2f} seconds")
   
   world = loader.world
-  
-  font = pg.font.Font(None, 15)
-  font20 = pg.font.Font(None, 20)
-  
   player = Player()
   sun = Sun()
 

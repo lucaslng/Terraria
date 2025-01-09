@@ -1,7 +1,7 @@
 import pygame as pg
 from typing import *
 
-from constants import *
+from constants import SURF
 
 pg.init()
 
