@@ -40,23 +40,6 @@ def sysexit() -> None:
   pg.quit()
   raise SystemExit
 
-def pixelToCoord(x: float, y: float) -> tuple[int, int]:
-  """Returns coordinate based on pixel location"""
-  coord = int((x + player.camera.left) // BLOCK_SIZE), int(
-      (y + player.camera.top) // BLOCK_SIZE
-  )
-  return coord
-
-def relativeRect(rect: pg.rect.Rect) -> pg.rect.Rect:
-  """Returns on screen rect relative to the camera"""
-  return pg.rect.Rect(
-      rect.x - player.camera.x, rect.y - player.camera.y, rect.width, rect.height
-  )
-
-def relativeCoord(x: float, y: float) -> tuple[int, int]:
-  '''Convert a pixel coordinate relative to the camera. Useful for drawing things and more.'''
-  return x - player.camera.x, y - player.camera.y
-
 def coordWorld2Pixel(x: int, y: int) -> tuple[int, int]:
   '''convert world coordinates to pixel'''
   return x * BLOCK_SIZE, y * BLOCK_SIZE
@@ -64,15 +47,6 @@ def coordWorld2Pixel(x: int, y: int) -> tuple[int, int]:
 def rectWorld2Pixel(rect: pg.rect.Rect) -> pg.rect.Rect:
   '''convert world rect to pixel rect'''
   return pg.rect.Rect(rect.left * BLOCK_SIZE, rect.top * BLOCK_SIZE, rect.width * BLOCK_SIZE, rect.height * BLOCK_SIZE)
-
-def coordWorld2Relative(x: int, y: int) -> tuple[int, int]:
-  '''convert world coordinates to pixel on screen'''
-  return relativeCoord(*coordWorld2Pixel(x, y))
-
-def rectWorld2Relative(rect: pg.rect.Rect) -> pg.rect.Rect:
-  '''convert world rect to relative rect'''
-  pixelRect = rectWorld2Pixel(rect)
-  return relativeRect(pixelRect)
 
 def check_for_interaction() -> None:
   '''loops over every visible block to check for interactable blocks'''
@@ -100,7 +74,7 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, quality: int=1):
     x = x1
     while x != x0 - xi:
       # print(x, x0-x1)
-      blockTouched = world.blockAt(*pixelToCoord(x, y))
+      blockTouched = world.blockAt(*player.pixelToCoord(x, y))
       if not blockTouched.isAir:
         return x, y
       if d > 0:
@@ -110,7 +84,7 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, quality: int=1):
         d += 2 * dy
       x += xi
       if not 0 <= x < WIDTH or not 0 <= y < HEIGHT: return pointsTouched
-      nextBlock = world.blockAt(*pixelToCoord(x, y))
+      nextBlock = world.blockAt(*player.pixelToCoord(x, y))
       if not nextBlock.isAir:
         xi = xii
         yi = yii
@@ -127,7 +101,7 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, quality: int=1):
     x = x1
     y = y1
     while y != y0 - yi:
-      blockTouched = world.blockAt(*pixelToCoord(x, y))
+      blockTouched = world.blockAt(*player.pixelToCoord(x, y))
       if not blockTouched.isAir:
         return x, y
       if d > 0:
@@ -137,7 +111,7 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, quality: int=1):
         d += 2 * dx
       y += yi
       if not 0 <= x < WIDTH or not 0 <= y < HEIGHT: return pointsTouched
-      nextBlock = world.blockAt(*pixelToCoord(x, y))
+      nextBlock = world.blockAt(*player.pixelToCoord(x, y))
       if not nextBlock.isAir:
         xi = xii
         yi = yii
@@ -171,8 +145,8 @@ class Light:
   def drawLight(self):
     '''draw light'''
     if self.relative:
-      # print(self.x, self.y, self.x*20, self.y*20, coordWorld2Relative(self.x, self.y))
-      pg.draw.circle(SUNLIGHTSURF, (0,0,0,0), coordWorld2Relative(self.x,self.y), self.lightRadius)
+      # print(self.x, self.y, self.x*20, self.y*20, player.coordWorld2Relative(self.x, self.y))
+      pg.draw.circle(SUNLIGHTSURF, (0,0,0,0), player.coordWorld2Relative(self.x,self.y), self.lightRadius)
     else:
       pg.draw.circle(SUNLIGHTSURF, (0,0,0,0), (self.x,self.y), self.lightRadius)
 
@@ -254,11 +228,11 @@ class Block:
       self.texture.blit(self.BACK_TINT, (0,0))
 
   def drawBlockOutline(self, color: pg.color.Color):
-    pg.draw.rect(ASURF, color, relativeRect(self.rect), 2)
+    pg.draw.rect(ASURF, color, player.relativeRect(self.rect), 2)
 
   def drawBlock(self):
-    SURF.blit(self.texture, relativeRect(self.rect))
-    breakingRect = relativeRect(self.rect.copy())
+    SURF.blit(self.texture, player.relativeRect(self.rect))
+    breakingRect = player.relativeRect(self.rect.copy())
     breakingRect.scale_by_ip(
       self.amountBroken / self.hardness, self.amountBroken / self.hardness
     )
@@ -271,7 +245,7 @@ class Block:
     if self.isEmpty:
       return False
     if self.mask.overlap(player.mask, self.offset(x, y)):
-      # pg.draw.rect(SURF, (255, 0, 0), relativeRect(self.rect), width=3)
+      # pg.draw.rect(SURF, (255, 0, 0), player.relativeRect(self.rect), width=3)
       return True
     else:
       return False
@@ -833,10 +807,10 @@ class Entity:
       x = newrect.left // BLOCK_SIZE,
       y = (newrect.top + 10) // BLOCK_SIZE
     )
-    # pg.draw.rect(SURF, (0,0,255),relativeRect(blockRightTop.rect),3)
-    # pg.draw.rect(SURF, (255,0,255),relativeRect(blockRightBot.rect),3)
-    # pg.draw.rect(SURF, (255,128,128),relativeRect(blockLeftBot.rect),3)
-    # pg.draw.rect(SURF, (255,0,0),relativeRect(blockLeftTop.rect),3)
+    # pg.draw.rect(SURF, (0,0,255),player.relativeRect(blockRightTop.rect),3)
+    # pg.draw.rect(SURF, (255,0,255),player.relativeRect(blockRightBot.rect),3)
+    # pg.draw.rect(SURF, (255,128,128),player.relativeRect(blockLeftBot.rect),3)
+    # pg.draw.rect(SURF, (255,0,0),player.relativeRect(blockLeftTop.rect),3)
     if (
         blockRightBot.collides(*newrect.topleft)
         or blockRightTop.collides(*newrect.topleft)
@@ -869,7 +843,7 @@ class Entity:
     )
     # blockTopRight.drawBlockOutline((0,255,0))
     # blockTopLeft.drawBlockOutline((0,255,255))
-    # pg.draw.rect(SURF, (0,0,0), relativeRect(newrect), 2)
+    # pg.draw.rect(SURF, (0,0,0), player.relativeRect(newrect), 2)
     if self.vvelo < 0:
       # print("attepmting to move up!")
       if (
@@ -907,18 +881,18 @@ class Entity:
 
   def draw(self) -> None:
     if self.hvelo < 0:
-      SURF.blit(self.reversedTexture, relativeRect(self.rect).topleft)
+      SURF.blit(self.reversedTexture, player.relativeRect(self.rect).topleft)
       self.mask = pg.mask.from_surface(self.reversedTexture)
       self.previousDirection = 0
     elif self.hvelo > 0:
-      SURF.blit(self.texture, relativeRect(self.rect).topleft)
+      SURF.blit(self.texture, player.relativeRect(self.rect).topleft)
       self.mask = pg.mask.from_surface(self.texture)
       self.previousDirection = 1
     elif self.previousDirection:
-      SURF.blit(self.texture, relativeRect(self.rect).topleft)
+      SURF.blit(self.texture, player.relativeRect(self.rect).topleft)
       self.mask = pg.mask.from_surface(self.texture)
     else:
-      SURF.blit(self.reversedTexture, relativeRect(self.rect).topleft)
+      SURF.blit(self.reversedTexture, player.relativeRect(self.rect).topleft)
       self.mask = pg.mask.from_surface(self.reversedTexture)
 
   def update(self) -> None:
@@ -1007,20 +981,20 @@ class Player(Entity, HasInventory, Light):
     # print(self.vvelo)
     if self.hvelo < 0:
       if self.vvelo < -4:
-        self.selfSprites["jump"].drawFrame(*relativeRect(self.rect).topleft, 2, flipped=True)
+        self.selfSprites["jump"].drawFrame(*player.relativeRect(self.rect).topleft, 2, flipped=True)
       else:
-        self.selfSprites["walk"].drawAnimated(*relativeRect(self.rect).topleft, flipped=True)
+        self.selfSprites["walk"].drawAnimated(*player.relativeRect(self.rect).topleft, flipped=True)
       self.previousDirection = 0
     elif self.hvelo > 0:
       if self.vvelo < -4:
-        self.selfSprites["jump"].drawFrame(*relativeRect(self.rect).topleft, 2)
+        self.selfSprites["jump"].drawFrame(*player.relativeRect(self.rect).topleft, 2)
       else:
-        self.selfSprites["walk"].drawAnimated(*relativeRect(self.rect).topleft)
+        self.selfSprites["walk"].drawAnimated(*player.relativeRect(self.rect).topleft)
       self.previousDirection = 1
     elif self.previousDirection:
-      self.selfSprites["sit"].drawAnimated(*relativeRect(self.rect).topleft)
+      self.selfSprites["sit"].drawAnimated(*player.relativeRect(self.rect).topleft)
     else:
-      self.selfSprites["sit"].drawAnimated(*relativeRect(self.rect).topleft, flipped=True)
+      self.selfSprites["sit"].drawAnimated(*player.relativeRect(self.rect).topleft, flipped=True)
 
   def hotbar(self) -> list[Slot]:
     '''Returns the first row of the player's inventory'''
@@ -1034,8 +1008,30 @@ class Player(Entity, HasInventory, Light):
     else:
       return None
   
-  def drawCursorSlot(self):
-    ...
+  def pixelToCoord(self, x: float, y: float) -> tuple[int, int]:
+    """Returns coordinate based on pixel location"""
+    coord = int((x + self.camera.left) // BLOCK_SIZE), int(
+        (y + self.camera.top) // BLOCK_SIZE
+    )
+    return coord
+  
+  def relativeRect(self, rect: pg.rect.Rect) -> pg.rect.Rect:
+    """Returns on screen rect relative to the camera"""
+    return pg.rect.Rect(
+        rect.x - self.camera.x, rect.y - self.camera.y, rect.width, rect.height
+    )
+    
+  def relativeCoord(self, x: float, y: float) -> tuple[int, int]:
+    '''Convert a pixel coordinate relative to the camera. Useful for drawing things and more.'''
+    return x - self.camera.x, y - self.camera.y
+  
+  def coordWorld2Relative(self, x: int, y: int) -> tuple[int, int]:
+    '''convert world coordinates to pixel on screen'''
+    return self.relativeCoord(*coordWorld2Pixel(x, y))
+
+  def rectWorld2Relative(self, rect: pg.rect.Rect) -> pg.rect.Rect:
+    '''convert world rect to relative rect'''
+    return self.relativeRect(rectWorld2Pixel(rect))
 
   def executeHeldSlotEffect(self):
     '''do whatever the heldslot says needs to be done'''
@@ -1140,7 +1136,7 @@ class Player(Entity, HasInventory, Light):
 
   def place(self):
     if self.heldSlot().item and self.heldSlot().count > 0 and self.heldSlot().item.isPlaceable():
-      x, y = pixelToCoord(*pg.mouse.get_pos())
+      x, y = player.pixelToCoord(*pg.mouse.get_pos())
       if world.blockAt(x, y).isAir:
         self.animations["placingBlock"] = 0
         self.heldSlot().item.place(x, y)
@@ -1156,9 +1152,9 @@ class Player(Entity, HasInventory, Light):
     """Returns the block that the player is facing, if it is in range"""
     blockPixel = bresenham(*pg.mouse.get_pos(), *FRAME.center)
     if blockPixel:
-      block = world.blockAt(*pixelToCoord(*bresenham(*pg.mouse.get_pos(), *FRAME.center)))
+      block = world.blockAt(*player.pixelToCoord(*bresenham(*pg.mouse.get_pos(), *FRAME.center)))
       for vertex in block.vertices:
-        if math.dist(relativeCoord(*vertex), FRAME.center) < self.reach:
+        if math.dist(player.relativeCoord(*vertex), FRAME.center) < self.reach:
           return block
     return None
 
@@ -1202,9 +1198,9 @@ class Edge:
   
   def draw(self):
     # if self.x != self.ex and self.y != self.ey: print("diagonal wtf")
-    pg.draw.line(SURF,(0,0,0),relativeCoord(self.x*BLOCK_SIZE, self.y*BLOCK_SIZE),relativeCoord(self.ex*BLOCK_SIZE, self.ey*BLOCK_SIZE), 3)
-    # pg.draw.circle(SURF,(0,255,0),relativeCoord(self.x*BLOCK_SIZE,self.y*BLOCK_SIZE), 3)
-    # pg.draw.circle(SURF,(0,255,0),relativeCoord(self.ex*BLOCK_SIZE,self.ey*BLOCK_SIZE), 3)
+    pg.draw.line(SURF,(0,0,0),player.relativeCoord(self.x*BLOCK_SIZE, self.y*BLOCK_SIZE),player.relativeCoord(self.ex*BLOCK_SIZE, self.ey*BLOCK_SIZE), 3)
+    # pg.draw.circle(SURF,(0,255,0),player.relativeCoord(self.x*BLOCK_SIZE,self.y*BLOCK_SIZE), 3)
+    # pg.draw.circle(SURF,(0,255,0),player.relativeCoord(self.ex*BLOCK_SIZE,self.ey*BLOCK_SIZE), 3)
   def __repr__(self):
     return str((self.x, self.y, self.ex, self.ey))
 
@@ -1460,7 +1456,7 @@ class World:
   
   def hoveredBlock(self) -> Block:
     mousepos = pg.mouse.get_pos()
-    return self.blockAt(*pixelToCoord(*mousepos))
+    return self.blockAt(*player.pixelToCoord(*mousepos))
 
   def blockAt(self, x, y) -> Block:
     return self[y][x]
@@ -1489,7 +1485,7 @@ class World:
           backBlock.drawBlock()
         if not block.isAir:
           block.drawBlock()
-        pg.draw.rect(SUNLIGHTSURF, (0,0,0,light), relativeRect(block.rect))
+        pg.draw.rect(SUNLIGHTSURF, (0,0,0,light), player.relativeRect(block.rect))
   
   def buildEdgePool(self):
     self.edgePool.clear()
@@ -1567,8 +1563,8 @@ class World:
               self.edgePool.append(edge)
               cur.edgeExist[Direction.SOUTH] = True
     for i in range(len(self.edgePool)):
-      self.vertices.add(relativeCoord(self.edgePool[i].x*BLOCK_SIZE,self.edgePool[i].y*BLOCK_SIZE))
-      self.vertices.add(relativeCoord(self.edgePool[i].ex*BLOCK_SIZE,self.edgePool[i].ey*BLOCK_SIZE))
+      self.vertices.add(player.relativeCoord(self.edgePool[i].x*BLOCK_SIZE,self.edgePool[i].y*BLOCK_SIZE))
+      self.vertices.add(player.relativeCoord(self.edgePool[i].ex*BLOCK_SIZE,self.edgePool[i].ey*BLOCK_SIZE))
       self.edgePool[i].draw()
 
   def generateLight(self, originr=None, originc=None):
@@ -2097,8 +2093,8 @@ if __name__ == "__main__":
       elif event.type == KEYDOWN and event.key == pg.K_e:
         check_for_interaction()
       elif event.type == KEYDOWN and event.key == pg.K_m:
-        pixel = tuple(map(lambda a: BLOCK_SIZE*a,pixelToCoord(*pg.mouse.get_pos())))
-        # print(pixel, world.mask.get_at(pixel), world.blockAt(*pixelToCoord(*pg.mouse.get_pos())).rect.topleft)
+        pixel = tuple(map(lambda a: BLOCK_SIZE*a,player.pixelToCoord(*pg.mouse.get_pos())))
+        # print(pixel, world.mask.get_at(pixel), world.blockAt(*player.pixelToCoord(*pg.mouse.get_pos())).rect.topleft)
         
         # print(world.mask.get_at())
 
@@ -2112,7 +2108,7 @@ if __name__ == "__main__":
     # SUNLIGHTSURF.blit(LIGHTSURF, (0,0))
     SURF.blit(SUNLIGHTSURF, ((0,0)))
     SURF.blit(OVERLAY, (0,0))
-    SURF.blit(font20.render(str(pixelToCoord(*player.camera.center)), True, (0,0,0)), (20, 50))
+    SURF.blit(font20.render(str(player.pixelToCoord(*player.camera.center)), True, (0,0,0)), (20, 50))
     
     frameEndTime = time.time()
     clock.tick(FPS)
