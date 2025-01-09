@@ -16,7 +16,7 @@ from customqueue import Queue
 from sprites import *
 # from utils import *
 # from world import *
-
+from utils import *
 from abc import *
 from dataclasses import dataclass
 from typing import *
@@ -27,18 +27,6 @@ start = time.time()
 
 pg.init()
 pg.font.init()
-
-class Direction:
-  '''Just to make code easier to read'''
-  NORTH=0
-  SOUTH=1
-  WEST=2
-  EAST=3
-
-def sysexit() -> None:
-  '''Helper function to exit the program'''
-  pg.quit()
-  raise SystemExit
 
 def coordWorld2Pixel(x: int, y: int) -> tuple[int, int]:
   '''convert world coordinates to pixel'''

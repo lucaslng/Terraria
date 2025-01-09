@@ -1,14 +1,4 @@
-import pygame as pg, math
-from pygame.locals import *
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-
-from constants import *
-from entities import *
-from inventory import Interactable
-
-player = Player()
-
+import pygame as pg
 class Direction:
   '''Just to make code easier to read'''
   NORTH=0
