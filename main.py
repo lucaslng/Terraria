@@ -320,8 +320,7 @@ class CraftingTableBlock(Block, Interactable):
     pg.image.load("crafting_table.png"), (BLOCK_SIZE, BLOCK_SIZE))
   
   def __init__(self, x, y, isBack=False):
-    Block.__init__(self, name="Crafting Table", texture=self.craftingTableTexture,
-                   x=x, y=y, hardness=2.5, blockType=BlockType.AXE, isBack=isBack)
+    Block.__init__(self, name="Crafting Table", texture=self.craftingTableTexture, x=x, y=y, hardness=2.5, blockType=BlockType.AXE, isBack=isBack)
   
   def interact(self):
     pass
@@ -335,17 +334,17 @@ class DirtVariant:
     self.name = name
     self.texture = texture
 class DirtVariantDirt(DirtVariant):
+  dirtTexture = pg.transform.scale(sprites["dirt"], (BLOCK_SIZE, BLOCK_SIZE))
   def __init__(self):
-    super().__init__("Dirt", sprites["dirt"])
+    super().__init__("Dirt", self.dirtTexture)
 class DirtVariantGrass(DirtVariant):
   grassTexture = pg.transform.scale(sprites["grass"], (BLOCK_SIZE, BLOCK_SIZE))
-  grassItemTexture = pg.transform.scale(grassTexture, (Item.SIZE, Item.SIZE))
+  grassItemTexture = pg.transform.scale(sprites["grass"], (Item.SIZE, Item.SIZE))
   def __init__(self):
     super().__init__("Grass Block", self.grassTexture)
 class DirtBlock(Block):
   def __init__(self, x, y, variant: DirtVariant = DirtVariantDirt(), isBack=False):
-    super().__init__(variant.name, variant.texture, x, y, 1.5, BlockType.SHOVEL, isBack=isBack)
-    
+    super().__init__(variant.name, variant.texture, x, y, 1.5, BlockType.SHOVEL, isBack=isBack) 
     self.variant = variant.name.lower()
 class DirtItem(PlaceableItem):
   dirtItemTexture = pg.transform.scale(sprites["dirt"], (Item.SIZE, Item.SIZE))
@@ -353,21 +352,25 @@ class DirtItem(PlaceableItem):
     super().__init__("Dirt", self.dirtItemTexture, 64)
     
 class OakLogBlock(Block):
+    oakLogTexture = pg.transform.scale(sprites["oak log"], (BLOCK_SIZE, BLOCK_SIZE))
     def __init__(self, x, y, isBack=False):
-        super().__init__("Oak Log", sprites["oak log"], x, y, 2.5, BlockType.AXE, isBack=isBack)
+        super().__init__("Oak Log", self.oakLogTexture, x, y, 2.5, BlockType.AXE, isBack=isBack)
 class OakLogItem(PlaceableItem):
     oakLogItemTexture = pg.transform.scale(sprites["oak log"], (Item.SIZE, Item.SIZE))
     def __init__(self):
         super().__init__("Oak Log", self.oakLogItemTexture, 64)
 
 class LeavesBlock(Block):
+    oakLeavesTexture = pg.transform.scale(sprites["oak leaves"], (BLOCK_SIZE, BLOCK_SIZE))
     def __init__(self, x, y, isBack=False):
-        super().__init__("Leaves", sprites["oak leaves"], x, y, 1, BlockType.SHEARS, isBack=isBack)
+        super().__init__("Leaves", self.oakLeavesTexture, x, y, 1, BlockType.SHEARS, isBack=isBack)
 
 class StoneBlock(Block):
+  stoneTexture = pg.transform.scale(sprites["stone"], (BLOCK_SIZE, BLOCK_SIZE))
   def __init__(self, x, y, isBack=False):
-    super().__init__("Stone", sprites["stone"], x, y, 5, BlockType.PICKAXE, isBack=isBack)
+    super().__init__("Stone", self.stoneTexture, x, y, 5, BlockType.PICKAXE, isBack=isBack)
 class CobblestoneBlock(Block):
+  cobblestoneTexture = pg.transform.scale(sprites["cobblestone"], (BLOCK_SIZE, BLOCK_SIZE))
   def __init__(self, x, y, isBack=False):
     super().__init__("Cobblestone", sprites["cobblestone"], x, y, 5.5, BlockType.PICKAXE, isBack=isBack)
 class CobbleStoneItem(PlaceableItem):
@@ -382,24 +385,24 @@ class Generated(ABC):
   rarity: int
   
 class IronOreBlock(Block, Generated):
-  ironOreTexture = sprites["ironOre"]
+  ironOreTexture = pg.transform.scale(sprites["ironOre"], (BLOCK_SIZE, BLOCK_SIZE))
   veinSize = 3.2
   rarity = 0.38
   def __init__(self, x, y, isBack=False):
     Block.__init__(self, "Iron Ore", self.ironOreTexture, x, y, 6, BlockType.PICKAXE, isBack=isBack)
 class IronOreItem(PlaceableItem):
-  ironOreItemTexture = sprites["ironOre"]
+  ironOreItemTexture = pg.transform.scale(sprites["ironOre"], (Item.SIZE, Item.SIZE))
   def __init__(self):
     super().__init__("Iron Ore", self.ironOreItemTexture, 64)
 
 class CoalOreBlock(Block, Generated):
-  coalTexture = sprites["coalOre"]
+  coalTexture = pg.transform.scale(sprites["coalOre"], (BLOCK_SIZE, BLOCK_SIZE))
   veinSize = 3.9
   rarity = 0.3
   def __init__(self, x, y, isBack=False):
     Block.__init__(self, "Coal Ore", self.coalTexture, x, y, 3, BlockType.PICKAXE, isBack=isBack)
 class CoalItem(Item):
-  coalItemTexture = sprites["coal"]
+  coalItemTexture = pg.transform.scale(sprites["coal"], (Item.SIZE, Item.SIZE))
   def __init__(self):
     super().__init__("Coal", self.coalItemTexture, 64)
 
@@ -454,7 +457,7 @@ class Slot:
   size = 40
   
   def clear(self):
-    '''reset / clear the slot'''
+    '''reset/clear the slot'''
     self.item = None
     self.count = 0
 
@@ -667,54 +670,82 @@ class Shears(Tool):
     
 '''Wooden'''
 class WoodenPickaxe(Tool):
+  woodenPickaxeTexture = pg.transform.scale(sprites["woodenPickaxe"], (Item.SIZE, Item.SIZE))
   def __init__(self):
-    super().__init__("Wooden Pickaxe", sprites["woodenPickaxe"], 1, 1.5, 59, BlockType.PICKAXE)  
+    super().__init__("Wooden Pickaxe", self.woodenPickaxeTexture, 1, 1.5, 59, BlockType.PICKAXE)  
 class WoodenAxe(Tool):
+  woodenAxeTexture = pg.transform.scale(sprites["woodenAxe"], (Item.SIZE, Item.SIZE))
   def __init__(self):
-    super().__init__("Wooden Axe", sprites["woodenAxe"], 1, 1.5, 59, BlockType.AXE)
+    super().__init__("Wooden Axe", self.woodenAxeTexture, 1, 1.5, 59, BlockType.AXE)
 class WoodenShovel(Tool):
+  woodenShovelTexture = pg.transform.scale(sprites["woodenShovel"], (Item.SIZE, Item.SIZE))
   def __init__(self):
-    super().__init__("Wooden Shovel", sprites["woodenShovel"], 1, 1.5, 59, BlockType.SHOVEL)
+    super().__init__("Wooden Shovel", self.woodenShovelTexture, 1, 1.5, 59, BlockType.SHOVEL)
 class WoodenSword(Tool):
+  woodenSwordTexture = pg.transform.scale(sprites["woodenSword"], (Item.SIZE, Item.SIZE))
   def __init__(self):
-    super().__init__("Wooden Sword", sprites["woodenSword"], 1, 1, 59, BlockType.SWORD)
+    super().__init__("Wooden Sword", self.woodenSwordTexture, 1, 1, 59, BlockType.SWORD)
     
 '''Stone'''
 class StonePickaxe(Tool):
+  stonePickaxeTexture = pg.transform.scale(sprites["stonePickaxe"], (Item.SIZE, Item.SIZE))
   def __init__(self):
-    super().__init__("Stone Pickaxe", sprites["stonePickaxe"], 1, 3, 131, BlockType.PICKAXE)
+    super().__init__("Stone Pickaxe", self.stonePickaxeTexture, 1, 3, 131, BlockType.PICKAXE)
 class StoneAxe(Tool):
+  stoneAxeTexture = pg.transform.scale(sprites["stoneAxe"], (Item.SIZE, Item.SIZE))
   def __init__(self):
-    super().__init__("Stone Axe", sprites["stoneAxe"], 1, 2.5, 131, BlockType.AXE)
+    super().__init__("Stone Axe", self.stoneAxeTexture, 1, 2.5, 131, BlockType.AXE)
 class StoneShovel(Tool):
+  stoneShovelTexture = pg.transform.scale(sprites["stoneShovel"], (Item.SIZE, Item.SIZE))
   def __init__(self):
-    super().__init__("Stone Shovel", sprites["stoneShovel"], 1, 2.5, 131, BlockType.SHOVEL)
+    super().__init__("Stone Shovel", self.stoneShovelTexture, 1, 2.5, 131, BlockType.SHOVEL)
 class StoneSword(Tool):
+  stoneSwordTexture = pg.transform.scale(sprites["stoneSword"], (Item.SIZE, Item.SIZE))
   def __init__(self):
-    super().__init__("Stone Sword", sprites["stoneSword"], 1, 1, 131, BlockType.SWORD)
+    super().__init__("Stone Sword", self.stoneSwordTexture, 1, 1, 131, BlockType.SWORD)
     
 '''Iron'''
 class IronPickaxe(Tool):
+  ironPickaxeTexture = pg.transform.scale(sprites["ironPickaxe"], (Item.SIZE, Item.SIZE))
   def __init__(self):
-    super().__init__("Iron Pickaxe", sprites["ironPickaxe"], 1, 5, 250, BlockType.PICKAXE)
+    super().__init__("Iron Pickaxe", self.ironPickaxeTexture, 1, 5, 250, BlockType.PICKAXE)
 class IronAxe(Tool):
+  ironAxeTexture = pg.transform.scale(sprites["ironAxe"], (Item.SIZE, Item.SIZE))
   def __init__(self):
-    super().__init__("Iron Axe", sprites["ironAxe"], 1, 3.5, 250, BlockType.AXE)
+    super().__init__("Iron Axe", self.ironAxeTexture, 1, 3.5, 250, BlockType.AXE)
 class IronShovel(Tool):
+  ironShovelTexture = pg.transform.scale(sprites["ironShovel"], (Item.SIZE, Item.SIZE))
   def __init__(self):
-    super().__init__("Iron Shovel", sprites["ironShovel"], 1, 3.5, 250, BlockType.SHOVEL)
-    
+    super().__init__("Iron Shovel", self.ironShovelTexture, 1, 3.5, 250, BlockType.SHOVEL)
+class IronSword(Tool):
+  ironSwordTexture = pg.transform.scale(sprites["ironSword"], (Item.SIZE, Item.SIZE))
+  def __init__(self):
+    super().__init__("Iron Sword", self.ironSwordTexture, 1, 1, 250, BlockType.SWORD)  
+
 '''Gold'''
 class GoldPickaxe(Tool):
+  goldPickaxeTexture = pg.transform.scale(sprites["goldPickaxe"], (Item.SIZE, Item.SIZE))
   def __init__(self):
-    super().__init__("Gold Pickaxe", sprites["goldPickaxe"], 1, 8.5, 32, BlockType.PICKAXE)
+    super().__init__("Gold Pickaxe", self.goldPickaxeTexture, 1, 8.5, 32, BlockType.PICKAXE)
+class GoldAxe(Tool):
+  goldAxeTexture = pg.transform.scale(sprites["goldAxe"], (Item.SIZE, Item.SIZE))
+  def __init__(self):
+    super().__init__("Gold Axe", self.goldAxeTexture, 1, 7.5, 32, BlockType.AXE)
+class GoldShovel(Tool):
+  goldShovelTexture = pg.transform.scale(sprites["goldShovel"], (Item.SIZE, Item.SIZE))
+  def __init__(self):
+    super().__init__("Gold Shovel", self.goldShovelTexture, 1, 7.5, 32, BlockType.SHOVEL)
+class GoldSword(Tool):
+  goldSwordTexture = pg.transform.scale(sprites["goldSword"], (Item.SIZE, Item.SIZE))
+  def __init__(self):
+    super().__init__("Gold Sword", self.goldSwordTexture, 1, 1, 32, BlockType.SWORD)
+
 
 class HasInventory:
   """Parent class for classes than have an inventory"""
 
   def __init__(self, rows: int, cols: int, menux: int, menuy: int):
     self.inventory = Inventory(rows=rows, cols=cols, menux=menux, menuy=menuy)
-
 
 class Entity:
   """Base entity class. Contains methods for moving, drawing, and gravity"""
@@ -1694,120 +1725,100 @@ class Button:
         SURF.blit(shadow_surf, shadow_rect)
         SURF.blit(text_surf, text_rect)
 
-class MainMenu:
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.screen = pg.display.set_mode((width, height))
+def main_menu(width, height):
+    button_font = pg.font.Font("MinecraftRegular-Bmg3.otf",  36)
+    splash_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 28)
+    button_text_colour = (240, 240, 240)
+    text_shadow = (20, 20, 20, 160)
 
-        self.buttonFont = pg.font.Font("MinecraftRegular-Bmg3.otf", 36)
-        self.splashFont = pg.font.Font("MinecraftRegular-Bmg3.otf", 28)
-        
-        self.buttonTextColour = (240, 240, 240)
-        self.textShadow = (20, 20, 20, 160)
-        
-        #Background
-        self.bgPanorama = pg.image.load("title screen background animation.jpg").convert()
-        
-        self.overlay = pg.Surface((self.width, self.height))
-        self.overlay.fill((0, 0, 0))
-        self.overlay.set_alpha(40)
-        
-        self.bgScrollSpeed = 20
-        self.bgOffset = 0
-        
-        #Title
-        self.titleImage = pg.image.load("title screen title.png").convert_alpha()
-        self.titleImageRect = self.titleImage.get_rect(center=(self.width // 2, self.height // 4))
-        
-        #Splash text stuff
-        self.splashTexts = [
-            "Dont sue us Minecraft!",
-            "Made with Pygame!",
-            "Lorem ipsum!",
-            "Pygame >",
-        ]
-        
-        self.currentSplash = random.choice(self.splashTexts)
-        self.splashAngle = -15
-        self.splashWaveOffset = 0
-        self.splashScale = 1.0
-        
-        self._createButtons()
-        
-    def _createButtons(self):
-        buttonWidth, buttonHeight = 400, 50
-        buttonX = (self.width - buttonWidth) // 2
-        spacing = 24  #space between buttons
-        startY = self.height // 2
-        
-        self.buttons = {
-            'play': Button(buttonX, startY, buttonWidth, buttonHeight, "Play"),
-            'instructions': Button(buttonX, startY + buttonHeight + spacing, buttonWidth, buttonHeight, "Instructions"),
-            'options': Button(buttonX, startY + (buttonHeight + spacing) * 2, buttonWidth, buttonHeight, "Options"),
-            'quit': Button(buttonX, startY + (buttonHeight + spacing) * 3, buttonWidth, buttonHeight, "Quit")
-        }
-        
-    def _updateBackground(self, time):
-        self.bgOffset = (self.bgOffset + self.bgScrollSpeed * time / 1000.0) % self.bgPanorama.get_width()
+    bg_panorama = pg.image.load("title screen background animation.jpg").convert()
+    overlay = pg.Surface((width, height))
+    overlay.fill((0, 0, 0))
+    overlay.set_alpha(40)
 
-    def _draw(self):
-        #Draw background
-        self.screen.blit(self.bgPanorama, (-self.bgOffset, 0))
-        self.screen.blit(self.bgPanorama, (self.bgPanorama.get_width() - self.bgOffset, 0))
-        self.screen.blit(self.overlay, (0, 0))
-        
-        #Title
-        self.screen.blit(self.titleImage, self.titleImageRect)
-        
-        #Splash text
-        self.splashWaveOffset += 0.03
-        self.splashScale = 1.0 + math.sin(self.splashWaveOffset * 0.5) * 0.03  #subtle pulse
-        
-        splashSurf = self.splashFont.render(self.currentSplash, True, (255, 255, 0))
-        splashSurf = pg.transform.rotate(splashSurf, self.splashAngle)
-        splashSurf = pg.transform.scale(splashSurf, 
-                                       (int(splashSurf.get_width() * self.splashScale),
-                                        int(splashSurf.get_height() * self.splashScale)))
-        
-        splashYOffset = math.sin(self.splashWaveOffset) * 6
-        splashPos = (self.width // 2 + 180, self.height // 4 + splashYOffset)
-        self.screen.blit(splashSurf, splashPos)
-        
-        for button in self.buttons.values():
-            button.draw(self.buttonFont, self.buttonTextColour, self.textShadow)
+    title_image = pg.image.load("title screen title.png").convert_alpha()
+    title_image_rect = title_image.get_rect(center=(width // 2, height // 4))
 
-    def run(self):
-        clock = pg.time.Clock()
-        
-        while True:
-            mousePos = pg.mouse.get_pos()           
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    sysexit()
-                    
-                if event.type in (pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP):
-                    for button in self.buttons.values():
-                        button.handle_event(event, mousePos)
+    splash_texts = [
+      "Dont sue us Minecraft!",
+      "Made with Pygame!",
+      "Lorem ipsum!",
+      "Pygame >",
+    ]
+  
+    current_splash = random.choice(splash_texts)
+    splash_angle = -15
+    splash_wave_offset = 0
+    splash_scale = 1.0
 
-                if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-                    if self.buttons['play'].rect.collidepoint(mousePos):
-                        return
-                    elif self.buttons['instructions'].rect.collidepoint(mousePos):
-                        pass
-                    elif self.buttons['options'].rect.collidepoint(mousePos):
-                        pass
-                    elif self.buttons['quit'].rect.collidepoint(mousePos):
-                        sysexit()
+    button_width, button_height = 400, 50
+    button_x = (width - button_width) // 2
+    spacing = 24
+    start_y = height // 2
 
-            for button in self.buttons.values():
-                button.update(mousePos)
-            
-            self._updateBackground(clock.get_time())
-            self._draw()
-            
-            pg.display.flip()
-            clock.tick(FPS)
+    buttons = {
+        'play': Button(button_x, start_y, button_width, button_height, "Play"),
+        'instructions': Button(button_x, start_y + button_height + spacing, button_width, button_height, "Instructions"),
+        'options': Button(button_x, start_y + (button_height + spacing) * 2, button_width, button_height, "Options"),
+        'quit': Button(button_x, start_y + (button_height + spacing) * 3, button_width, button_height, "Quit"),
+    }
+
+    bg_scroll_speed = 20
+    bg_offset = 0
+    clock = pg.time.Clock()
+
+    while True:
+        mouse_pos = pg.mouse.get_pos()
+
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                return "quit"
+
+            if event.type in (pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP):
+                for button in buttons.values():
+                    button.handle_event(event, mouse_pos)
+
+            if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+                if buttons['play'].rect.collidepoint(mouse_pos):
+                    return "play"
+                elif buttons['instructions'].rect.collidepoint(mouse_pos):
+                    return "instructions"
+                elif buttons['options'].rect.collidepoint(mouse_pos):
+                    return "options"
+                elif buttons['quit'].rect.collidepoint(mouse_pos):
+                    return "quit"
+
+        for button in buttons.values():
+            button.update(mouse_pos)
+
+        bg_offset = (bg_offset + bg_scroll_speed * clock.get_time() / 1000.0) % bg_panorama.get_width()
+
+        # Draw background
+        SURF.blit(bg_panorama, (-bg_offset, 0))
+        SURF.blit(bg_panorama, (bg_panorama.get_width() - bg_offset, 0))
+        SURF.blit(overlay, (0, 0))
+
+        # Draw title
+        SURF.blit(title_image, title_image_rect)
+
+        # Draw splash text
+        splash_wave_offset += 0.03
+        splash_scale = 1.0 + math.sin(splash_wave_offset * 0.5) * 0.03
+
+        splash_surf = splash_font.render(current_splash, True, (255, 255, 0))
+        splash_surf = pg.transform.rotate(splash_surf, splash_angle)
+        splash_surf = pg.transform.scale(splash_surf, (int(splash_surf.get_width() * splash_scale), int(splash_surf.get_height() * splash_scale)))
+
+        splash_y_offset = math.sin(splash_wave_offset) * 6
+        splash_pos = (width // 2 + 180, height // 4 + splash_y_offset)
+        SURF.blit(splash_surf, splash_pos)
+
+        # Draw buttons
+        for button in buttons.values():
+            button.draw(button_font, button_text_colour, text_shadow)
+
+        pg.display.flip()
+        clock.tick(60)
     
 #TODO work on these later hopefully        
 def instructionsScreen():
@@ -1816,7 +1827,7 @@ def instructionsScreen():
 def changeKeybinds():
     pass
   
-class PauseScreen:
+class PauseMenu:
   def __init__(self, width, height):
     self.width = width
     self.height = height
@@ -1973,7 +1984,7 @@ if __name__ == "__main__":
   loader.startGeneration()
   start_time = time.time()
   
-  MainMenu(WIDTH, HEIGHT).run()
+  main_menu(WIDTH, HEIGHT)
 
   while True:
       for event in pg.event.get():
@@ -2057,7 +2068,7 @@ if __name__ == "__main__":
           print(player.inventory.menu.hoveredSlot)
           player.inventory.menu.pickUpItem()
       elif event.type == KEYDOWN and event.key == pg.K_ESCAPE:
-        PauseScreen(WIDTH, HEIGHT).run()
+        pass
         
       elif event.type == KEYDOWN and event.key == pg.K_e:
         check_for_interaction()

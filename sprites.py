@@ -10,13 +10,12 @@ class SpriteSheet:
     def __init__(this, imageName: str):
         this.sheet = pg.image.load(imageName).convert_alpha()
         
-    def get(this, x, y, width, height, scale=BLOCK_SIZE, colour=(0,0,0)):
+    def get(this, x, y, width, height, colour=(0,0,0)):
         image = pg.Surface((width, height), pg.SRCALPHA)
         image.blit(this.sheet, (0, 0), (x, y, width, height))
         if colour != (0, 0, 0):
             image.set_colorkey(colour)
-
-        image = pg.transform.scale(image, (scale, scale))     
+   
         return image
             
 
@@ -116,38 +115,38 @@ sprites = {
   
     #---TOOLS---
     #Wooden
-    "woodenAxe": everythingSheet.get(0, 0, 16, 16, 15),
-    "woodenPickaxe": everythingSheet.get(16, 0, 16, 16, 15),
-    "woodenShovel": everythingSheet.get(32, 0, 16, 16, 15),
-    "woodenSword": everythingSheet.get(48, 0, 16, 16, 15),
+    "woodenAxe": everythingSheet.get(0, 0, 16, 16),
+    "woodenPickaxe": everythingSheet.get(16, 0, 16, 16),
+    "woodenShovel": everythingSheet.get(32, 0, 16, 16),
+    "woodenSword": everythingSheet.get(48, 0, 16, 16),
   
     #Stone
-    "stoneAxe": everythingSheet.get(64, 0, 16, 16, 15),
-    "stonePickaxe": everythingSheet.get(80, 0, 16, 16, 15),
-    "stoneShovel": everythingSheet.get(96, 0, 16, 16, 15),
-    "stoneSword": everythingSheet.get(112, 0, 16, 16, 15),
+    "stoneAxe": everythingSheet.get(64, 0, 16, 16),
+    "stonePickaxe": everythingSheet.get(80, 0, 16, 16),
+    "stoneShovel": everythingSheet.get(96, 0, 16, 16),
+    "stoneSword": everythingSheet.get(112, 0, 16, 16),
     
     #Iron
-    "ironAxe": everythingSheet.get(128, 0, 16, 16, 15),
-    "ironPickaxe": everythingSheet.get(144, 0, 16, 16, 15),
-    "ironShovel": everythingSheet.get(160, 0, 16, 16, 15),
-    "ironSword": everythingSheet.get(176, 0, 16, 16, 15),
+    "ironAxe": everythingSheet.get(128, 0, 16, 16),
+    "ironPickaxe": everythingSheet.get(144, 0, 16, 16),
+    "ironShovel": everythingSheet.get(160, 0, 16, 16),
+    "ironSword": everythingSheet.get(176, 0, 16, 16),
     
     #Gold
-    "goldAxe": everythingSheet.get(192, 0, 16, 16, 15),
-    "goldPickaxe": everythingSheet.get(208, 0, 16, 16, 15),
-    "goldShovel": everythingSheet.get(224, 0, 16, 16, 15),
-    "goldSword": everythingSheet.get(240, 0, 16, 16, 15),
+    "goldAxe": everythingSheet.get(192, 0, 16, 16),
+    "goldPickaxe": everythingSheet.get(208, 0, 16, 16),
+    "goldShovel": everythingSheet.get(224, 0, 16, 16),
+    "goldSword": everythingSheet.get(240, 0, 16, 16),
     
     #Diamond
-    "diamondAxe": everythingSheet.get(256, 0, 16, 16, 15),
-    "diamondPickaxe": everythingSheet.get(272, 0, 16, 16, 15),
-    "diamondShovel": everythingSheet.get(288, 0, 16, 16, 15),
-    "diamondSword": everythingSheet.get(304, 0, 16, 16, 15),
+    "diamondAxe": everythingSheet.get(256, 0, 16, 16),
+    "diamondPickaxe": everythingSheet.get(272, 0, 16, 16),
+    "diamondShovel": everythingSheet.get(288, 0, 16, 16),
+    "diamondSword": everythingSheet.get(304, 0, 16, 16),
     
     #Misc
-    "shears": everythingSheet.get(320, 0, 16, 16, 15),
-    "flintAndSteel": everythingSheet.get(336, 0, 16, 16, 15),
+    "shears": everythingSheet.get(320, 0, 16, 16),
+    "flintAndSteel": everythingSheet.get(336, 0, 16, 16),
     
     #---HEARTS---
     "empty heart": weirdBlocksSheet.get(0, 0, 9, 9),
