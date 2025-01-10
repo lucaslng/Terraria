@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from items import *
 from constants import font20, SURF, OVERLAY, BIG
-from entities import Player
+from game.entities import Player
 
 
 player = Player()

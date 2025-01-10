@@ -6,7 +6,7 @@ from blocks import *
 from sprites import *
 from utils.direction import direction
 from utils.utils import *
-from entities import *
+from game.entities import *
 from menus import LoadingScreen
 
 
