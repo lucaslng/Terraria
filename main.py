@@ -7,29 +7,19 @@ from pygame.locals import QUIT, KEYDOWN
 from pygame.math import Vector2
 
 #Import code from other files
-# from blocks import *
-# from block_item_registry import *
 from game.model.blocks.utils.blocksenum import Blocks
 from game.model.blocks.utils.executable import Executable
 from game.model.blocks.utils.interactable import Interactable
 from constants import WIDTH, HEIGHT, BLOCK_SIZE, WORLD_HEIGHT, WORLD_WIDTH, SURF, SUNLIGHTSURF, FPS, font20, gravity, BIG, clock
 from utils.customqueue import Queue
-# from entities import *
-# from inventory import *
-# from items import *
-# from light import *
-# from menus import *
-from game.model.textures.sprites import sprites
-# from utils import *
-# from world import *
+from game.textures.sprites import sprites
 from game.utils.direction import NORTH, EAST, SOUTH, WEST
 from game.utils.utils import sysexit
+from utils.simplexnoise import SimplexNoise
+
 from abc import ABC
 from dataclasses import dataclass
-# from typing import 
 from enum import Enum
-
-from utils.simplexnoise import SimplexNoise
 
 
 start = time.time()
@@ -305,12 +295,12 @@ class DirtVariant:
     self.name = name
     self.texture = texture
 class DirtVariantDirt(DirtVariant):
-  dirtTexture = pg.transform.scale(sprites["dirt"], (BLOCK_SIZE, BLOCK_SIZE))
+  dirtTexture = pg.transform.scale(sprites[Blocks.Dirt], (BLOCK_SIZE, BLOCK_SIZE))
   def __init__(self):
     super().__init__("Dirt", self.dirtTexture)
 class DirtVariantGrass(DirtVariant):
-  grassTexture = pg.transform.scale(sprites["grass"], (BLOCK_SIZE, BLOCK_SIZE))
-  grassItemTexture = pg.transform.scale(sprites["grass"], (Item.SIZE, Item.SIZE))
+  grassTexture = pg.transform.scale(sprites[Blocks.Grass], (BLOCK_SIZE, BLOCK_SIZE))
+  grassItemTexture = pg.transform.scale(sprites[Blocks.Grass], (Item.SIZE, Item.SIZE))
   def __init__(self):
     super().__init__("Grass Block", self.grassTexture)
 class DirtBlock(Block):
@@ -318,7 +308,7 @@ class DirtBlock(Block):
     super().__init__(variant.name, variant.texture, x, y, 1.5, BlockType.SHOVEL, isBack=isBack) 
     self.variant = variant.name.lower()
 class DirtItem(PlaceableItem):
-  dirtItemTexture = pg.transform.scale(sprites["dirt"], (Item.SIZE, Item.SIZE))
+  dirtItemTexture = pg.transform.scale(sprites[Blocks.Dirt], (Item.SIZE, Item.SIZE))
   def __init__(self):
     super().__init__("Dirt", self.dirtItemTexture, 64)
     
