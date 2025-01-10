@@ -1318,6 +1318,7 @@ class World:
             'trees': 0.2
         }
     
+    start_time = time.perf_counter()
     # Precompute noise
     grassHeightNoise = self.SimplexNoise(19, 1)
     stoneHeightNoise = self.SimplexNoise(30, 1)
@@ -1327,6 +1328,9 @@ class World:
       ore.__name__: (self.SimplexNoise(ore.veinSize, 2), ore)
       for ore in ores
     }
+    
+    elapsed_time = time.perf_counter() - start_time
+    print(f"Noise time {elapsed_time:.2f} seconds")
     
     baseProgress = 0.0        
     if self.progress_tracker:
