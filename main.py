@@ -1213,7 +1213,7 @@ class World:
     self.mask = pg.mask.Mask((WORLD_WIDTH*BLOCK_SIZE, WORLD_HEIGHT*BLOCK_SIZE))
     self.lightmap = [
         [0 for x in range(WORLD_WIDTH)] for y in range(WORLD_HEIGHT)]
-
+    
     self.generateWorld()
     self.generateLight()
 
@@ -1226,6 +1226,7 @@ class World:
             'trees': 0.2
         }
     
+    start_time = time.perf_counter()
     # Precompute noise
     grassHeightNoise = SimplexNoise(19, 1)
     stoneHeightNoise = SimplexNoise(30, 1)
@@ -1235,6 +1236,8 @@ class World:
       ore.__name__: (SimplexNoise(ore.veinSize, 2), ore)
       for ore in ores
     }
+    elapsed_time = time.perf_counter() - start_time
+    print(f"Noise time: {elapsed_time:.2f} seconds")
     
     baseProgress = 0.0        
     if self.progress_tracker:
