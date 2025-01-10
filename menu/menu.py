@@ -11,8 +11,8 @@ from utils.updatescreen import updateScreen
 from widgets.button import Button
 
 
-def menu():
-	'''main menu loop'''
+def MainMenu():
+	'''Main menu loop'''
 	button_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 36)
 	splash_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 28)
 	button_text_colour = (240, 240, 240)
@@ -25,7 +25,6 @@ def menu():
 
 	title_image = pg.image.load("title screen title.png").convert_alpha()
 	title_image_rect = title_image.get_rect(center=(WIDTH // 2, HEIGHT // 4))
-
 
 	current_splash = random.choice(splashTexts)
 	splash_angle = -15
@@ -48,30 +47,32 @@ def menu():
 	bg_offset = 0
 
 	while True:
+		dt = clock.get_time() / 1000.0  #delta time in seconds
 		mouse_pos = pg.mouse.get_pos()
 
 		for event in pg.event.get():
-				if event.type == pg.QUIT:
-						return Screens.QUIT
+			if event.type == pg.QUIT:
+				return Screens.QUIT
 
-				if event.type in (pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP):
-						for button in buttons.values():
-								button.handle_event(event, mouse_pos)
+			if event.type in (pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP):
+				for button in buttons.values():
+					button.handle_event(event, mouse_pos)
 
-				if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-						if buttons['play'].rect.collidepoint(mouse_pos):
-								return Screens.GAME
-						elif buttons['instructions'].rect.collidepoint(mouse_pos):
-								return instructionsScreen()
-						elif buttons['options'].rect.collidepoint(mouse_pos):
-								return optionsScreen()
-						elif buttons['quit'].rect.collidepoint(mouse_pos):
-								return Screens.QUIT
+			if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+				if buttons['play'].rect.collidepoint(mouse_pos):
+					return Screens.GAME
+				elif buttons['instructions'].rect.collidepoint(mouse_pos):
+					return instructionsScreen()
+				elif buttons['options'].rect.collidepoint(mouse_pos):
+					# return optionsScreen()
+					pass
+				elif buttons['quit'].rect.collidepoint(mouse_pos):
+					return Screens.QUIT
 
 		for button in buttons.values():
-				button.update(mouse_pos)
+			button.update(mouse_pos)
 
-		bg_offset = (bg_offset + bg_scroll_speed * clock.get_time() / 1000.0) % bg_panorama.get_width()
+		bg_offset = (bg_offset + bg_scroll_speed * dt) % bg_panorama.get_width()
 
 		#Draw background
 		SURF.blit(bg_panorama, (-bg_offset, 0))
@@ -81,7 +82,7 @@ def menu():
 		SURF.blit(title_image, title_image_rect)
 
 		#Draw splash text
-		splash_wave_offset += 0.03
+		splash_wave_offset += dt
 		splash_scale = 1.0 + math.sin(splash_wave_offset * 0.5) * 0.03
 
 		splash_surf = splash_font.render(current_splash, True, (255, 255, 0))
@@ -94,6 +95,6 @@ def menu():
 
 		#Draw buttons
 		for button in buttons.values():
-				button.draw(button_font, button_text_colour, text_shadow)
+			button.draw(button_font, button_text_colour, text_shadow)
 
 		updateScreen()

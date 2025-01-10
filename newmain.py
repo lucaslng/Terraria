@@ -1,6 +1,6 @@
 from game.game import game
 from game.utils.utils import sysexit
-from menu.menu import menu
+from menu.menu import MainMenu
 from screens import Screens
 from initialize import initialize
 
@@ -15,7 +15,7 @@ def main():
 	while True:
 		match state:
 			case Screens.MENU:
-				state = menu()
+				state = MainMenu()
 			case Screens.GAME:
 				state = game()
 			case Screens.QUIT:
