@@ -1,7 +1,7 @@
 from game.game import game
 from game.utils.utils import sysexit
 from menu.menu import menu
-from gamestates import Screens
+from screens import Screens
 from initialize import initialize
 
 

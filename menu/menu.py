@@ -1,11 +1,12 @@
 import math
 import pygame as pg
-from constants import FPS, HEIGHT, SURF, WIDTH
-from gamestates import Screens
+from constants import HEIGHT, SURF, WIDTH, clock
+from screens import Screens
 from menu.instructions.instructions import instructionsScreen
 from menu.options.options import optionsScreen
 from menu.splashtexts import splashTexts
 import random
+from utils.updatescreen import updateScreen
 from widgets.button import Button
 
 
@@ -44,7 +45,6 @@ def menu():
 
 	bg_scroll_speed = 20
 	bg_offset = 0
-	clock = pg.time.Clock()
 
 	while True:
 		mouse_pos = pg.mouse.get_pos()
@@ -95,5 +95,4 @@ def menu():
 		for button in buttons.values():
 				button.draw(button_font, button_text_colour, text_shadow)
 
-		pg.display.flip()
-		clock.tick(FPS)
+		updateScreen()
