@@ -4,4 +4,4 @@ from constants import HEIGHT, WIDTH
 
 
 blocks = Surface((WIDTH, HEIGHT), SRCALPHA)
-light = Surface((WIDTH, HEIGHT), SRCALPHA)
+sunlight = Surface((WIDTH, HEIGHT), SRCALPHA)

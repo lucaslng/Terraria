@@ -1,6 +1,6 @@
 import pygame as pg
-from constants import clock
+from constants import FPS, clock
 
 def updateScreen():
 	pg.display.flip()
-	clock.tick()
+	clock.tick(FPS)

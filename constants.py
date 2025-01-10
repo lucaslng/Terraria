@@ -8,7 +8,7 @@ FPS = 60
 
 pg.init()
 
-SURF = pg.display.set_mode((WIDTH, HEIGHT), vsync=1)
+SURF = pg.display.set_mode((WIDTH, HEIGHT))
 SUNLIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
 LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
 FRAME = SURF.get_rect()
