@@ -25,7 +25,7 @@ font20 = pg.font.Font(None, 20)
 
 BLOCK_SIZE = 25
 WORLD_HEIGHT = 256
-WORLD_WIDTH = 400    #default is 2500
+WORLD_WIDTH = 500    #default is 2500
 SHADOW_QUALITY = 3
 gravity = 1 
 
