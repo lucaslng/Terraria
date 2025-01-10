@@ -1,6 +1,6 @@
 import pygame as pg, math, time, threading, random
-from queue import Queue
 
+from customqueue import Queue
 from constants import SURF, WIDTH, HEIGHT, FPS, clock
 from utils.utils import sysexit
 
@@ -83,17 +83,13 @@ class Button:
         
         text_surf = font.render(self.text, True, text_colour)
         text_surf = pg.transform.scale(text_surf, (int(text_surf.get_width() * scale_factor), int(text_surf.get_height() * scale_factor)))
-        text_rect = text_surf.get_rect(center=button_rect.center)
         
-        #Text shadow
-        shadow_surf = font.render(self.text, True, shadow_color)
-        shadow_surf = pg.transform.scale(shadow_surf, (int(shadow_surf.get_width() * scale_factor), int(shadow_surf.get_height() * scale_factor)))
-        shadow_rect = shadow_surf.get_rect(center=(text_rect.centerx + 1, text_rect.centery + 1))
-        
-        SURF.blit(shadow_surf, shadow_rect)
+        verticalOffset = 5
+        text_rect = text_surf.get_rect(center=(button_rect.centerx, button_rect.centery + verticalOffset))
+
         SURF.blit(text_surf, text_rect)
 
-def mainMenu():
+def MainMenu():
     button_font = pg.font.Font("MinecraftRegular-Bmg3.otf",  36)
     splash_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 28)
     button_text_colour = (240, 240, 240)
@@ -194,7 +190,7 @@ def instructionsScreen():
 def changeKeybinds():
     pass
   
-def pauseMenu():
+def PauseMenu():
     button_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 36)
     button_text_colour = (240, 240, 240)
     text_shadow = (20, 20, 20, 160)
@@ -257,10 +253,12 @@ class LoadingScreen:
         self.progress = 0.0
         self.startTime = time.time()
 
+        #Progress bar dimensions
         self.barWidth = 400
         self.barHeight = 20
         self.barX = (width - self.barWidth) // 2
         self.barY = height // 2 + 30
+        self.radius = self.barHeight // 2
         
     def update(self, progress, current_step):
         self.progress = progress
@@ -278,18 +276,41 @@ class LoadingScreen:
         message_rect = message.get_rect(center=(self.width // 2, self.height // 2 - 20))
         self.screen.blit(message, message_rect)
 
-        #Progress bar
-        pg.draw.rect(self.screen, (50, 50, 50), (self.barX, self.barY, self.barWidth, self.barHeight))
-        fill_width = int(self.barWidth * self.progress)
-        pg.draw.rect(self.screen, (106, 176, 76), (self.barX, self.barY, fill_width, self.barHeight))
+        #Progress bar with rounded corners
+        self.loadingBarColour = (50, 50, 50)
+        pg.draw.rect(self.screen, self.loadingBarColour, (self.barX + self.radius, self.barY, self.barWidth - 2 * self.radius, self.barHeight))    
+        pg.draw.rect(self.screen, self.loadingBarColour, (self.barX, self.barY + self.radius, self.radius, self.barHeight - 2 * self.radius))
+        pg.draw.rect(self.screen, self.loadingBarColour, (self.barX + self.barWidth - self.radius, self.barY + self.radius, self.radius, self.barHeight - 2 * self.radius))
 
-        #Percentage
+        pg.draw.circle(self.screen, self.loadingBarColour, (self.barX + self.radius, self.barY + self.radius), self.radius)
+        pg.draw.circle(self.screen, self.loadingBarColour, (self.barX + self.barWidth - self.radius, self.barY + self.radius), self.radius)
+        pg.draw.circle(self.screen, self.loadingBarColour, (self.barX + self.radius, self.barY + self.barHeight - self.radius), self.radius)
+        pg.draw.circle(self.screen, self.loadingBarColour, (self.barX + self.barWidth - self.radius, self.barY + self.barHeight - self.radius), self.radius)
+        
+        fill_width = int(self.barWidth * self.progress)
+        if fill_width > 0:
+            fillColor = (106, 176, 76)
+            
+            if fill_width <= self.barHeight:
+                pg.draw.circle(self.screen, fillColor, (self.barX + self.radius, self.barY + self.barHeight//2), self.radius)
+            else:
+                pg.draw.rect(self.screen, fillColor, (self.barX + self.radius, self.barY, fill_width - 2 * self.radius, self.barHeight))
+                pg.draw.rect(self.screen, fillColor, (self.barX, self.barY + self.radius, self.radius, self.barHeight - 2 * self.radius))
+                pg.draw.circle(self.screen, fillColor, (self.barX + self.radius, self.barY + self.radius), self.radius)
+                pg.draw.circle(self.screen, fillColor, (self.barX + self.radius, self.barY + self.barHeight - self.radius), self.radius)
+                
+                if fill_width > self.barHeight:
+                    pg.draw.rect(self.screen, fillColor, (self.barX + fill_width - self.radius, self.barY + self.radius, self.radius, self.barHeight - 2 * self.radius))
+                    pg.draw.circle(self.screen, fillColor, (self.barX + fill_width - self.radius, self.barY + self.radius), self.radius)
+                    pg.draw.circle(self.screen, fillColor, (self.barX + fill_width - self.radius, self.barY + self.barHeight - self.radius), self.radius)
+
+        #Percentage text
         percentage = f"{int(self.progress * 100)}%"
         percent_text = self.font.render(percentage, True, (255, 255, 255))
-        percent_rect = percent_text.get_rect(center=(self.width // 2, self.barY + 40))
+        percent_rect = percent_text.get_rect(center=(self.width // 2, self.barY + 50))
         self.screen.blit(percent_text, percent_rect)
 
-        #Elapsed load time
+        #Elapsed load time text
         elapsed_time = time.time() - self.startTime
         elapsed_text = self.font.render(f"Time elapsed: {elapsed_time:.1f} seconds", True, (200, 200, 200))
         elapsed_rect = elapsed_text.get_rect(center=(self.width // 2, self.barY + 120))
