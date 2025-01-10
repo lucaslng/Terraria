@@ -8,7 +8,10 @@ from pygame.math import Vector2
 # from block_item_registry import *
 from blocks.executable import Executable
 from blocks.interactable import Interactable
+from blocks.light.worldProtocol import LightWorldProtocol
 from constants import *
+from utils.conversions.rectWorld2Pixel import rectWorld2Pixel
+from utils.conversions.coordWorld2Pixel import coordWorld2Pixel
 from customqueue import Queue
 # from entities import *
 # from inventory import *
@@ -30,14 +33,6 @@ start = time.time()
 
 pg.init()
 pg.font.init()
-
-def coordWorld2Pixel(x: int, y: int) -> tuple[int, int]:
-  '''convert world coordinates to pixel'''
-  return x * BLOCK_SIZE, y * BLOCK_SIZE
-
-def rectWorld2Pixel(rect: pg.rect.Rect) -> pg.rect.Rect:
-  '''convert world rect to pixel rect'''
-  return pg.rect.Rect(rect.left * BLOCK_SIZE, rect.top * BLOCK_SIZE, rect.width * BLOCK_SIZE, rect.height * BLOCK_SIZE)
 
 def check_for_interaction() -> None:
   '''loops over every visible block to check for interactable blocks'''
@@ -112,28 +107,6 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, quality: int=1):
     return plotLineLow(x0, y0, x1, y1)
   else:
     return plotLineHigh(x0, y0, x1, y1)
-
-@dataclass
-class Light:
-  '''Base class for any object with light except the sun'''
-  lightRadius: int
-  x: float
-  y: float
-  relative: bool = True
-  
-  def __post_init__(self):
-    # print("post init light")
-    lights.append(self)
-    
-  def drawLight(self):
-    '''draw light'''
-    if self.relative:
-      # print(self.x, self.y, self.x*20, self.y*20, player.coordWorld2Relative(self.x, self.y))
-      pg.draw.circle(SUNLIGHTSURF, (0,0,0,0), player.coordWorld2Relative(self.x,self.y), self.lightRadius)
-    else:
-      pg.draw.circle(SUNLIGHTSURF, (0,0,0,0), (self.x,self.y), self.lightRadius)
-
-lights: list[Light] = []
 
 @dataclass
 class Item:
@@ -374,8 +347,7 @@ class TorchBlock(Block, Light):
   torchTexture = pg.transform.scale(sprites["torch"].convert_alpha(), (BLOCK_SIZE,BLOCK_SIZE))
   def __init__(self, x, y, isBack=False):
     Block.__init__(self, "Torch", self.torchTexture, x, y, 1, BlockType.NONE, isEmpty=True, isBack=isBack)
-    Light.__init__(self, 100, x, y)
-    lights.append(self)
+    Light.__init__(self, 100)
 class TorchItem(PlaceableItem, Executable):
   torchItemTexture = pg.transform.scale(sprites["torch"].convert_alpha(), (Item.SIZE, Item.SIZE))
   def __init__(self):
@@ -1967,11 +1939,6 @@ class WorldLoader:
 
 '''Main Loop'''
 if __name__ == "__main__":
-  SUNLIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
-  LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
-  FRAME = SURF.get_rect()
-  ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
-  OVERLAY = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
   
   #Give player items at the beginning of the game
   defaultItems = [GoldPickaxe(), IronAxe(), StoneAxe(), WoodenShovel(), CraftingTableItem()] + [
