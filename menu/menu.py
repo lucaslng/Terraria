@@ -1,11 +1,12 @@
 import math
 import pygame as pg
+import random
+
 from constants import HEIGHT, SURF, WIDTH, clock
 from screens import Screens
 from menu.instructions.instructions import instructionsScreen
 from menu.options.options import optionsScreen
 from menu.splashtexts import splashTexts
-import random
 from utils.updatescreen import updateScreen
 from widgets.button import Button
 
