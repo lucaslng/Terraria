@@ -1,4 +1,6 @@
-import pygame as pg, random, time
+import pygame as pg
+import random
+import time
 
 WIDTH = 1280
 HEIGHT = 720

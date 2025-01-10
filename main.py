@@ -13,7 +13,7 @@ from game.model.blocks.utils.blocksenum import Blocks
 from game.model.blocks.utils.executable import Executable
 from game.model.blocks.utils.interactable import Interactable
 from constants import WIDTH, HEIGHT, BLOCK_SIZE, WORLD_HEIGHT, WORLD_WIDTH, SURF, SUNLIGHTSURF, FPS, font20, gravity, BIG, clock
-from customqueue import Queue
+from utils.customqueue import Queue
 # from entities import *
 # from inventory import *
 # from items import *
