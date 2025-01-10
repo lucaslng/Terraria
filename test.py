@@ -29,11 +29,12 @@ while sigma:
   asurf.fill((0,0,0,0))
   
   cobblestone = everythingSheet.get(528, 0, 16, 16, 25)
+  goldAxe = everythingSheet.get(192, 0, 16, 16, 15)
+  goldPickaxe = everythingSheet.get(208, 0, 16, 16, 15)
+  
   
   asurf.blit(cobblestone, (0, 0))
-  # asurf.blit(axe, (0, 0))
-  # asurf.blit(shovel, (0, 0))
-  # asurf.blit(sword, (0, 0))
+  asurf.blit(goldPickaxe, (200, 0))
   
   surf.blit(asurf, (0,0))
   

@@ -15,7 +15,7 @@ class SpriteSheet:
         image.blit(this.sheet, (0, 0), (x, y, width, height))
         if colour != (0, 0, 0):
             image.set_colorkey(colour)
-   
+
         return image
             
 

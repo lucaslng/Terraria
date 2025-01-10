@@ -18,6 +18,7 @@ from customqueue import Queue
 from sprites import *
 # from utils import *
 # from world import *
+
 from utils.direction import *
 from utils.utils import *
 from abc import *
@@ -876,9 +877,9 @@ class Player(Entity, HasInventory, Light):
   blockFacing = None
   reach = 4 * BLOCK_SIZE
   
-  full_heart_texture = sprites["full heart"]
-  half_heart_texture = sprites["half heart"]
-  empty_heart_texture = sprites["empty heart"]
+  full_heart_texture = pg.transform.scale(sprites["full heart"], (BLOCK_SIZE, BLOCK_SIZE))
+  half_heart_texture = pg.transform.scale(sprites["half heart"], (BLOCK_SIZE, BLOCK_SIZE))
+  empty_heart_texture = pg.transform.scale(sprites["empty heart"], (BLOCK_SIZE, BLOCK_SIZE))
 
   def __init__(self):
     Light.__init__(self, BLOCK_SIZE//2, *FRAME.center, relative=False)
@@ -1708,7 +1709,7 @@ class Button:
         SURF.blit(shadow_surf, shadow_rect)
         SURF.blit(text_surf, text_rect)
 
-def mainMenu():
+def MainMenu():
     button_font = pg.font.Font("MinecraftRegular-Bmg3.otf",  36)
     splash_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 28)
     button_text_colour = (240, 240, 240)
@@ -1809,7 +1810,7 @@ def instructionsScreen():
 def changeKeybinds():
     pass
   
-def pauseMenu():
+def PauseMenu():
     button_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 36)
     button_text_colour = (240, 240, 240)
     text_shadow = (20, 20, 20, 160)
@@ -1872,10 +1873,12 @@ class LoadingScreen:
         self.progress = 0.0
         self.startTime = time.time()
 
+        #Progress bar dimensions
         self.barWidth = 400
         self.barHeight = 20
         self.barX = (width - self.barWidth) // 2
         self.barY = height // 2 + 30
+        self.radius = self.barHeight // 2
         
     def update(self, progress, current_step):
         self.progress = progress
@@ -1893,10 +1896,33 @@ class LoadingScreen:
         message_rect = message.get_rect(center=(self.width // 2, self.height // 2 - 20))
         self.screen.blit(message, message_rect)
 
-        #Progress bar
-        pg.draw.rect(self.screen, (50, 50, 50), (self.barX, self.barY, self.barWidth, self.barHeight))
+        #Progress bar with rounded corners
+        self.loadingBarColour = (50, 50, 50)
+        pg.draw.rect(self.screen, self.loadingBarColour, (self.barX + self.radius, self.barY, self.barWidth - 2 * self.radius, self.barHeight))    
+        pg.draw.rect(self.screen, self.loadingBarColour, (self.barX, self.barY + self.radius, self.radius, self.barHeight - 2 * self.radius))
+        pg.draw.rect(self.screen, self.loadingBarColour, (self.barX + self.barWidth - self.radius, self.barY + self.radius, self.radius, self.barHeight - 2 * self.radius))
+
+        pg.draw.circle(self.screen, self.loadingBarColour, (self.barX + self.radius, self.barY + self.radius), self.radius)
+        pg.draw.circle(self.screen, self.loadingBarColour, (self.barX + self.barWidth - self.radius, self.barY + self.radius), self.radius)
+        pg.draw.circle(self.screen, self.loadingBarColour, (self.barX + self.radius, self.barY + self.barHeight - self.radius), self.radius)
+        pg.draw.circle(self.screen, self.loadingBarColour, (self.barX + self.barWidth - self.radius, self.barY + self.barHeight - self.radius), self.radius)
+        
         fill_width = int(self.barWidth * self.progress)
-        pg.draw.rect(self.screen, (106, 176, 76), (self.barX, self.barY, fill_width, self.barHeight))
+        if fill_width > 0:
+            fillColor = (106, 176, 76)
+            
+            if fill_width <= self.barHeight:
+                pg.draw.circle(self.screen, fillColor, (self.barX + self.radius, self.barY + self.barHeight//2), self.radius)
+            else:
+                pg.draw.rect(self.screen, fillColor, (self.barX + self.radius, self.barY, fill_width - 2 * self.radius, self.barHeight))
+                pg.draw.rect(self.screen, fillColor, (self.barX, self.barY + self.radius, self.radius, self.barHeight - 2 * self.radius))
+                pg.draw.circle(self.screen, fillColor, (self.barX + self.radius, self.barY + self.radius), self.radius)
+                pg.draw.circle(self.screen, fillColor, (self.barX + self.radius, self.barY + self.barHeight - self.radius), self.radius)
+                
+                if fill_width > self.barHeight:
+                    pg.draw.rect(self.screen, fillColor, (self.barX + fill_width - self.radius, self.barY + self.radius, self.radius, self.barHeight - 2 * self.radius))
+                    pg.draw.circle(self.screen, fillColor, (self.barX + fill_width - self.radius, self.barY + self.radius), self.radius)
+                    pg.draw.circle(self.screen, fillColor, (self.barX + fill_width - self.radius, self.barY + self.barHeight - self.radius), self.radius)
 
         #Percentage
         percentage = f"{int(self.progress * 100)}%"
@@ -1981,7 +2007,7 @@ if __name__ == "__main__":
   loader.startGeneration()
   start_time = time.time()
   
-  mainMenu()
+  MainMenu()
 
   while True:
       for event in pg.event.get():
@@ -2058,7 +2084,7 @@ if __name__ == "__main__":
           print(player.inventory.menu.hoveredSlot)
           player.inventory.menu.pickUpItem()
       elif event.type == KEYDOWN and event.key == pg.K_ESCAPE:
-        pauseMenu()
+        PauseMenu()
         
       elif event.type == KEYDOWN and event.key == pg.K_e:
         check_for_interaction()
