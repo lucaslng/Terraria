@@ -1,6 +1,9 @@
-import math, random, time, copy, threading, pickle          #pickle stores game data onto system
+import math
+import random
+import time
+import threading          #pickle stores game data onto system
 import pygame as pg
-from pygame.locals import *
+from pygame.locals import QUIT, KEYDOWN
 from pygame.math import Vector2
 
 #Import code from other files
@@ -8,22 +11,21 @@ from pygame.math import Vector2
 # from block_item_registry import *
 from blocks.executable import Executable
 from blocks.interactable import Interactable
-from constants import *
+from constants import WIDTH, HEIGHT, BLOCK_SIZE, WORLD_HEIGHT, WORLD_WIDTH, SURF, SUNLIGHTSURF, FPS, font20, gravity, BIG, SEED, clock
 from customqueue import Queue
 # from entities import *
 # from inventory import *
 # from items import *
 # from light import *
 # from menus import *
-from sprites import *
+from sprites import sprites
 # from utils import *
 # from world import *
-
-from utils.direction import *
-from utils.utils import *
-from abc import *
+from utils.direction import NORTH, EAST, SOUTH, WEST
+from utils.utils import sysexit
+from abc import ABC
 from dataclasses import dataclass
-from typing import *
+# from typing import 
 from enum import Enum
 
 
@@ -75,7 +77,8 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, quality: int=1):
       else:
         d += 2 * dy
       x += xi
-      if not 0 <= x < WIDTH or not 0 <= y < HEIGHT: return pointsTouched
+      if not 0 <= x < WIDTH or not 0 <= y < HEIGHT:
+        return pointsTouched
       nextBlock = world.blockAt(*player.pixelToCoord(x, y))
       if not nextBlock.isAir:
         xi = xii
@@ -102,7 +105,8 @@ def bresenham(x0: int, y0: int, x1: int, y1: int, quality: int=1):
       else:
         d += 2 * dx
       y += yi
-      if not 0 <= x < WIDTH or not 0 <= y < HEIGHT: return pointsTouched
+      if not 0 <= x < WIDTH or not 0 <= y < HEIGHT:
+        return pointsTouched
       nextBlock = world.blockAt(*player.pixelToCoord(x, y))
       if not nextBlock.isAir:
         xi = xii
@@ -204,7 +208,8 @@ class Block:
       self.rect.bottomright,
     )
     self.mask = pg.mask.from_surface(self.texture)
-    if self.isAir: self.mask.clear()
+    if self.isAir:
+      self.mask.clear()
     self.edgeExist = [False for _ in range(4)]
     self.edgeId = [0 for _ in range(4)]
     
@@ -922,7 +927,8 @@ class Player(Entity, HasInventory, Light):
     self.placingBlock = False
 
     #Add items at the beginning of the game to the player
-    for item in defaultItems: self.inventory.addItem(item)
+    for item in defaultItems:
+      self.inventory.addItem(item)
 
     # beginning tick, tick length
     self.animations["usingItem"] = pg.time.get_ticks() + 200
@@ -1027,7 +1033,7 @@ class Player(Entity, HasInventory, Light):
           texture, -self.animations["placingBlock"] / 3.8, 1)
         self.animations["placingBlock"] += 1000 / FPS
         self.placingBlock = False
-      if self.previousDirection == False:
+      if not self.previousDirection:
         texture = pg.transform.flip(texture, True, False)
       
       SURF.blit(texture, FRAME.center)
@@ -1093,7 +1099,8 @@ class Player(Entity, HasInventory, Light):
         world[self.blockFacing.y][self.blockFacing.x] = AirBlock(
             self.blockFacing.x, self.blockFacing.y
         )
-        if world.back[self.blockFacing.y][self.blockFacing.x].isAir: world.generateLight(self.blockFacing.y, self.blockFacing.x)
+        if world.back[self.blockFacing.y][self.blockFacing.x].isAir:
+          world.generateLight(self.blockFacing.y, self.blockFacing.x)
         item = self.blockFacing.item()
         
         if self.heldSlot().item and self.heldSlot().item.isTool():
@@ -1114,7 +1121,8 @@ class Player(Entity, HasInventory, Light):
         self.heldSlot().count -= 1
         if self.heldSlot().count == 0:
           self.heldSlot().item = None
-        if world.back[y][x].isAir: world.generateLight(y, x)
+        if world.back[y][x].isAir:
+          world.generateLight(y, x)
 
   def drawCircle(self):
     pg.draw.circle(ASURF, (0, 0, 0, 120), FRAME.center, BLOCK_SIZE * 4)
@@ -1406,12 +1414,15 @@ class World:
         self.mask.draw(block.mask, block.rect.topleft)
         
   def __generateTree(self, x, y):
-    if x < 3: return
-    if x > WORLD_WIDTH - 3: return
+    if x < 3:
+      return
+    if x > WORLD_WIDTH - 3:
+      return
     height = random.randint(3, 7)
     for r in range(y-height-1, y+1):
       for c in range(x-2, x+3):
-        if not self[r][c].isAir: return
+        if not self[r][c].isAir:
+          return
     for i in range(height):
       self[y-i][x] = OakLogBlock(x, y-i)
     self[y-height][x-2] = LeavesBlock(x-2, y-height)
@@ -1575,8 +1586,10 @@ class World:
           if cur is None:
             level += 1
             bfs.add(None)
-            if bfs.peek is None: break
-            else: continue
+            if bfs.peek is None:
+              break
+            else:
+              continue
           
           x, y = cur
           
