@@ -2,6 +2,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
 import random
 from constants import SEED, WORLD_HEIGHT, WORLD_WIDTH
+from game.model.blocks.stoneblock import StoneBlock
 from game.model.entity.player import Player
 from game.model.utils.noisesenum import Noises
 from game.model.world import World
@@ -22,11 +23,16 @@ class Model:
 	def _generateWorld(self):
 		'''Generate the random world'''
 		noises = self._generateAllNoise()
-		self.placeDirt(noises.get(Noises.GRASSHEIGHT))
+		self.placeDirtAndStone(noises.get(Noises.GRASSHEIGHT), noises.get(Noises.STONEHEIGHT))
 	
-	def placeDirt(self, noise: SimplexNoise):
+	def placeDirtAndStone(self, grassNoise: SimplexNoise, stoneNoise: SimplexNoise) -> None:
 		'''Place the dirt based on a simplex noise'''
-		
+		for x in range(self.world.width):
+			grassHeight = round(self.world.height * 0.58 + 9 * grassNoise[x])
+			stoneHeight = round(grassHeight + 5 + 5 * stoneNoise[x])
+			for y in range(self.world.height - 1, grassHeight - 1, -1):
+				if y > stoneHeight:
+					self.world.array[y][x] = StoneBlock()
 
 
 	@staticmethod

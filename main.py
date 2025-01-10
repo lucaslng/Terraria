@@ -9,8 +9,8 @@ from pygame.math import Vector2
 #Import code from other files
 # from blocks import *
 # from block_item_registry import *
-from game.model.blocks.executable import Executable
-from game.model.blocks.interactable import Interactable
+from game.model.blocks.utils.executable import Executable
+from game.model.blocks.utils.interactable import Interactable
 from constants import WIDTH, HEIGHT, BLOCK_SIZE, WORLD_HEIGHT, WORLD_WIDTH, SURF, SUNLIGHTSURF, FPS, font20, gravity, BIG, clock
 from customqueue import Queue
 # from entities import *
