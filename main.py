@@ -21,9 +21,9 @@ from customqueue import Queue
 from sprites import sprites
 # from utils import *
 # from world import *
-from utils.direction import NORTH, EAST, SOUTH, WEST
-from utils.utils import sysexit
-from abc import ABC
+from utils.direction import *
+from utils.utils import *
+from abc import *
 from dataclasses import dataclass
 # from typing import 
 from enum import Enum
@@ -1712,14 +1712,10 @@ class Button:
         
         text_surf = font.render(self.text, True, text_colour)
         text_surf = pg.transform.scale(text_surf, (int(text_surf.get_width() * scale_factor), int(text_surf.get_height() * scale_factor)))
-        text_rect = text_surf.get_rect(center=button_rect.center)
         
-        #Text shadow
-        shadow_surf = font.render(self.text, True, shadow_color)
-        shadow_surf = pg.transform.scale(shadow_surf, (int(shadow_surf.get_width() * scale_factor), int(shadow_surf.get_height() * scale_factor)))
-        shadow_rect = shadow_surf.get_rect(center=(text_rect.centerx + 1, text_rect.centery + 1))
-        
-        SURF.blit(shadow_surf, shadow_rect)
+        verticalOffset = 5
+        text_rect = text_surf.get_rect(center=(button_rect.centerx, button_rect.centery + verticalOffset))
+
         SURF.blit(text_surf, text_rect)
 
 def MainMenu():
