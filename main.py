@@ -9,6 +9,7 @@ from pygame.math import Vector2
 #Import code from other files
 # from blocks import *
 # from block_item_registry import *
+from game.model.blocks.utils.blocksenum import Blocks
 from game.model.blocks.utils.executable import Executable
 from game.model.blocks.utils.interactable import Interactable
 from constants import WIDTH, HEIGHT, BLOCK_SIZE, WORLD_HEIGHT, WORLD_WIDTH, SURF, SUNLIGHTSURF, FPS, font20, gravity, BIG, clock
@@ -18,7 +19,7 @@ from customqueue import Queue
 # from items import *
 # from light import *
 # from menus import *
-from sprites import sprites
+from game.model.textures.sprites import sprites
 # from utils import *
 # from world import *
 from game.utils.direction import NORTH, EAST, SOUTH, WEST
@@ -336,7 +337,7 @@ class LeavesBlock(Block):
         super().__init__("Leaves", self.oakLeavesTexture, x, y, 1, BlockType.SHEARS, isBack=isBack)
 
 class StoneBlock(Block):
-  stoneTexture = pg.transform.scale(sprites["stone"], (BLOCK_SIZE, BLOCK_SIZE))
+  stoneTexture = pg.transform.scale(sprites[Blocks.Stone], (BLOCK_SIZE, BLOCK_SIZE))
   def __init__(self, x, y, isBack=False):
     super().__init__("Stone", self.stoneTexture, x, y, 5, BlockType.PICKAXE, isBack=isBack)
 class CobblestoneBlock(Block):

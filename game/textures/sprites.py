@@ -1,51 +1,8 @@
-import pygame as pg
-from typing import *
-
-from constants import SURF
-
-pg.init()
-
-class SpriteSheet:
-    '''sprite sheet class'''
-    def __init__(this, imageName: str):
-        this.sheet = pg.image.load(imageName).convert_alpha()
-        
-    def get(this, x, y, width, height, colour=(0,0,0)):
-        image = pg.Surface((width, height), pg.SRCALPHA)
-        image.blit(this.sheet, (0, 0), (x, y, width, height))
-        if colour != (0, 0, 0):
-            image.set_colorkey(colour)
-   
-        return image
-            
-
-class Animation:
-    '''list of frames to cycle between for an animation. unit of duration is in frames'''
-    def __init__(this, *args, duration: int=10, startFrame: int = 0):
-        this.arr: List[pg.surface.Surface] = list(args)
-        this.duration = duration
-        this.frame = startFrame * duration
-    
-    def __getitem__(this, i: int) -> pg.surface.Surface:
-        return this.arr[i]
-    
-    def drawAnimated(this, x: int, y: int, flipped=False):
-        '''draws the the animation, takes a pixel relative to camera'''
-        index = this.frame//this.duration
-        this.frame += 1
-        if this.frame > len(this.arr) * this.duration - 1: this.frame = 0
-        return this.drawFrame(x, y, index, flipped)
-
-    def drawFrame(this, x: int, y: int, index=0, flipped=False):
-        '''draws the frame of the given index, takes a pixel relative to camera'''
-        texture = this[index]
-        if flipped: texture = pg.transform.flip(texture, True, False).convert_alpha()
-        return SURF.blit(texture, (x, y))
-
-
-catSheet = SpriteSheet("cat.png")
-everythingSheet = SpriteSheet("everything.png")
-weirdBlocksSheet = SpriteSheet("weird block spritesheet.png")
+from pygame import SRCALPHA, Surface
+from constants import BLOCK_SIZE
+from game.model.blocks.utils.blocksenum import Blocks
+from game.textures.animation import Animation
+from game.textures.spritesheets import catSheet, everythingSheet, weirdBlocksSheet
 
 sprites = {
     "cat": {
@@ -87,18 +44,21 @@ sprites = {
     },
     
     #Ores
-    "coalOre": everythingSheet.get(352, 0, 16, 16),
-    "ironOre": everythingSheet.get(368, 0, 16, 16),
+    "coalOre": everythingSheet.get(352, 0, 16, 16, BLOCK_SIZE),
+    "ironOre": everythingSheet.get(368, 0, 16, 16, BLOCK_SIZE),
     "goldOre": everythingSheet.get(384, 0, 16, 16),
     "diamondOre": everythingSheet.get(400, 0, 16, 16),
     
     #---BLOCKS---
+	
+    Blocks.Air: Surface((0,0), SRCALPHA),
+
     #Grass
-    "dirt": everythingSheet.get(480, 0, 16, 16),
-    "grass": everythingSheet.get(496, 0, 16, 16),
+    Blocks.Dirt: everythingSheet.get(480, 0, 16, 16, BLOCK_SIZE),
+	Blocks.Grass: everythingSheet.get(496, 0, 16, 16, BLOCK_SIZE),
     
     #Stone
-    "stone": everythingSheet.get(512, 0, 16, 16),
+	Blocks.Stone: everythingSheet.get(512, 0, 16, 16, BLOCK_SIZE),
     "cobblestone": everythingSheet.get(528, 0, 16, 16),
     
     #Wood

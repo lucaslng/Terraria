@@ -11,3 +11,6 @@ class World:
 		]
 		self.width = width
 		self.height = height
+	
+	def __getitem__(self, i: int):
+		return self.array[i]

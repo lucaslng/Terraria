@@ -2,6 +2,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
 import random
 from constants import SEED, WORLD_HEIGHT, WORLD_WIDTH
+from game.model.blocks.dirtblock import DirtBlock
+from game.model.blocks.grassblock import GrassBlock
 from game.model.blocks.stoneblock import StoneBlock
 from game.model.entity.player import Player
 from game.model.utils.noisesenum import Noises
@@ -23,16 +25,21 @@ class Model:
 	def _generateWorld(self):
 		'''Generate the random world'''
 		noises = self._generateAllNoise()
-		self.placeDirtAndStone(noises.get(Noises.GRASSHEIGHT), noises.get(Noises.STONEHEIGHT))
+		self._placeDirtAndStone(noises.get(Noises.GRASSHEIGHT), noises.get(Noises.STONEHEIGHT))
 	
-	def placeDirtAndStone(self, grassNoise: SimplexNoise, stoneNoise: SimplexNoise) -> None:
+	def _placeDirtAndStone(self, grassNoise: SimplexNoise, stoneNoise: SimplexNoise) -> None:
 		'''Place the dirt based on a simplex noise'''
 		for x in range(self.world.width):
 			grassHeight = round(self.world.height * 0.58 + 9 * grassNoise[x])
 			stoneHeight = round(grassHeight + 5 + 5 * stoneNoise[x])
 			for y in range(self.world.height - 1, grassHeight - 1, -1):
 				if y > stoneHeight:
-					self.world.array[y][x] = StoneBlock()
+					self.world[y][x] = StoneBlock()
+					self.world.back[y][x] = StoneBlock()
+				else:
+					self.world[y][x] = DirtBlock()
+					self.world.back[y][x] = DirtBlock()
+			self.world[grassHeight][x] = GrassBlock()
 
 
 	@staticmethod

@@ -1,8 +1,14 @@
-from pygame import Surface, mask
+from pygame import mask
+
+from game.model.blocks.utils.blocksenum import Blocks
+from game.textures.sprites import sprites
 
 
 class Block:
 	'''Base block class'''
 	
-	def __init__(self, texture: Surface):
-		self.mask = mask.from_surface(texture)
+	isEmpty = False
+
+	def __init__(self, enum: Blocks):
+		self.mask = mask.from_surface(sprites[enum])
+		self.enum = enum
