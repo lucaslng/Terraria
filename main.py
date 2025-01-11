@@ -1,16 +1,17 @@
-from game.game import Game
-from game.utils.utils import sysexit
-from menu.menu import MainMenu
-from screens import Screens
-from initialize import initialize
 from utils.installpackages import installPackages
+installPackages()
+
+from game.game import Game  # noqa: E402
+from game.utils.utils import sysexit  # noqa: E402
+from menu.menu import MainMenu  # noqa: E402
+from screens import Screens  # noqa: E402
+from initialize import initialize  # noqa: E402
+
 
 
 def main():
 	'''Main loop'''
-
-	installPackages()
-
+	
 	initialize()
 
 	state = Screens.MENU
