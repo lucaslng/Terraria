@@ -115,7 +115,7 @@ sprites = {
     "flintAndSteel": everythingSheet.get(336, 0, 16, 16),
     
     #---HEARTS---
-    "empty heart": weirdBlocksSheet.get(0, 0, 9, 9),
-    "half heart": weirdBlocksSheet.get(18, 0, 9, 9),
-    "full heart": weirdBlocksSheet.get(9, 0, 9, 9),
+    "empty heart": weirdBlocksSheet.get(0, 0, 9, 9, BLOCK_SIZE),
+    "half heart": weirdBlocksSheet.get(18, 0, 9, 9, BLOCK_SIZE),
+    "full heart": weirdBlocksSheet.get(9, 0, 9, 9, BLOCK_SIZE),
 }

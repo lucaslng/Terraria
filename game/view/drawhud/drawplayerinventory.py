@@ -4,4 +4,4 @@ from game.view.inventory.drawinventory import drawInventory
 
 
 def drawPlayerInventory(inventory: Inventory):
-	drawInventory(inventory, 15, 80, BLOCK_SIZE)
+	drawInventory(inventory, 15, 80, BLOCK_SIZE + 2)

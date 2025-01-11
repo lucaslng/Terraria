@@ -7,7 +7,7 @@ class Player(Entity):
 	'''Player entity class'''
 	
 	def __init__(self, x: float, y: float, world: World):
-		super().__init__(x, y, 4, 1, 1, 1600, 8, 60, 20, 0.8, 9, world)
+		super().__init__(x, y, 4, 1, 1, 1600, 8, 60, 20, 0.8, 18, world)
 		self.inventory = Inventory(4, 9)
 		self._heldSlotIndex = 0
 	

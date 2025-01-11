@@ -8,7 +8,7 @@ from game.view.drawhud.drawplayerinventory import drawPlayerInventory
 
 def drawHUD(model: Model):
 	'''Draw hud'''
-	drawHealth(model.player.health)
+	drawHealth(model.player.health, model.player.maxHealth)
 	drawPlayerInventory(model.player.inventory)  # noqa: F821
 	drawHotbar(model.player.hotbar, model.player.heldSlotIndex)
 	SURF.blit(surfaces.hud, (0,0))

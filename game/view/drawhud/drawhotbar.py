@@ -3,8 +3,8 @@ from game.model.items.inventory.slot import Slot
 import pygame as pg
 
 from game.view import surfaces
-from game.view.inventory.drawslotcount import drawSlotCount
-from game.view.inventory.drawslotitem import drawSlotItem
+from game.view.inventory.drawslot import drawSlot
+
 
 def drawHotbar(hotbar: list[Slot], heldSlotIndex: int) -> None:
 	'''Draw player hotbar on screen'''
@@ -22,16 +22,10 @@ def drawHotbar(hotbar: list[Slot], heldSlotIndex: int) -> None:
 		pg.draw.rect(surfaces.hud, (200, 200, 200), (x, y, slotSize, slotSize))
 
 		if i == heldSlotIndex:
-			pg.draw.rect(surfaces.hud, (80, 80, 80), (x, y, slotSize, slotSize), 5)
+			pg.draw.rect(surfaces.hud, (0, 0, 0), (x, y, slotSize, slotSize), 2)
 		else:
-			pg.draw.rect(surfaces.hud, (40, 40, 40), (x, y, slotSize, slotSize), 3)
+			pg.draw.rect(surfaces.hud, (90, 90, 90), (x, y, slotSize, slotSize), 2)
 
-		if slot.item:
-			slotCenter = x + slotSize // 2, y + slotSize // 2
-			drawSlotItem(slot.item, slotSize, slotCenter)
-
-			if slot.count > 1:
-				drawSlotCount(slot.count, slotCenter)
-
+		drawSlot(slot, x, y, slotSize)
 
 		

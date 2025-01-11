@@ -18,7 +18,7 @@ class Entity(HasPhysics):
 							jumpImpulse: float,
 							jumpSpeed: float,
 							friction: float,
-							health: int,
+							maxHealth: int,
 							world: World,
 							):
 		super().__init__(x, y, mass, width, height)
@@ -28,7 +28,8 @@ class Entity(HasPhysics):
 		self.jumpSpeed = jumpSpeed
 		self.previousJumpTime = 0
 		self.friction = friction
-		self.health = health
+		self.maxHealth = maxHealth
+		self.health = maxHealth
 		self.world = world
 		self.minyvelo = 100
 	
