@@ -2,7 +2,10 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
 import random
 from typing import List
-from constants import SEED, WORLD_HEIGHT, WORLD_WIDTH
+
+from pymunk import Space
+import pymunk as pm
+from constants import BLOCK_SIZE, SEED, WORLD_HEIGHT, WORLD_WIDTH, clock
 from game.model.blocks.airblock import AirBlock
 from game.model.blocks.dirtblock import DirtBlock
 from game.model.blocks.grassblock import GrassBlock
@@ -25,10 +28,27 @@ class Model:
 			[0 for x in range(worldWidth)] for y in range(worldHeight)
 		]
 		self.entities: List[Entity] = [] # list of the entities in the world except the player
-	
+		self.space = Space()
+		self.space.gravity = 0, 5 # earth's gravity is 9.81
+		playerShape = pm.Poly.create_box(self.player, (self.player.width, self.player.height))
+		playerShape.mass = self.player.mass
+		self.space.add(self.player, playerShape)
+		self.worldBody = pm.Body(body_type=pm.Body.STATIC)
+		self.space.add(self.worldBody)
+
+	def update(self):
+		'''Update the model, should be called every frame'''
+		self.space.step(clock.get_time() / 1000) # step the simulation in roughly 1/60s in milliseconds
+
 	def start(self):
 		'''Start game'''
 		self._generateWorld()
+		self._generateWorldShapes()
+	
+	def spawnEntity(self, entity: Entity):
+		'''Spawn a new entity into the game'''
+		self.entities.append(entity)
+		self.space.add(entity, pm.Poly.create_box(entity, (entity.width, entity.height)))
 	
 	def _generateWorld(self):
 		'''Generate the random world'''
@@ -155,3 +175,20 @@ class Model:
 						if new not in visited: # if block has not been checked
 							visited.add(new)
 							bfs.add(new)
+	
+	def _generateWorldShapes(self):
+		'''Generate pymunk shapes for the world'''
+		for y, row in enumerate(self.world.array):
+			for x, block in enumerate(row):
+				if not block.isEmpty:
+					self.generateBlockShape(x, y)
+
+	def generateBlockShape(self, x: int, y: int):
+		vertices = (
+						(x, y),
+						(x + 1, y),
+						(x + 1, y + 1),
+						(x, y + 1)
+					)
+		shape = pm.Poly(self.worldBody, vertices)
+		self.space.add(shape)

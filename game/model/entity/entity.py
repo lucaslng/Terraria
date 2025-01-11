@@ -1,11 +1,15 @@
-from pygame import Surface, Vector2, mask
+from pygame import Surface, mask
+import pymunk as pm
 
-class Entity:
+class Entity(pm.Body):
 	'''Base class for all entities.'''
 
-	def __init__(self, x: float, y: float, texture: Surface):
-		self.position = Vector2(x=x, y=y)
-		self.mask = mask.from_surface(texture)
+	def __init__(self, x: float, y: float, mass: float, width: float, height: float):
+		super().__init__()
+		self.position = x, y
+		self.mass = mass
+		self.width = width
+		self.height = height
 
 	def update(self):
 		'''Update the entity, should be called every frame'''

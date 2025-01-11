@@ -5,4 +5,4 @@ class Player(Entity):
 	'''Player entity class'''
 	
 	def __init__(self, x: float, y: float):
-		super().__init__(x=x, y=y, texture=sprites["cat"]["walk"][0])
+		super().__init__(x=x, y=y, mass=4, width=1, height=1)

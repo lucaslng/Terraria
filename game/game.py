@@ -14,6 +14,8 @@ def game():
 
 	while True:
 		clearScreen()
+
+		model.update()
 		draw(model)
 
 		for event in pg.event.get():

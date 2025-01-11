@@ -8,7 +8,7 @@ def draw(model: Model):
 	'''Draw everything'''
 
 	camera = FRAME.copy()
-	camera.center = model.player.position * BLOCK_SIZE
+	camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
 	drawBlocks(model.world, camera)
 	drawSunlight(model.lightmap, camera)
 	drawPlayer(model.player)
