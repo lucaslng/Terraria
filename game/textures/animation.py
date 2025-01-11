@@ -1,4 +1,3 @@
-from typing import List
 import pygame as pg
 
 from constants import SURF
@@ -6,7 +5,7 @@ from constants import SURF
 class Animation:
     '''list of frames to cycle between for an animation. unit of duration is in frames'''
     def __init__(this, *args, duration: int=10, startFrame: int = 0):
-        this.arr: List[pg.surface.Surface] = list(args)
+        this.arr: list[pg.surface.Surface] = list(args)
         this.duration = duration
         this.frame = startFrame * duration
     

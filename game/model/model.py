@@ -5,7 +5,6 @@ import time
 from pymunk import Space
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
-from typing import List
 
 from constants import FPS, SEED, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
@@ -32,7 +31,7 @@ class Model:
 		self.lightmap = [
 			[0 for x in range(worldWidth)] for y in range(worldHeight)
 		]
-		self.entities: List[Entity] = [] # list of the entities in the world except the player
+		self.entities: list[Entity] = [] # list of the entities in the world except the player
 		
 		self.space = Space()
 		self.space.gravity = 0, 20 # earth's gravity is 9.81 m/s
