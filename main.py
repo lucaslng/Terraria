@@ -3,10 +3,13 @@ from game.utils.utils import sysexit
 from menu.menu import MainMenu
 from screens import Screens
 from initialize import initialize
+from utils.installpackages import installPackages
 
 
 def main():
 	'''Main loop'''
+
+	installPackages()
 
 	initialize()
 
