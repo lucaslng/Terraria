@@ -1,4 +1,3 @@
-from pygame import Surface, mask
 import pymunk as pm
 
 class Entity(pm.Body):

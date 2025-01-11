@@ -1,16 +1,18 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
 import random
+from time import perf_counter
 from typing import List
 
 from pymunk import Space
 import pymunk as pm
-from constants import BLOCK_SIZE, SEED, WORLD_HEIGHT, WORLD_WIDTH, clock
+from constants import FPS, SEED, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
 from game.model.blocks.dirtblock import DirtBlock
 from game.model.blocks.grassblock import GrassBlock
 from game.model.blocks.stoneblock import StoneBlock
 from game.model.entity.entities.player import Player
+from game.model.physics.keepupright import keepUpright
 from game.model.utils.noisesenum import Noises
 from game.model.world import World
 from main import Entity
@@ -28,17 +30,28 @@ class Model:
 			[0 for x in range(worldWidth)] for y in range(worldHeight)
 		]
 		self.entities: List[Entity] = [] # list of the entities in the world except the player
+		
 		self.space = Space()
-		self.space.gravity = 0, 4 # earth's gravity is 9.81
-		playerShape = pm.Poly.create_box(self.player, (self.player.width, self.player.height))
-		playerShape.mass = self.player.mass
-		self.space.add(self.player, playerShape)
+		self.space.gravity = 0, 9.81 # earth's gravity is 9.81
+
+		self.playerShape = pm.Poly.create_box(self.player, (self.player.width, self.player.height))
+		self.playerShape.mass = self.player.mass
+		self.space.add(self.player, self.playerShape)
 		self.worldBody = pm.Body(body_type=pm.Body.STATIC)
 		self.space.add(self.worldBody)
 
-	def update(self):
-		'''Update the model, should be called every frame'''
-		self.space.step(clock.get_time() / 1000) # step the simulation in roughly 1/60s in milliseconds
+	def update(self, steps=10):
+		'''Update the model, should be called every frame. steps increases the accuracy of the physics simulation but sacrifices performance'''
+		startTime = perf_counter()
+		for i in range(steps):
+			self.space.step(1/FPS/steps) # step the simulation in 1/60 seconds
+			keepUpright(self.player)
+		print(f'Physics time: {round(perf_counter() - startTime, 2)}')
+	
+	def _postStepCallback(self, space: Space, dt: float):
+		keepUpright(self.player)
+		for entity in self.entities:
+			keepUpright(entity)
 
 	def start(self):
 		'''Start game'''

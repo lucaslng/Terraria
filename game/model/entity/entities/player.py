@@ -1,5 +1,4 @@
 from game.model.entity.entity import Entity
-from game.textures.sprites import sprites
 
 class Player(Entity):
 	'''Player entity class'''
