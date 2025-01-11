@@ -1,7 +1,5 @@
 from math import ceil, floor
-import math
 import time
-from game.model.blocks.block import Block
 from game.model.entity.hasphysics import HasPhysics
 from game.model.world import World
 

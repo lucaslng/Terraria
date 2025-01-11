@@ -201,9 +201,9 @@ class Model:
 	def generateBlockShape(self, x: int, y: int):
 		vertices = (
 						(x, y),
-						(x + 1, y),
+						(x, y + 1),
 						(x + 1, y + 1),
-						(x, y + 1)
+						(x + 1, y)
 					)
 		shape = pm.Poly(self.worldBody, vertices)
 		shape.friction = self.world[y][x].friction
