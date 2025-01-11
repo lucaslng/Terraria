@@ -9,6 +9,7 @@ class Block:
 	
 	isEmpty = False
 
-	def __init__(self, enum: Blocks):
+	def __init__(self, friction: float, enum: Blocks):
+		self.friction = friction
 		self.mask = mask.from_surface(sprites[enum])
 		self.enum = enum

@@ -6,4 +6,4 @@ class GrassBlock(Block):
 	'''Class for grass dirt block'''
 	
 	def __init__(self):
-		super().__init__(Blocks.Grass)
+		super().__init__(0.95, Blocks.Grass)

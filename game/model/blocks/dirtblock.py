@@ -6,4 +6,4 @@ class DirtBlock(Block):
 	'''Class for normal dirt block'''
 	
 	def __init__(self):
-		super().__init__(Blocks.Dirt)
+		super().__init__(0.95, Blocks.Dirt)

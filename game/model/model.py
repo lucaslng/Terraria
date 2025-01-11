@@ -25,33 +25,35 @@ class Model:
 	def __init__(self, worldWidth: int, worldHeight: int):
 		'''initialize the game'''
 		self.world = World(worldWidth, worldHeight)
-		self.player = Player(worldWidth * 0.5, worldHeight * 0.55)
+		self.player = Player(worldWidth * 0.5, worldHeight * 0.55, self.world)
 		self.lightmap = [
 			[0 for x in range(worldWidth)] for y in range(worldHeight)
 		]
 		self.entities: List[Entity] = [] # list of the entities in the world except the player
 		
 		self.space = Space()
-		self.space.gravity = 0, 9.81 # earth's gravity is 9.81
+		self.space.gravity = 0, 20 # earth's gravity is 9.81 m/s
 
 		self.playerShape = pm.Poly.create_box(self.player, (self.player.width, self.player.height))
 		self.playerShape.mass = self.player.mass
+		self.playerShape.friction = self.player.friction
 		self.space.add(self.player, self.playerShape)
 		self.worldBody = pm.Body(body_type=pm.Body.STATIC)
 		self.space.add(self.worldBody)
 
-	def update(self, steps=10):
+	def update(self, steps=20):
 		'''Update the model, should be called every frame. steps increases the accuracy of the physics simulation but sacrifices performance'''
-		startTime = perf_counter()
+		# startTime = perf_counter()
+		self.player.update()
+		for entity in self.entities:
+			entity.update()
+		
 		for i in range(steps):
 			self.space.step(1/FPS/steps) # step the simulation in 1/60 seconds
 			keepUpright(self.player)
-		print(f'Physics time: {round(perf_counter() - startTime, 2)}')
-	
-	def _postStepCallback(self, space: Space, dt: float):
-		keepUpright(self.player)
-		for entity in self.entities:
-			keepUpright(entity)
+			for entity in self.entities:
+				keepUpright(entity)
+		# print(f'Physics time: {round(perf_counter() - startTime, 2)}')
 
 	def start(self):
 		'''Start game'''
@@ -204,4 +206,5 @@ class Model:
 						(x, y + 1)
 					)
 		shape = pm.Poly(self.worldBody, vertices)
+		shape.friction = self.world[y][x].friction
 		self.space.add(shape)

@@ -6,5 +6,5 @@ class AirBlock(Block):
 	'''Air block class'''
 
 	def __init__(self):
-		super().__init__(Blocks.Air)
+		super().__init__(0, Blocks.Air)
 		self.isEmpty = True

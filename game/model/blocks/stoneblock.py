@@ -5,4 +5,4 @@ class StoneBlock(Block):
 	'''Stone block class'''
 
 	def __init__(self):
-		super().__init__(Blocks.Stone)
+		super().__init__(0.95, Blocks.Stone)
