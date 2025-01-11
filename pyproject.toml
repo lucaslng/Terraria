@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.12"
 dependencies = [
+    "numpy>=2.2.1",
     "pygame>=2.6.1",
-    "sq-blocks>=999.999.999"
+    "pymunk>=6.10.0",
 ]
