@@ -7,9 +7,8 @@ from screens import Screens
 from utils.clearscreen import clearScreen
 from utils.updatescreen import updateScreen
 
-def game():
-
-	'''main game loop'''
+def Game():
+	'''Main game loop'''
 	model = Model(WORLD_WIDTH, WORLD_HEIGHT)
 	model.start()
 

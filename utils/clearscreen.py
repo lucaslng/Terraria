@@ -1,12 +1,12 @@
 from constants import ASURF, SUNLIGHTSURF, SURF, OVERLAY, LIGHTSURF
 from game.view import surfaces
-import utils.colors as colors
+import utils.colours as colours
 
 def clearScreen():
-	SURF.fill(colors.WHITE)
-	ASURF.fill(colors.CLEAR)
-	OVERLAY.fill(colors.CLEAR)
-	SUNLIGHTSURF.fill(colors.CLEAR)
-	LIGHTSURF.fill(colors.CLEAR)
-	surfaces.sunlight.fill(colors.CLEAR)
-	surfaces.blocks.fill(colors.CLEAR)
+	SURF.fill(colours.WHITE)
+	ASURF.fill(colours.CLEAR)
+	OVERLAY.fill(colours.CLEAR)
+	SUNLIGHTSURF.fill(colours.CLEAR)
+	LIGHTSURF.fill(colours.CLEAR)
+	surfaces.sunlight.fill(colours.CLEAR)
+	surfaces.blocks.fill(colours.CLEAR)

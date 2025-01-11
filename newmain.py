@@ -1,4 +1,4 @@
-from game.game import game
+from game.game import Game
 from game.utils.utils import sysexit
 from menu.menu import MainMenu
 from screens import Screens
@@ -17,9 +17,10 @@ def main():
 			case Screens.MENU:
 				state = MainMenu()
 			case Screens.GAME:
-				state = game()
+				state = Game()
 			case Screens.QUIT:
 				sysexit()
 
 
-main()
+if __name__ == '__main__':
+	main()
