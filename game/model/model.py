@@ -1,11 +1,12 @@
+import random
+import pymunk as pm
+import numpy as np
+import time
+from pymunk import Space
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
-import random
-from time import perf_counter
-from typing import List
+from typing import List, Dict, Tuple
 
-from pymunk import Space
-import pymunk as pm
 from constants import FPS, SEED, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
 from game.model.blocks.dirtblock import DirtBlock
@@ -59,8 +60,10 @@ class Model:
 
 	def start(self):
 		'''Start game'''
+		startTime = time.perf_counter()
 		self._generateWorld()
 		self._generateWorldShapes()
+		print(f'World generation time: {round(time.perf_counter() - startTime, 2)} seconds')
 	
 	def spawnEntity(self, entity: Entity):
 		'''Spawn a new entity into the game'''
@@ -68,137 +71,175 @@ class Model:
 		self.space.add(entity, pm.Poly.create_box(entity, (entity.width, entity.height)))
 	
 	def _generateWorld(self):
-		'''Generate the random world'''
+		'''Generate the random world using vectorized NumPy operations'''
 		noises = self._generateAllNoise()
 		self._generateTerrain(noises[Noises.GRASSHEIGHT], noises[Noises.STONEHEIGHT], noises[Noises.CAVES])
 		self.generateLight()
-	
+		self._generateWorldShapes()
+    
 	def _generateTerrain(self, grassNoise: SimplexNoise, stoneNoise: SimplexNoise, caveNoise: SimplexNoise) -> None:
-		'''Place the dirt, stone, and cut out caves based on a simplex noise'''
+		'''Place the dirt, stone, and cut out caves'''
+		grass_noise_array = np.array([grassNoise[x] for x in range(self.world.width)])
+		stone_noise_array = np.array([stoneNoise[x] for x in range(self.world.width)])
+		cave_noise_array = np.array([[caveNoise[y][x] for x in range(self.world.width)] 
+									for y in range(self.world.height)])
+		
+		# Calculate height maps using vectorized operations
+		grassHeight = np.round(self.world.height * 0.58 + 9 * grass_noise_array).astype(int)
+		stoneHeight = np.round(grassHeight + 5 + 5 * stone_noise_array).astype(int)
+		
 		for x in range(self.world.width):
-
-			# Place dirt and stone
-			grassHeight = round(self.world.height * 0.58 + 9 * grassNoise[x])
-			stoneHeight = round(grassHeight + 5 + 5 * stoneNoise[x])
-			for y in range(self.world.height - 1, grassHeight - 1, -1):
-				if y > stoneHeight:
+			# Place stone and dirt
+			for y in range(self.world.height - 1, grassHeight[x] - 1, -1):
+				if y > stoneHeight[x]:
 					self.world[y][x] = StoneBlock()
 					self.world.back[y][x] = StoneBlock()
 				else:
 					self.world[y][x] = DirtBlock()
 					self.world.back[y][x] = DirtBlock()
 			
-			# Place grass block
-			self.world[grassHeight][x] = GrassBlock()
-
-			# Cut out caves
-			for y in range(self.world.height - 1, grassHeight - 1, -1):
-				if caveNoise[y][x] > 0.1:
+			# Place grass block at the surface
+			if grassHeight[x] < self.world.height:
+				self.world[grassHeight[x]][x] = GrassBlock()
+		
+		# Cut out caves
+		for y in range(self.world.height):
+			for x in range(self.world.width):
+				if (cave_noise_array[y][x] > 0.1 and 
+					y >= grassHeight[x] and 
+					y < self.world.height):
 					self.world[y][x] = AirBlock()
 
-	@staticmethod
-	def _generateAllNoise(seed: int | None = None) -> dict[Noises, SimplexNoise]:
+	def _generateAllNoise(self, seed: int | None = None) -> dict[Noises, SimplexNoise]:
+		totalStartTime = time.perf_counter()
+		
 		random.seed(seed)
 
-		def generateNoise(noiseType: Noises, scale: float, dimension: int, width: int = WORLD_WIDTH, height: int = WORLD_HEIGHT, seed: int = SEED) -> tuple[Noises, SimplexNoise]:
-			return noiseType, SimplexNoise(scale=scale, dimension=dimension, width=width, height=height, seed=seed)
+		def generateNoise(noiseType: Noises, scale: float, dimension: int, width: int = WORLD_WIDTH, 
+						height: int = WORLD_HEIGHT, seed: int = SEED) -> tuple[Noises, SimplexNoise, float]:
+			start_time = time.perf_counter()
+			
+			noise = SimplexNoise(scale=scale, dimension=dimension, width=width, height=height, seed=seed)
+			
+			# Calculate the time taken for this noise generation
+			generation_time = time.perf_counter() - start_time
+			return noiseType, noise, generation_time
 
 		noiseParameters = (
-			(Noises.GRASSHEIGHT, 19, 1), # grass height noise
-			(Noises.STONEHEIGHT, 30, 1), # stone height noise
-			(Noises.CAVES, 9, 2),  # caves noise
+			(Noises.GRASSHEIGHT, 19, 1),  # grass height noise
+			(Noises.STONEHEIGHT, 30, 1),  # stone height noise
+			(Noises.CAVES, 9, 2),         # caves noise
 		)
 
 		with ThreadPoolExecutor() as executor:
-			futures = [executor.submit(partial(generateNoise, *parameter)) for parameter in noiseParameters]
-			noises = [future.result() for future in as_completed(futures)]
-			return {k: v for k, v in noises}
+			futures = [executor.submit(partial(generateNoise, *parameter)) 
+					for parameter in noiseParameters]
+			
+
+			noises = {}
+			timing_data = {}
+			
+			for future in as_completed(futures):
+				noise_type, noise_obj, generation_time = future.result()
+				noises[noise_type] = noise_obj
+				timing_data[noise_type] = generation_time
 		
-		raise Exception
+		total_time = time.perf_counter() - totalStartTime
+		
+		#Print timing information
+		print(f"\nNoise Generation Timing:")
+		print(f"{'Noise Type':<15} | {'Time (seconds)':<10}")
+		print("-" * 30)
+		for noise_type, time_taken in timing_data.items():
+			print(f"{noise_type.name:<15} | {time_taken:.4f}s")
+		print("-" * 30)
+		print(f"{'Total':<15} | {total_time:.4f}s\n")
+
+		return noises
 	
 	def generateLight(self, originr=None, originc=None) -> None:
-		'''Generate the lightmap for the entire world'''
-    
+		'''Generate the lightmap using breadth-first search with the custom Queue class'''
+		# Calculate bounds for the light calculation region
+		startr = max(0 if originr is None else originr - 6, 0)
+		startc = max(0 if originc is None else originc - 6, 0)
+		stopr = min(self.world.height if originr is None else originr + 7, self.world.height)
+		stopc = min(self.world.width if originc is None else originc + 7, self.world.width)
+		
 		def isDark(world: World, x: int, y: int) -> bool:
-			return False if not world[y][x].isEmpty or not world.back[y][x].isEmpty else True
-
-		if originr is None and originc is None:
-			startr = startc = 0
-			stopr = self.world.height
-			stopc = self.world.width
-		else:
-			startr = max(originr - 6, 0)
-			startc = max(originc - 6, 0)
-			stopr = min(originr + 7, self.world.height)
-			stopc = min(originc + 7, self.world.width)
-
-		# loop over every block in the world
+			'''Helper function to check if a block is empty/dark'''
+			return world[y][x].isEmpty and world.back[y][x].isEmpty
+		
+		# Initialize the lightmap if it hasn't been created yet
+		if not hasattr(self, 'lightmap'):
+			self.lightmap = [[255 for _ in range(self.world.width)] 
+							for _ in range(self.world.height)]
+		
+		# Process each block in the specified region
 		for r in range(startr, stopr):
 			for c in range(startc, stopc):
-				# make queue to perform breadth first search to calculate the light at the block at row r and col c
+				# Create a new queue for BFS at each starting position
 				bfs = Queue()
-				bfs.add((c, r)) # c is x and r is y
-				bfs.add(None) # use Nones to track the level of the bfs
-				level = 0 # keep track of level of bfs
-				# set to store visited coordinates
-				visited = set()
-				visited.add((c, r))
+				bfs.add((c, r))  # Add starting position
+				bfs.add(None)    # Level marker
 				
-				while bfs:
-					
-					if level > 6:
-						self.lightmap[r][c] = 255
-						break # exit after traversing 5 levels
-					
+				level = 0
+				visited = set([(c, r)])  # Track visited coordinates
+				
+				# Continue BFS until queue is empty or we reach max level
+				while bfs.size() > 0 and level <= 6:
 					cur = bfs.poll()
+					
+					# Handle level markers
 					if cur is None:
 						level += 1
-						bfs.add(None)
-						if bfs.peek() is None:
-							break
-						else:
-							continue
+						if bfs.size() > 0:
+							bfs.add(None)
+						continue
 					
 					x, y = cur
 					
+					# Check if current block is dark
 					if isDark(self.world, x, y):
 						self.lightmap[r][c] = max(0, (level - 1) * 51)
 						break
 					
-					# left block
-					if x - 1 >= 0: # if block is inside world bounds
-						new = (x - 1, y)
-						if new not in visited: # if block has not been checked
-							visited.add(new)
-							bfs.add(new)
-
-					# right block
-					if x + 1 < self.world.width: # if block is inside world bounds
-						new = (x + 1, y)
-						if new not in visited: # if block has not been checked
-							visited.add(new)
-							bfs.add(new)
-
-					# upper block
-					if y - 1 >= 0: # if block is inside world bounds
-						new = (x, y - 1)
-						if new not in visited: # if block has not been checked
-							visited.add(new)
-							bfs.add(new)
+					# Add neighboring blocks to the queue
+					neighbors = [
+						(x-1, y), (x+1, y),  # Left and right
+						(x, y-1), (x, y+1)   # Up and down
+					]
 					
-					# lower block
-					if y + 1 < self.world.height: # if block is inside world bounds
-						new = (x, y + 1)
-						if new not in visited: # if block has not been checked
-							visited.add(new)
-							bfs.add(new)
+					for nx, ny in neighbors:
+						# Check if neighbor is within bounds and unvisited
+						if (0 <= nx < self.world.width and 
+							0 <= ny < self.world.height and 
+							(nx, ny) not in visited):
+							visited.add((nx, ny))
+							bfs.add((nx, ny))
+				else:
+					# If we exit the while loop normally (didn't break),
+					# set maximum light level
+					self.lightmap[r][c] = 255
 	
 	def _generateWorldShapes(self):
-		'''Generate pymunk shapes for the world'''
-		for y, row in enumerate(self.world.array):
-			for x, block in enumerate(row):
-				if not block.isEmpty:
-					self.generateBlockShape(x, y)
+		'''Generate pymunk shapes using NumPy operations to identify solid blocks'''
+		# Create mask for non-empty blocks
+		solid_mask = ~np.vectorize(lambda x: x.isEmpty)(self.world.array)
+		
+		# Get coordinates of solid blocks
+		solid_coords = np.where(solid_mask)
+		
+		# Generate shapes for all solid blocks at once
+		for y, x in zip(*solid_coords):
+			vertices = (
+				(x, y),
+				(x, y + 1),
+				(x + 1, y + 1),
+				(x + 1, y)
+			)
+			shape = pm.Poly(self.worldBody, vertices)
+			shape.friction = self.world[y][x].friction
+			self.space.add(shape)
 
 	def generateBlockShape(self, x: int, y: int):
 		vertices = (

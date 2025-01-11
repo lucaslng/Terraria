@@ -2,6 +2,7 @@ import numpy as np
 from typing import Union, Tuple
 from constants import BIG, SEED, WORLD_HEIGHT, WORLD_WIDTH
 
+
 class SimplexNoise:
     def __init__(self, scale: float, dimension: int, width: int = WORLD_WIDTH, height: int = WORLD_HEIGHT, seed: int = SEED):
         self.seed = int(seed)

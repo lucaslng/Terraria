@@ -1,15 +1,14 @@
 import pygame as pg
+import keys
 from constants import WORLD_HEIGHT, WORLD_WIDTH, clock
 from game.view.draw import draw
 from game.model.model import Model
-import keys
 from screens import Screens
 from utils.clearscreen import clearScreen
 from utils.updatescreen import updateScreen
 
-def game():
-
-	'''main game loop'''
+def Game():
+	'''Main game loop'''
 	model = Model(WORLD_WIDTH, WORLD_HEIGHT)
 	model.start()
 
