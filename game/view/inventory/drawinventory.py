@@ -1,5 +1,4 @@
 from game.model.items.inventory.inventory import Inventory
-import pygame as pg
 
 
 def drawInventory(inventory: Inventory, inventoryx: int, inventoryy: int, slotSize: int) -> None:

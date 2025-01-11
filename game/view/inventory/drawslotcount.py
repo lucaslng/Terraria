@@ -1,4 +1,3 @@
-import pygame as pg
 from constants import font20
 from game.view import surfaces
 from utils import colours

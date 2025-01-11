@@ -5,7 +5,7 @@ import time
 from pymunk import Space
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
-from typing import List, Dict, Tuple
+from typing import List
 
 from constants import FPS, SEED, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
@@ -147,7 +147,7 @@ class Model:
 		total_time = time.perf_counter() - totalStartTime
 		
 		#Print timing information
-		print(f"\nNoise Generation Timing:")
+		print("\nNoise Generation Timing:")
 		print(f"{'Noise Type':<15} | {'Time (seconds)':<10}")
 		print("-" * 30)
 		for noise_type, time_taken in timing_data.items():

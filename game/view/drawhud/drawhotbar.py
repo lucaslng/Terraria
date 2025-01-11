@@ -2,7 +2,6 @@ from constants import BLOCK_SIZE, FRAME
 from game.model.items.inventory.slot import Slot
 import pygame as pg
 
-from game.textures.sprites import sprites
 from game.view import surfaces
 from game.view.inventory.drawslotcount import drawSlotCount
 from game.view.inventory.drawslotitem import drawSlotItem
