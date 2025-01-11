@@ -29,7 +29,7 @@ class Model:
 		]
 		self.entities: List[Entity] = [] # list of the entities in the world except the player
 		self.space = Space()
-		self.space.gravity = 0, 5 # earth's gravity is 9.81
+		self.space.gravity = 0, 4 # earth's gravity is 9.81
 		playerShape = pm.Poly.create_box(self.player, (self.player.width, self.player.height))
 		playerShape.mass = self.player.mass
 		self.space.add(self.player, playerShape)
