@@ -18,6 +18,7 @@ class Entity(HasPhysics):
 							jumpImpulse: float,
 							jumpSpeed: float,
 							friction: float,
+							health: int,
 							world: World,
 							):
 		super().__init__(x, y, mass, width, height)
@@ -27,6 +28,7 @@ class Entity(HasPhysics):
 		self.jumpSpeed = jumpSpeed
 		self.previousJumpTime = 0
 		self.friction = friction
+		self.health = health
 		self.world = world
 		self.minyvelo = 100
 	
@@ -52,5 +54,4 @@ class Entity(HasPhysics):
 		return False
 
 	def update(self) -> None:
-		print((self.position.y - self.height / 2) % 1)
 		pass

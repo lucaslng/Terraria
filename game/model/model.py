@@ -13,9 +13,10 @@ from game.model.blocks.grassblock import GrassBlock
 from game.model.blocks.stoneblock import StoneBlock
 from game.model.entity.entities.player import Player
 from game.model.physics.keepupright import keepUpright
+from game.model.utils.adddefaultitems import addDefaultItems
 from game.model.utils.noisesenum import Noises
 from game.model.world import World
-from main import Entity
+from game.model.entity.entity import Entity
 from utils.customqueue import Queue
 from utils.simplexnoise import SimplexNoise
 
@@ -26,6 +27,7 @@ class Model:
 		'''initialize the game'''
 		self.world = World(worldWidth, worldHeight)
 		self.player = Player(worldWidth * 0.5, worldHeight * 0.55, self.world)
+		addDefaultItems(self.player)
 		self.lightmap = [
 			[0 for x in range(worldWidth)] for y in range(worldHeight)
 		]

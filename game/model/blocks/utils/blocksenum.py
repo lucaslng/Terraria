@@ -6,4 +6,5 @@ class Blocks(Enum):
 	Dirt = auto()
 	Grass = auto()
 	Stone = auto()
+	Cobblestone = auto()
 	Air = auto()

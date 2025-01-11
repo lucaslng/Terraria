@@ -10,3 +10,4 @@ def clearScreen():
 	LIGHTSURF.fill(colors.CLEAR)
 	surfaces.sunlight.fill(colors.CLEAR)
 	surfaces.blocks.fill(colors.CLEAR)
+	surfaces.hud.fill(colors.CLEAR)

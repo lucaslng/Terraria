@@ -1,6 +1,7 @@
 from pygame import SRCALPHA, Surface
 from constants import BLOCK_SIZE
 from game.model.blocks.utils.blocksenum import Blocks
+from game.model.items.utils.itemsenum import Items
 from game.textures.animation import Animation
 from game.textures.spritesheets import catSheet, everythingSheet, weirdBlocksSheet
 
@@ -53,13 +54,18 @@ sprites = {
 	
     Blocks.Air: Surface((0,0), SRCALPHA),
 
-    #Grass
+    # Dirt
     Blocks.Dirt: everythingSheet.get(480, 0, 16, 16, BLOCK_SIZE),
-	Blocks.Grass: everythingSheet.get(496, 0, 16, 16, BLOCK_SIZE),
-    
-    #Stone
+	Items.Dirt: everythingSheet.get(480, 0, 16, 16, BLOCK_SIZE),
+	# Grass
+    Blocks.Grass: everythingSheet.get(496, 0, 16, 16, BLOCK_SIZE),
+	Items.Grass: everythingSheet.get(496, 0, 16, 16, BLOCK_SIZE),
+    # Stone
 	Blocks.Stone: everythingSheet.get(512, 0, 16, 16, BLOCK_SIZE),
-    "cobblestone": everythingSheet.get(528, 0, 16, 16),
+	Items.Stone: everythingSheet.get(512, 0, 16, 16, BLOCK_SIZE),
+    # Cobblestone
+    Blocks.Cobblestone: everythingSheet.get(528, 0, 16, 16, BLOCK_SIZE),
+	Items.Cobblestone: everythingSheet.get(528, 0, 16, 16, BLOCK_SIZE),
     
     #Wood
     "oak plank": everythingSheet.get(544, 0, 16, 16),
