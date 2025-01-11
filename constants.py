@@ -9,11 +9,7 @@ FPS = 60
 pg.init()
 
 SURF = pg.display.set_mode((WIDTH, HEIGHT))
-SUNLIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
-LIGHTSURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
 FRAME = SURF.get_rect()
-ASURF = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
-OVERLAY = pg.surface.Surface((WIDTH, HEIGHT), pg.SRCALPHA)
 
 clock = pg.time.Clock()
 pg.time.set_timer(101, 500)
