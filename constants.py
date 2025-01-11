@@ -25,7 +25,7 @@ random.seed(SEED)
 font = pg.font.Font(None, 15)
 font20 = pg.font.Font(None, 20)
 
-BLOCK_SIZE = 25
+BLOCK_SIZE = 32
 WORLD_HEIGHT = 256
 WORLD_WIDTH = 500    #default is 2500
 SHADOW_QUALITY = 3

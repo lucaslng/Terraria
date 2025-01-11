@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
 import random
+from typing import List
 from constants import SEED, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
 from game.model.blocks.dirtblock import DirtBlock
@@ -9,6 +10,7 @@ from game.model.blocks.stoneblock import StoneBlock
 from game.model.entity.entities.player import Player
 from game.model.utils.noisesenum import Noises
 from game.model.world import World
+from main import Entity
 from utils.customqueue import Queue
 from utils.simplexnoise import SimplexNoise
 
@@ -22,6 +24,7 @@ class Model:
 		self.lightmap = [
 			[0 for x in range(worldWidth)] for y in range(worldHeight)
 		]
+		self.entities: List[Entity] = [] # list of the entities in the world except the player
 	
 	def start(self):
 		'''Start game'''
