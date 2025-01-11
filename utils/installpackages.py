@@ -13,8 +13,9 @@ def installPackages():
         if not isPackageInstalled(package):
             print(f"{package} not found. Installing...")
             try:
-                subprocess.check_call([sys.executable, '-m', 'pip', 'install', package])
+                subprocess.check_call([sys.executable, '-m', 'pip', 'install', package], stdout=subprocess.DEVNULL)
+                print(f"Succesfully installed {package}.")
             except subprocess.CalledProcessError as e:
-                print(f"Failed to install {package}: {e}")
+                print(f"Failed to install {package}: {e}.")
         else:
             print(f"{package} is already installed.")
