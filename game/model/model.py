@@ -43,6 +43,8 @@ class Model:
 		self.worldBody = pm.Body(body_type=pm.Body.STATIC)
 		self.space.add(self.worldBody)
 
+		self.blockFacingCoord: tuple[int, int] | None = None
+
 	def update(self, steps=20):
 		'''Update the model, should be called every frame. steps increases the accuracy of the physics simulation but sacrifices performance'''
 		# startTime = perf_counter()

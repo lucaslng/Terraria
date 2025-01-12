@@ -1,6 +1,7 @@
 import pygame as pg
+from game.model.utils.bresenham import bresenham
 import keys
-from constants import WORLD_HEIGHT, WORLD_WIDTH, clock
+from constants import BLOCK_SIZE, FRAME, WORLD_HEIGHT, WORLD_WIDTH, clock
 from game.view.draw import draw
 from game.model.model import Model
 from screens import Screens
@@ -11,6 +12,9 @@ def Game():
 	'''Main game loop'''
 	model = Model(WORLD_WIDTH, WORLD_HEIGHT)
 	model.start()
+
+	camera = FRAME.copy()
+	camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
 
 	while True:
 		clearScreen()
@@ -48,7 +52,11 @@ def Game():
 			elif event.type == 101:
 				print(f'fps: {round(clock.get_fps(), 2)}')
 		
+		model.blockFacingCoord = bresenham(model.world.array, *FRAME.center, *pg.mouse.get_pos(), camera)
 		model.update()
-		draw(model)
+		
+		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
+		
+		draw(model, camera)
 		
 		updateScreen()
