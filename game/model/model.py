@@ -11,7 +11,9 @@ from game.model.blocks.airblock import AirBlock
 from game.model.blocks.dirtblock import DirtBlock
 from game.model.blocks.grassblock import GrassBlock
 from game.model.blocks.stoneblock import StoneBlock
+from game.model.blocks.utils.block2item import block2Item
 from game.model.entity.entities.player import Player
+from game.model.items.specialitems.tool import Tool
 from game.model.physics.keepupright import keepUpright
 from game.model.utils.adddefaultitems import addDefaultItems
 from game.model.utils.noisesenum import Noises
@@ -71,6 +73,24 @@ class Model:
 		self.entities.append(entity)
 		self.space.add(entity, pm.Poly.create_box(entity, (entity.width, entity.height)))
 	
+	def mineBlock(self):
+		if self.blockFacingCoord:
+			x, y = self.blockFacingCoord
+			block = self.world[y][x]
+			if block.amountBroken < block.hardness:
+				miningSpeed = 1
+				if self.player.heldSlot.item and isinstance(self.player.heldSlot.item, Tool) and self.player.heldSlot.item.blockType == block.blockType:
+					miningSpeed = self.player.heldSlot.item.speed
+				block.amountBroken += miningSpeed / FPS
+			else:
+				itemType = block2Item[block.enum]
+				if itemType:
+					self.player.inventory.addItem(itemType())
+
+				self.world[y][x] = AirBlock()
+				if isinstance(self.world.back[y][x], AirBlock):
+					self.generateLight(y, x)
+
 	def _generateWorld(self):
 		'''Generate the random world using vectorized NumPy operations'''
 		noises = self._generateAllNoise()

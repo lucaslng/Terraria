@@ -5,11 +5,13 @@ from game.model.world import World
 
 class Player(Entity):
 	'''Player entity class'''
+
+	_heldSlotIndex: int = 0
+	reach: int = 4
 	
 	def __init__(self, x: float, y: float, world: World):
 		super().__init__(x, y, 4, 1, 1, 10000, 8, 60, 20, 0.8, 18, world)
 		self.inventory = Inventory(4, 9)
-		self._heldSlotIndex = 0
 	
 	@property
 	def hotbar(self) -> list[Slot]:
@@ -27,6 +29,7 @@ class Player(Entity):
 		if index != self._heldSlotIndex:
 			self._heldSlotIndex = index
 	
+	@property
 	def heldSlot(self) -> Slot:
 		'''returns the held slot'''
 		

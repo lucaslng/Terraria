@@ -8,3 +8,7 @@ class Items(Enum):
 	Grass = "Grass"
 	Stone = "Stone"
 	Cobblestone = "Cobblestone"
+	WoodenPickaxe = "Wooden Pickaxe"
+	WoodenAxe = "Wooden Axe"
+	WoodenShovel = "Wooden Shovel"
+	WoodenSword = "Wooden Sword"

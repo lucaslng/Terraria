@@ -1,15 +1,16 @@
-from pygame import mask
-
+from dataclasses import dataclass
 from game.model.blocks.utils.blocksenum import Blocks
-from game.textures.sprites import sprites
+from game.model.blocks.utils.blocktype import BlockType
 
 
+@dataclass
 class Block:
 	'''Base block class'''
 	
-	isEmpty = False
+	friction: float
+	hardness: float
+	blockType: BlockType
+	enum: Blocks
 
-	def __init__(self, friction: float, enum: Blocks):
-		self.friction = friction
-		self.mask = mask.from_surface(sprites[enum])
-		self.enum = enum
+	isEmpty = False
+	amountBroken = 0

@@ -1,3 +1,4 @@
+from math import dist
 import pygame as pg
 from game.model.utils.bresenham import bresenham
 import keys
@@ -44,7 +45,9 @@ def Game():
 			model.player.heldSlotIndex = 7
 		if pressedKeys[keys.slot9]:
 			model.player.heldSlotIndex = 8
-			
+		
+		if pg.mouse.get_pressed()[0]:
+			model.mineBlock()
 
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
@@ -52,7 +55,12 @@ def Game():
 			elif event.type == 101:
 				print(f'fps: {round(clock.get_fps(), 2)}')
 		
-		model.blockFacingCoord = bresenham(model.world.array, *FRAME.center, *pg.mouse.get_pos(), camera)
+		blockFacingCoord = bresenham(model.world.array, *pg.mouse.get_pos(), *FRAME.center, camera)
+		if blockFacingCoord and dist(map(lambda a: a + 0.5, blockFacingCoord), model.player.position) < model.player.reach:
+			model.blockFacingCoord = blockFacingCoord
+		else:
+			model.blockFacingCoord = None
+
 		model.update()
 		
 		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
