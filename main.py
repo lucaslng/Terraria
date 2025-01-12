@@ -6,7 +6,6 @@ from screens import Screens
 from initialize import initialize
 
 
-
 def main():
 	'''Main loop'''
 	

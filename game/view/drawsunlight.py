@@ -12,5 +12,3 @@ def drawSunlight(lightmap: list[list[int]], camera: pg.Rect) -> None:
 	
 	surfaces.sunlight = pg.transform.smoothscale(surfaces.sunlight, (FRAME.width // 15, FRAME.height // 20))
 	surfaces.sunlight = pg.transform.smoothscale(surfaces.sunlight, FRAME.size)
-
-	SURF.blit(surfaces.sunlight, (0, 0))

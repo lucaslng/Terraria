@@ -22,6 +22,7 @@ font = pg.font.Font(None, 15)
 font20 = pg.font.Font(None, 20)
 
 BLOCK_SIZE = 32
+BLOCK_RECT = pg.rect.Rect(0, 0, BLOCK_SIZE, BLOCK_SIZE)
 WORLD_HEIGHT = 256
 WORLD_WIDTH = 500    #default is 2500
 SHADOW_QUALITY = 3

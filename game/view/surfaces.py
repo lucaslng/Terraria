@@ -3,6 +3,7 @@ from pygame import SRCALPHA, Surface
 from constants import HEIGHT, WIDTH
 
 
-blocks = Surface((WIDTH, HEIGHT), SRCALPHA)
-sunlight = Surface((WIDTH, HEIGHT), SRCALPHA)
-hud = Surface((WIDTH, HEIGHT), SRCALPHA)
+world = Surface((WIDTH, HEIGHT), SRCALPHA)
+blockBreak = world.copy()
+sunlight = world.copy()
+hud = world.copy()
