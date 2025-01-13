@@ -32,5 +32,4 @@ class Player(Entity):
 	@property
 	def heldSlot(self) -> Slot:
 		'''returns the held slot'''
-		
 		return self.hotbar[self._heldSlotIndex]
