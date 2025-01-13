@@ -1,6 +1,5 @@
 import pygame as pg
 
-from constants import SURF
 
 class Animation:
     '''list of frames to cycle between for an animation. unit of duration is in frames'''
@@ -12,17 +11,17 @@ class Animation:
     def __getitem__(this, i: int) -> pg.surface.Surface:
         return this.arr[i]
     
-    def drawAnimated(this, x: int, y: int, flipped=False):
+    def drawAnimated(this, surface: pg.Surface, center: tuple[int, int], flipped=False) -> None:
         '''draws the the animation, takes a pixel relative to camera'''
-        index = this.frame//this.duration
+        index = this.frame // this.duration
         this.frame += 1
         if this.frame > len(this.arr) * this.duration - 1:
             this.frame = 0
-        return this.drawFrame(x, y, index, flipped)
+        this.drawFrame(surface, center, index, flipped)
 
-    def drawFrame(this, x: int, y: int, index=0, flipped=False):
+    def drawFrame(this, surface: pg.Surface, center: tuple[int, int], index=0, flipped=False) -> None:
         '''draws the frame of the given index, takes a pixel relative to camera'''
         texture = this[index]
         if flipped:
             texture = pg.transform.flip(texture, True, False).convert_alpha()
-        return SURF.blit(texture, (x, y))
+        surface.blit(texture, texture.get_rect(center=center))
