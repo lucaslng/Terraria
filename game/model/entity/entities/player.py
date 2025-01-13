@@ -12,7 +12,7 @@ class Player(Entity):
 	cursorSlot = Slot()
 	
 	def __init__(self, x: float, y: float, world: World):
-		super().__init__(x, y, 4, 1, 1, 10000, 8, 60, 20, 0.8, 18, world)
+		super().__init__(x, y, 4, 1, 1, 20000, 7, 60, 20, 0.99, 18, world)
 	
 	@property
 	def hotbar(self) -> list[Slot]:
