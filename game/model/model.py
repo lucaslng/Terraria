@@ -17,6 +17,7 @@ from game.model.blocks.leavesblock import LeavesBlock
 from game.model.blocks.oaklogblock import LogBlock
 from game.model.blocks.stoneblock import StoneBlock
 from game.model.blocks.utils.block2item import block2Item
+from game.model.blocks.utils.inventoryblock import InventoryBlock
 from game.model.entity.entities.player import Player
 from game.model.items.specialitems.placeable import Placeable
 from game.model.items.specialitems.tool import Tool
@@ -105,16 +106,18 @@ class Model:
 		'''mine the block the player is facing'''
 		if self.blockFacingCoord:
 			x, y = self.blockFacingCoord
-			block = self.world[y][x]
-			if block.amountBroken < block.hardness:
+			if self.world[y][x].amountBroken < self.world[y][x].hardness:
 				miningSpeed = 1
-				if self.player.heldSlot.item and isinstance(self.player.heldSlot.item, Tool) and self.player.heldSlot.item.blockType == block.blockType:
+				if self.player.heldSlot.item and isinstance(self.player.heldSlot.item, Tool) and self.player.heldSlot.item.blockType == self.world[y][x].blockType:
 					miningSpeed = self.player.heldSlot.item.speed
-				block.amountBroken += miningSpeed / FPS
+				self.world[y][x].amountBroken += miningSpeed / FPS
 			else:
-				itemType = block2Item[block.enum]
+				itemType = block2Item[self.world[y][x].enum]
 				if itemType:
 					self.player.inventory.addItem(itemType())
+				
+				if isinstance(self.world[y][x], InventoryBlock):
+					inventoryTypes = [inventoryType for _, inventoryType in self.world[y][x].inventories]
 
 				print(len(self.space.shapes))
 				self.space.remove(self.world[y][x].shape)
@@ -123,6 +126,7 @@ class Model:
 				self.world[y][x] = AirBlock()
 				if isinstance(self.world.back[y][x], AirBlock):
 					self.generateLight(y, x)
+				return inventoryTypes
 
 	def _generateWorld(self):
 		'''Generate the random world using vectorized NumPy operations'''

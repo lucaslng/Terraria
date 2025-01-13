@@ -1,4 +1,6 @@
+from constants import BLOCK_SIZE
 from game.model.items.inventory.inventory import Inventory
+from game.model.items.inventory.inventorytype import InventoryType
 from game.model.model import Model
 from game.view.drawhud.drawhealth import drawHealth
 from game.view.drawhud.drawhotbar import drawHotbar
@@ -10,11 +12,12 @@ from game.view.inventory.hoveredslot import getHoveredSlotRect
 import pygame as pg
 
 
-def drawHUD(model: Model, inventories: dict[str, tuple[Inventory, int, int, int]]):
+def drawHUD(model: Model, inventories: dict[InventoryType, tuple[Inventory, int, int, int]]):
 	'''Draw HUD'''
 
 	drawHealth(model.player.health, model.player.maxHealth)
-	drawInventory(*inventories["player"])
+	for inventoryKey in inventories:
+		drawInventory(*inventories[inventoryKey])
 	drawHotbar(model.player.hotbar, model.player.heldSlotIndex)
 	
 	hoveredSlotRect = getHoveredSlotRect(*(v for v in inventories.values()))
@@ -22,4 +25,4 @@ def drawHUD(model: Model, inventories: dict[str, tuple[Inventory, int, int, int]
 		drawHoveredSlotOutline(hoveredSlotRect)
 	
 	if model.player.cursorSlot.item:
-		drawSlot(model.player.cursorSlot, *pg.mouse.get_pos(), inventories["player"][1], center=True)
+		drawSlot(model.player.cursorSlot, *pg.mouse.get_pos(), BLOCK_SIZE + 2, center=True)

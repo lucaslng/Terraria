@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from game.model.items.inventory.slot import Slot
 from game.model.items.item import Item
 
@@ -5,11 +6,11 @@ from game.model.items.item import Item
 class Inventory:
 	'''Inventory class, 2d array of slots'''
 
-	def __init__(self, rows: int, cols: int):
+	def __init__(self, rows: int, cols: int, condition: Callable[[Item | None], bool] = lambda item: True):
 		self.rows = rows
 		self.cols = cols
 		self.array = [
-			[Slot() for _ in range(cols)]
+			[Slot(condition=condition) for _ in range(cols)]
 			for _ in range(rows)]
 	
 	def __getitem__(self, i: int):

@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from dataclasses import dataclass
 from game.model.items.item import Item
-
 
 @dataclass
 class Slot:
@@ -8,6 +8,7 @@ class Slot:
 
 	item: Item | None = None
 	count: int = 0
+	condition: Callable[[Item | None], bool] = lambda item: True
 
 	def clear(self):
 		'''reset/clear the slot'''

@@ -9,7 +9,7 @@ from pygame.math import Vector2
 #Import code from other files
 from game.model.blocks.utils.blocksenum import Blocks
 from game.model.blocks.utils.executable import Executable
-from game.model.blocks.utils.interactable import Interactable
+from game.model.blocks.utils.inventoryblock import InventoryBlock
 from constants import WIDTH, HEIGHT, BLOCK_SIZE, WORLD_HEIGHT, WORLD_WIDTH, SURF, SUNLIGHTSURF, FPS, font20, gravity, BIG, clock
 from utils.customqueue import Queue
 from game.textures.sprites import sprites
@@ -40,7 +40,7 @@ def check_for_interaction() -> None:
   for y in range(player.camera.top // BLOCK_SIZE, (player.camera.bottom // BLOCK_SIZE) + 1):
     for x in range(player.camera.left // BLOCK_SIZE, (player.camera.right // BLOCK_SIZE) + 1):
       block = world.blockAt(x, y)
-      if isinstance(block, Interactable):
+      if isinstance(block, InventoryBlock):
         dist = math.dist(player.rect.center, block.rect.center)
         if dist <= 3 * BLOCK_SIZE:
           block.interact()
@@ -276,7 +276,7 @@ class AirBlock(Block):
   def __init__(self, x=-1, y=-1, isBack=False):
     super().__init__("Air", self.texture, x, y, 0, BlockType.NONE, isAir=True, isEmpty=True, isBack=isBack)
 
-class CraftingTableBlock(Block, Interactable):
+class CraftingTableBlock(Block, InventoryBlock):
   craftingTableTexture = pg.transform.scale(
     pg.image.load("crafting_table.png"), (BLOCK_SIZE, BLOCK_SIZE))
   
