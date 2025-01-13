@@ -99,7 +99,7 @@ def game():
 						leftMousePressedTime = pg.time.get_ticks()
 						hoveredSlotName, r, c = hoveredSlotData
 						# print(f'hovered slot: {inventories[hoveredSlotName][0][r][c]}, cursor slot: {model.player.cursorSlot}')
-						if inventories[hoveredSlotName][0][r][c].condition(model.player.cursorSlot.item):
+						if inventories[hoveredSlotName][0][r][c].condition(model.player.cursorSlot):
 							if model.player.cursorSlot.item and inventories[hoveredSlotName][0][r][c].item == model.player.cursorSlot.item:
 								add = min(model.player.cursorSlot.item.stackSize - inventories[hoveredSlotName][0][r][c].count, model.player.cursorSlot.count)
 								extra = model.player.cursorSlot.count - add
@@ -117,7 +117,7 @@ def game():
 						if pg.time.get_ticks() - leftMousePressedTime > 150:
 							hoveredSlotName, r, c = hoveredSlotData
 							# print(f'hovered slot: {inventories[hoveredSlotName][0][r][c]}, cursor slot: {model.player.cursorSlot}')
-							if inventories[hoveredSlotName][0][r][c].condition(model.player.cursorSlot.item):
+							if inventories[hoveredSlotName][0][r][c].condition(model.player.cursorSlot):
 								if model.player.cursorSlot.item and inventories[hoveredSlotName][0][r][c].item == model.player.cursorSlot.item:
 									add = min(model.player.cursorSlot.item.stackSize - inventories[hoveredSlotName][0][r][c].count, model.player.cursorSlot.count)
 									extra = model.player.cursorSlot.count - add
