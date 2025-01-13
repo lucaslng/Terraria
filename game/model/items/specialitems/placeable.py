@@ -1,3 +1,4 @@
+from game.model.blocks.block import Block
 from game.model.blocks.utils.item2block import item2Block
 from game.model.items.utils.itemsenum import Items
 
@@ -7,5 +8,5 @@ class Placeable:
 	
 	enum: Items
 
-	def getBlock(self):
+	def getBlock(self) -> Block:
 		return item2Block[self.enum]

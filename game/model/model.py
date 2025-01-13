@@ -13,12 +13,14 @@ from game.model.blocks.grassblock import GrassBlock
 from game.model.blocks.stoneblock import StoneBlock
 from game.model.blocks.utils.block2item import block2Item
 from game.model.entity.entities.player import Player
+from game.model.items.specialitems.placeable import Placeable
 from game.model.items.specialitems.tool import Tool
 from game.model.physics.keepupright import keepUpright
 from game.model.utils.adddefaultitems import addDefaultItems
 from game.model.utils.noisesenum import Noises
 from game.model.world import World
 from game.model.entity.entity import Entity
+from game.view import conversions
 from utils.customqueue import Queue
 from utils.simplexnoise import SimplexNoise
 
@@ -73,7 +75,26 @@ class Model:
 		self.entities.append(entity)
 		self.space.add(entity, pm.Poly.create_box(entity, (entity.width, entity.height)))
 	
+	def placeBlock(self, x: int, y: int):
+		'''place a block at coordinates (x, y)'''
+		if isinstance(self.world[y][x], AirBlock):
+			if self.player.heldSlot.item and isinstance(self.player.heldSlot.item, Placeable):
+				self.player.heldSlot.count -= 1
+				self.world[y][x] = self.player.heldSlot.item.getBlock()()
+				vertices = (
+				(x, y),
+				(x, y + 1),
+				(x + 1, y + 1),
+				(x + 1, y)
+				)
+				self.world[y][x].shape = pm.Poly(self.worldBody, vertices)
+				self.world[y][x].shape.friction = self.world[y][x].friction
+				self.space.add(self.world[y][x].shape)
+				if self.player.heldSlot.count == 0:
+					self.player.heldSlot.clear()
+
 	def mineBlock(self):
+		'''mine the block the player is facing'''
 		if self.blockFacingCoord:
 			x, y = self.blockFacingCoord
 			block = self.world[y][x]
@@ -113,7 +134,7 @@ class Model:
 		
 		for x in range(self.world.width):
 			# Place stone and dirt
-			for y in range(self.world.height - 1, grassHeight[x] - 1, -1):
+			for y in range(self.world.height - 1, grassHeight[x], -1):
 				if y > stoneHeight[x]:
 					self.world[y][x] = StoneBlock()
 					self.world.back[y][x] = StoneBlock()
@@ -122,7 +143,7 @@ class Model:
 					self.world.back[y][x] = DirtBlock()
 			
 			# Place grass block at the surface
-			if grassHeight[x] < self.world.height:
+			if 0 <= grassHeight[x] < self.world.height:
 				self.world[grassHeight[x]][x] = GrassBlock()
 		
 		# Cut out caves

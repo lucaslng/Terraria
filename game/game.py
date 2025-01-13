@@ -1,6 +1,7 @@
 from math import dist
 import pygame as pg
 from game.model.utils.bresenham import bresenham
+from game.view import conversions
 from game.view.inventory.hoveredslot import getHoveredSlotSlot
 import keys
 from constants import BLOCK_SIZE, FRAME, WORLD_HEIGHT, WORLD_WIDTH, clock
@@ -61,6 +62,8 @@ def game():
 		
 		if pg.mouse.get_pressed()[0]:
 			model.mineBlock()
+		elif pg.mouse.get_pressed()[2]:
+			model.placeBlock(*conversions.pixel2Coordinate(*pg.mouse.get_pos(), camera))
 
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
