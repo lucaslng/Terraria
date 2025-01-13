@@ -6,7 +6,7 @@ from game.model.items.item import Item
 class Inventory:
 	'''Inventory class, 2d array of slots'''
 
-	def __init__(self, rows: int, cols: int, condition: Callable[[Item | None], bool] = lambda item: True):
+	def __init__(self, rows: int, cols: int, condition: Callable[[Slot], bool] = lambda other: True):
 		self.rows = rows
 		self.cols = cols
 		self.array = [

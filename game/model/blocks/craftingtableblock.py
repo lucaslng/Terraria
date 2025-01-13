@@ -11,7 +11,7 @@ class CraftingTableBlock(Block, InventoryBlock):
 
 	def __init__(self):
 		self.craftingInInventory = Inventory(3, 3)
-		self.craftingOutInventory = Inventory(1, 1, lambda item: item is None)
+		self.craftingOutInventory = Inventory(1, 1, lambda other: other.item is None)
 		super().__init__(0.94, 2.5, BlockType.AXE, Blocks.CraftingTable)
 	
 	@property
