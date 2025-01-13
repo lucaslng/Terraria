@@ -11,7 +11,8 @@ class Player(Entity, Light):
 	reach = 4
 	inventory = Inventory(4, 9)
 	cursorSlot = Slot()
-	lightRadius = 0.8
+	defaultLightRadius = 0.8
+	lightRadius = defaultLightRadius
 	
 	def __init__(self, x: float, y: float, world: World):
 		super().__init__(x, y, 4, 1, 1, 20000, 7, 60, 20, 0.99, 18, world)
@@ -35,3 +36,11 @@ class Player(Entity, Light):
 	def heldSlot(self) -> Slot:
 		'''returns the held slot'''
 		return self.hotbar[self._heldSlotIndex]
+	
+	def update(self) -> None:
+		super().update()
+		
+		if self.heldSlot.item and isinstance(self.heldSlot.item, Light):
+			self.lightRadius = self.heldSlot.item.lightRadius
+		else:
+			self.lightRadius = self.defaultLightRadius
