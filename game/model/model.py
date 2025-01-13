@@ -87,6 +87,8 @@ class Model:
 				if itemType:
 					self.player.inventory.addItem(itemType())
 
+				print(len(self.space.shapes))
+				self.space.remove(self.world[y][x].shape)
 				self.world[y][x] = AirBlock()
 				if isinstance(self.world.back[y][x], AirBlock):
 					self.generateLight(y, x)
@@ -258,9 +260,9 @@ class Model:
 				(x + 1, y + 1),
 				(x + 1, y)
 			)
-			shape = pm.Poly(self.worldBody, vertices)
-			shape.friction = self.world[y][x].friction
-			self.space.add(shape)
+			self.world[y][x].shape = pm.Poly(self.worldBody, vertices)
+			self.world[y][x].shape.friction = self.world[y][x].friction
+			self.space.add(self.world[y][x].shape)
 
 	def generateBlockShape(self, x: int, y: int):
 		vertices = (
