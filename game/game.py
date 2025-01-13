@@ -13,6 +13,7 @@ from screens import Screens
 from utils.clearscreen import clearScreen
 from utils.updatescreen import updateScreen
 
+
 def game():
 	'''Main game loop'''
 	model = Model(WORLD_WIDTH, WORLD_HEIGHT)

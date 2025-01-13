@@ -1,4 +1,4 @@
-import utils.installpackages  # noqa: F401
+import utils.installpackages
 from game.game import game
 from game.utils.utils import sysexit
 from menu.menu import mainMenu
