@@ -1,15 +1,17 @@
 from game.model.entity.entity import Entity
 from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.slot import Slot
+from game.model.light import Light
 from game.model.world import World
 
-class Player(Entity):
+class Player(Entity, Light):
 	'''Player entity class'''
 
 	_heldSlotIndex = 0
 	reach = 4
 	inventory = Inventory(4, 9)
 	cursorSlot = Slot()
+	lightRadius = 0.8
 	
 	def __init__(self, x: float, y: float, world: World):
 		super().__init__(x, y, 4, 1, 1, 20000, 7, 60, 20, 0.99, 18, world)

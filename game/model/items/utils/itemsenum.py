@@ -13,3 +13,4 @@ class Items(Enum):
 	WoodenAxe = "Wooden Axe"
 	WoodenShovel = "Wooden Shovel"
 	WoodenSword = "Wooden Sword"
+	Torch = "Torch"

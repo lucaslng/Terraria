@@ -19,6 +19,7 @@ from game.model.blocks.utils.block2item import block2Item
 from game.model.entity.entities.player import Player
 from game.model.items.specialitems.placeable import Placeable
 from game.model.items.specialitems.tool import Tool
+from game.model.light import Light
 from game.model.physics.keepupright import keepUpright
 from game.model.utils.adddefaultitems import addDefaultItems
 from game.model.utils.noisesenum import Noises
@@ -35,9 +36,11 @@ class Model:
 		self.world = World(worldWidth, worldHeight)
 		self.player = Player(worldWidth * 0.5, worldHeight * 0.55, self.world)
 		addDefaultItems(self.player)
+
 		self.lightmap = [
 			[0 for x in range(worldWidth)] for y in range(worldHeight)
 		]
+		self.lights: list[tuple[Light, int, int]] = []
 		self.entities: list[Entity] = [] # list of the entities in the world except the player
 		
 		self.space = Space()
@@ -84,17 +87,20 @@ class Model:
 			if self.player.heldSlot.item and isinstance(self.player.heldSlot.item, Placeable):
 				self.player.heldSlot.count -= 1
 				self.world[y][x] = self.player.heldSlot.item.getBlock()()
-				vertices = (
-				(x, y),
-				(x, y + 1),
-				(x + 1, y + 1),
-				(x + 1, y)
-				)
-				self.world[y][x].shape = pm.Poly(self.worldBody, vertices)
-				self.world[y][x].shape.friction = self.world[y][x].friction
-				self.space.add(self.world[y][x].shape)
 				if self.player.heldSlot.count == 0:
 					self.player.heldSlot.clear()
+				if isinstance(self.world[y][x], Light):
+					self.lights.append((self.world[y][x], x, y))
+				if not self.world[y][x].isEmpty:
+					vertices = (
+					(x, y),
+					(x, y + 1),
+					(x + 1, y + 1),
+					(x + 1, y)
+					)
+					self.world[y][x].shape = pm.Poly(self.worldBody, vertices)
+					self.world[y][x].shape.friction = self.world[y][x].friction
+					self.space.add(self.world[y][x].shape)
 
 	def mineBlock(self):
 		'''mine the block the player is facing'''
@@ -113,6 +119,8 @@ class Model:
 
 				print(len(self.space.shapes))
 				self.space.remove(self.world[y][x].shape)
+				if isinstance(self.world[y][x], Light):
+					self.lights.remove(self.world[y][x])
 				self.world[y][x] = AirBlock()
 				if isinstance(self.world.back[y][x], AirBlock):
 					self.generateLight(y, x)

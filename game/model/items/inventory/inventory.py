@@ -35,3 +35,9 @@ class Inventory:
 					return True
 
 		return False
+
+	def addItems(self, *items: Item) -> bool:
+		'''Add multiple items to the inventory at once'''
+
+		for item in items:
+			self.addItem(item)

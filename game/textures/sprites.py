@@ -75,7 +75,8 @@ sprites = {
 	Items.CraftingTable: everythingSheet.get(592, 0, 14, 16),
 
     #Misc
-    "torch": everythingSheet.get(576, 0, 16, 16),
+    Blocks.Torch: everythingSheet.get(576, 0, 16, 16, BLOCK_SIZE),
+	Items.Torch: everythingSheet.get(576, 0, 16, 16),
     
     #---ITEMS---
     "coal": everythingSheet.get(416, 0, 16, 16, 15),

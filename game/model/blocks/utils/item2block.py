@@ -4,6 +4,7 @@ from game.model.blocks.craftingtableblock import CraftingTableBlock
 from game.model.blocks.dirtblock import DirtBlock
 from game.model.blocks.grassblock import GrassBlock
 from game.model.blocks.stoneblock import StoneBlock
+from game.model.blocks.torchblock import TorchBlock
 from game.model.items.utils.itemsenum import Items
 
 
@@ -14,3 +15,4 @@ item2Block[Items.Grass] = GrassBlock
 item2Block[Items.Stone] = StoneBlock
 item2Block[Items.Cobblestone] = CobblestoneBlock
 item2Block[Items.CraftingTable] = CraftingTableBlock
+item2Block[Items.Torch] = TorchBlock
