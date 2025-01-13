@@ -5,6 +5,7 @@ import time
 from pymunk import Space
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
+from typing import Optional
 
 from constants import FPS, SEED, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
@@ -54,7 +55,6 @@ class Model:
 
 	def update(self, steps=20):
 		'''Update the model, should be called every frame. steps increases the accuracy of the physics simulation but sacrifices performance'''
-		# startTime = perf_counter()
 		self.player.update()
 		for entity in self.entities:
 			entity.update()
@@ -64,7 +64,6 @@ class Model:
 			keepUpright(self.player)
 			for entity in self.entities:
 				keepUpright(entity)
-		# print(f'Physics time: {round(perf_counter() - startTime, 2)}')
 
 	def start(self):
 		'''Start game'''
@@ -120,12 +119,16 @@ class Model:
 	def _generateWorld(self):
 		'''Generate the random world using vectorized NumPy operations'''
 		noises = self._generateAllNoise()
+  
 		start = time.perf_counter()
 		self._placeTerrain(noises[Noises.GRASSHEIGHT], noises[Noises.STONEHEIGHT], noises[Noises.CAVES])
-		print(f'terrain time: {round(time.perf_counter() - start, 4)}')
+		print(f"Terrain time: {round(time.perf_counter() - start, 4)} seconds")
+		
 		self._placeOres(noises[Noises.COAL], noises[Noises.IRON])
+		
+		start = time.perf_counter()
 		self.generateLight()
-		self._generateWorldShapes()
+		print(f"Light time: {round(time.perf_counter() - start, 4)} seconds")
     
 	def _placeTerrain(self, grassNoise: SimplexNoise, stoneNoise: SimplexNoise, caveNoise: SimplexNoise) -> None:
 		'''Place the dirt, stone, and cut out caves'''
@@ -158,9 +161,7 @@ class Model:
 					y < self.world.height):
 					self.world[y][x] = AirBlock()
 		
-		# place ores
-		
-		# generate trees
+		#Generate trees
 		for x in range(self.world.width):
 			if isinstance(self.world[grassHeight[x]][x], GrassBlock):
 				if random.random() > 0.8:
@@ -198,8 +199,7 @@ class Model:
 						self.world[y][x] = IronOreBlock()
 
 	def _generateAllNoise(self, seed: int | None = None) -> dict[Noises, SimplexNoise]:
-		totalStartTime = time.perf_counter()
-		
+		totalStartTime = time.perf_counter()		
 		random.seed(seed)
 
 		def generateNoise(noiseType: Noises, scale: float, dimension: int, width: int = WORLD_WIDTH, 
@@ -213,9 +213,9 @@ class Model:
 			return noiseType, noise, generation_time
 
 		noiseParameters = (
-			(Noises.GRASSHEIGHT, 19, 1),  # grass height noise
-			(Noises.STONEHEIGHT, 30, 1),  # stone height noise
-			(Noises.CAVES, 9, 2),         # caves noise
+			(Noises.GRASSHEIGHT, 19, 1),
+			(Noises.STONEHEIGHT, 30, 1),
+			(Noises.CAVES, 9, 2),
 			(Noises.COAL, 3.9, 2),
 			(Noises.IRON, 3.2, 2),
 		)
@@ -245,40 +245,54 @@ class Model:
 		print(f"{'Total':<15} | {total_time:.4f}s\n")
 
 		return noises
-	
-	def generateLight(self, originr=None, originc=None) -> None:
-		'''Generate the lightmap using breadth-first search with the custom Queue class'''
-		# Calculate bounds for the light calculation region
-		startr = max(0 if originr is None else originr - 6, 0)
-		startc = max(0 if originc is None else originc - 6, 0)
-		stopr = min(self.world.height if originr is None else originr + 7, self.world.height)
-		stopc = min(self.world.width if originc is None else originc + 7, self.world.width)
+ 
+	def generateLight(self, originr: Optional[int] = None, originc: Optional[int] = None) -> None:
+		# Calculate bounds for the light calculation region with proper clamping
+		startr = max(0, (0 if originr is None else originr - 6))
+		startc = max(0, (0 if originc is None else originc - 6))
+		stopr = min(self.world.height, (self.world.height if originr is None else originr + 7))
+		stopc = min(self.world.width, (self.world.width if originc is None else originc + 7))
 		
-		def isDark(world: World, x: int, y: int) -> bool:
-			'''Helper function to check if a block is empty/dark'''
-			return world[y][x].isEmpty and world.back[y][x].isEmpty
+		# Pre-calculate world dimensions for boundary checks
+		world_width = self.world.width
+		world_height = self.world.height
 		
-		# Initialize the lightmap if it hasn't been created yet
+		# Direction vectors for neighbor calculation
+		DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+		
+		def is_dark(x: int, y: int) -> bool:
+			"""Check if a block position is considered dark (both front and back are empty)."""
+			return self.world[y][x].isEmpty and self.world.back[y][x].isEmpty
+
+		# Initialize lightmap if not already created
 		if not hasattr(self, 'lightmap'):
-			self.lightmap = [[255 for _ in range(self.world.width)] 
-							for _ in range(self.world.height)]
+			self.lightmap = [[255 for _ in range(world_width)] 
+							for _ in range(world_height)]
+		
+		# Reusable queue and visited set to reduce memory allocations
+		bfs = Queue()
+		visited = set()
 		
 		# Process each block in the specified region
 		for r in range(startr, stopr):
 			for c in range(startc, stopc):
-				# Create a new queue for BFS at each starting position
-				bfs = Queue()
-				bfs.add((c, r))  # Add starting position
+				# Clear the queue and visited set for reuse
+				while bfs.size() > 0:
+					bfs.poll()
+				visited.clear()
+				
+				# Initialize BFS for current position
+				bfs.add((c, r))  # Starting position
 				bfs.add(None)    # Level marker
+				visited.add((c, r))
 				
 				level = 0
-				visited = set([(c, r)])  # Track visited coordinates
+				light_found = False
 				
-				# Continue BFS until queue is empty or we reach max level
+				# Continue BFS until we find light or reach max level
 				while bfs.size() > 0 and level <= 6:
 					cur = bfs.poll()
 					
-					# Handle level markers
 					if cur is None:
 						level += 1
 						if bfs.size() > 0:
@@ -288,26 +302,22 @@ class Model:
 					x, y = cur
 					
 					# Check if current block is dark
-					if isDark(self.world, x, y):
+					if is_dark(x, y):
 						self.lightmap[r][c] = max(0, (level - 1) * 51)
+						light_found = True
 						break
 					
-					# Add neighboring blocks to the queue
-					neighbors = [
-						(x-1, y), (x+1, y),  # Left and right
-						(x, y-1), (x, y+1)   # Up and down
-					]
-					
-					for nx, ny in neighbors:
-						# Check if neighbor is within bounds and unvisited
-						if (0 <= nx < self.world.width and 
-							0 <= ny < self.world.height and 
+					# Add unvisited neighbors within bounds
+					for dx, dy in DIRECTIONS:
+						nx, ny = x + dx, y + dy
+						if (0 <= nx < world_width and 
+							0 <= ny < world_height and 
 							(nx, ny) not in visited):
 							visited.add((nx, ny))
 							bfs.add((nx, ny))
-				else:
-					# If we exit the while loop normally (didn't break),
-					# set maximum light level
+				
+				# If no dark blocks found in range, set to full brightness
+				if not light_found:
 					self.lightmap[r][c] = 255
 	
 	def _generateWorldShapes(self):
