@@ -20,7 +20,6 @@ from game.model.utils.adddefaultitems import addDefaultItems
 from game.model.utils.noisesenum import Noises
 from game.model.world import World
 from game.model.entity.entity import Entity
-from game.view import conversions
 from utils.customqueue import Queue
 from utils.simplexnoise import SimplexNoise
 
