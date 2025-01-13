@@ -1,5 +1,6 @@
-from math import dist
+from math import dist, floor
 import pygame as pg
+from game.model.blocks.utils.interactable import Interactable
 from game.model.utils.bresenham import bresenham
 from game.view import conversions
 from game.view.inventory.hoveredslot import getHoveredSlotSlot
@@ -70,6 +71,13 @@ def game():
 				return Screens.QUIT
 			elif event.type == 101:
 				print(f'fps: {round(clock.get_fps(), 2)}')
+			elif event.type == pg.KEYDOWN and event.key == keys.interact:
+				for r in range(3):
+					for c in range(3):
+						x = floor(model.player.position.x) - 1 + c
+						y = floor(model.player.position.y) - 1 + r
+						if isinstance(model.world[y][x], Interactable):
+							model.world[y][x].interact()
 			elif event.type == pg.MOUSEBUTTONDOWN:
 				if event.button == 1:
 					hoveredSlotData = getHoveredSlotSlot(inventories)

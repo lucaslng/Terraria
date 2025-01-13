@@ -13,3 +13,5 @@ slot6 = pg.K_6
 slot7 = pg.K_7
 slot8 = pg.K_8
 slot9 = pg.K_9
+
+interact = pg.K_e
