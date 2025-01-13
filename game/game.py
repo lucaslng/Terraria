@@ -76,18 +76,34 @@ def game():
 					if hoveredSlotData:
 						leftMousePressedTime = pg.time.get_ticks()
 						hoveredSlotName, r, c = hoveredSlotData
-						print(f'hovered slot: {inventories[hoveredSlotName][0][r][c]}, cursor slot: {model.player.cursorSlot}')
-						inventories[hoveredSlotName][0][r][c], model.player.cursorSlot = model.player.cursorSlot, inventories[hoveredSlotName][0][r][c]
-						print(f'hovered slot: {inventories[hoveredSlotName][0][r][c]}, cursor slot: {model.player.cursorSlot}')
+						# print(f'hovered slot: {inventories[hoveredSlotName][0][r][c]}, cursor slot: {model.player.cursorSlot}')
+						if model.player.cursorSlot.item and inventories[hoveredSlotName][0][r][c].item == model.player.cursorSlot.item:
+							add = min(model.player.cursorSlot.item.stackSize - inventories[hoveredSlotName][0][r][c].count, model.player.cursorSlot.count)
+							extra = model.player.cursorSlot.count - add
+							inventories[hoveredSlotName][0][r][c].count += add
+							model.player.cursorSlot.count = extra
+							if model.player.cursorSlot.count == 0:
+								model.player.cursorSlot.clear()
+						else:
+							inventories[hoveredSlotName][0][r][c], model.player.cursorSlot = model.player.cursorSlot, inventories[hoveredSlotName][0][r][c]
+						# print(f'hovered slot: {inventories[hoveredSlotName][0][r][c]}, cursor slot: {model.player.cursorSlot}')
 			elif event.type == pg.MOUSEBUTTONUP:
 				if event.button == 1:
 					hoveredSlotData = getHoveredSlotSlot(inventories)
 					if hoveredSlotData:
 						if pg.time.get_ticks() - leftMousePressedTime > 150:
 							hoveredSlotName, r, c = hoveredSlotData
-							print(f'hovered slot: {inventories[hoveredSlotName][0][r][c]}, cursor slot: {model.player.cursorSlot}')
-							inventories[hoveredSlotName][0][r][c], model.player.cursorSlot = model.player.cursorSlot, inventories[hoveredSlotName][0][r][c]
-							print(f'hovered slot: {inventories[hoveredSlotName][0][r][c]}, cursor slot: {model.player.cursorSlot}')
+							# print(f'hovered slot: {inventories[hoveredSlotName][0][r][c]}, cursor slot: {model.player.cursorSlot}')
+							if model.player.cursorSlot.item and inventories[hoveredSlotName][0][r][c].item == model.player.cursorSlot.item:
+								add = min(model.player.cursorSlot.item.stackSize - inventories[hoveredSlotName][0][r][c].count, model.player.cursorSlot.count)
+								extra = model.player.cursorSlot.count - add
+								inventories[hoveredSlotName][0][r][c].count += add
+								model.player.cursorSlot.count = extra
+								if model.player.cursorSlot.count == 0:
+									model.player.cursorSlot.clear()
+							else:
+								inventories[hoveredSlotName][0][r][c], model.player.cursorSlot = model.player.cursorSlot, inventories[hoveredSlotName][0][r][c]
+							# print(f'hovered slot: {inventories[hoveredSlotName][0][r][c]}, cursor slot: {model.player.cursorSlot}')
 		
 		blockFacingCoord = bresenham(model.world.array, *pg.mouse.get_pos(), *FRAME.center, camera)
 		if blockFacingCoord and dist(map(lambda a: a + 0.5, blockFacingCoord), model.player.position) < model.player.reach:
