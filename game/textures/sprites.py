@@ -1,4 +1,5 @@
 from pygame import SRCALPHA, Surface
+import pygame as pg
 from constants import BLOCK_SIZE
 from game.model.blocks.utils.blocksenum import Blocks
 from game.model.items.utils.itemsenum import Items
@@ -84,7 +85,7 @@ sprites = {
   
     #---TOOLS---
     #Wooden
-    Items.WoodenAxe: everythingSheet.get(0, 0, 16, 16),
+    Items.WoodenAxe: pg.transform.flip(everythingSheet.get(0, 0, 16, 16), True, False),
     Items.WoodenPickaxe: everythingSheet.get(16, 0, 16, 16),
     Items.WoodenShovel: everythingSheet.get(32, 0, 16, 16),
     Items.WoodenSword: everythingSheet.get(48, 0, 16, 16),
