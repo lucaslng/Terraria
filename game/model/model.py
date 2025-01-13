@@ -8,8 +8,10 @@ from functools import partial
 
 from constants import FPS, SEED, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
+from game.model.blocks.coaloreblock import CoalOreBlock
 from game.model.blocks.dirtblock import DirtBlock
 from game.model.blocks.grassblock import GrassBlock
+from game.model.blocks.ironoreblock import IronOreBlock
 from game.model.blocks.leavesblock import LeavesBlock
 from game.model.blocks.oaklogblock import LogBlock
 from game.model.blocks.stoneblock import StoneBlock
@@ -118,16 +120,17 @@ class Model:
 	def _generateWorld(self):
 		'''Generate the random world using vectorized NumPy operations'''
 		noises = self._generateAllNoise()
-		self._generateTerrain(noises[Noises.GRASSHEIGHT], noises[Noises.STONEHEIGHT], noises[Noises.CAVES])
+		start = time.perf_counter()
+		self._placeTerrain(noises[Noises.GRASSHEIGHT], noises[Noises.STONEHEIGHT], noises[Noises.CAVES])
+		print(f'terrain time: {round(time.perf_counter() - start, 4)}')
+		self._placeOres(noises[Noises.COAL], noises[Noises.IRON])
 		self.generateLight()
 		self._generateWorldShapes()
     
-	def _generateTerrain(self, grassNoise: SimplexNoise, stoneNoise: SimplexNoise, caveNoise: SimplexNoise) -> None:
+	def _placeTerrain(self, grassNoise: SimplexNoise, stoneNoise: SimplexNoise, caveNoise: SimplexNoise) -> None:
 		'''Place the dirt, stone, and cut out caves'''
 		grass_noise_array = np.array([grassNoise[x] for x in range(self.world.width)])
 		stone_noise_array = np.array([stoneNoise[x] for x in range(self.world.width)])
-		cave_noise_array = np.array([[caveNoise[y][x] for x in range(self.world.width)] 
-									for y in range(self.world.height)])
 		
 		# Calculate height maps using vectorized operations
 		grassHeight = np.round(self.world.height * 0.58 + 9 * grass_noise_array).astype(int)
@@ -150,17 +153,19 @@ class Model:
 		# Cut out caves
 		for y in range(self.world.height):
 			for x in range(self.world.width):
-				if (cave_noise_array[y][x] > 0.1 and 
+				if (caveNoise[y][x] > 0.1 and 
 					y >= grassHeight[x] and 
 					y < self.world.height):
 					self.world[y][x] = AirBlock()
+		
+		# place ores
 		
 		# generate trees
 		for x in range(self.world.width):
 			if isinstance(self.world[grassHeight[x]][x], GrassBlock):
 				if random.random() > 0.8:
 					self._generateTree(x, grassHeight[x] - 1)
-	
+
 	def _generateTree(self, x: int, y: int) -> None:
 		'''Place a tree with base at coordinates (x, y) and a random height'''
 		if not 3 <= x < WORLD_WIDTH - 3:
@@ -182,6 +187,16 @@ class Model:
 		self.world[y - height - 1][x + 1] = LeavesBlock()
 		self.world[y + 1][x] = DirtBlock()
 
+	def _placeOres(self, coalNoise: SimplexNoise, ironNoise: SimplexNoise):
+		'''Place ores'''
+		for y in range(self.world.height):
+			for x in range(self.world.width):
+				if isinstance(self.world[y][x], StoneBlock):
+					if coalNoise[y][x] > 0.3:
+						self.world[y][x] = CoalOreBlock()
+					elif ironNoise[y][x] > 0.38:
+						self.world[y][x] = IronOreBlock()
+
 	def _generateAllNoise(self, seed: int | None = None) -> dict[Noises, SimplexNoise]:
 		totalStartTime = time.perf_counter()
 		
@@ -201,6 +216,8 @@ class Model:
 			(Noises.GRASSHEIGHT, 19, 1),  # grass height noise
 			(Noises.STONEHEIGHT, 30, 1),  # stone height noise
 			(Noises.CAVES, 9, 2),         # caves noise
+			(Noises.COAL, 3.9, 2),
+			(Noises.IRON, 3.2, 2),
 		)
 
 		with ThreadPoolExecutor() as executor:

@@ -11,3 +11,5 @@ class Blocks(Enum):
 	Cobblestone = auto()
 	Log = auto()
 	Leaves = auto()
+	CoalOreBlock = auto()
+	IronOreBlock = auto()

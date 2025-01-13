@@ -45,8 +45,8 @@ sprites = {
     },
     
     #Ores
-    "coalOre": everythingSheet.get(352, 0, 16, 16, BLOCK_SIZE),
-    "ironOre": everythingSheet.get(368, 0, 16, 16, BLOCK_SIZE),
+    Blocks.CoalOreBlock: everythingSheet.get(352, 0, 16, 16, BLOCK_SIZE),
+    Blocks.IronOreBlock: everythingSheet.get(368, 0, 16, 16, BLOCK_SIZE),
     "goldOre": everythingSheet.get(384, 0, 16, 16),
     "diamondOre": everythingSheet.get(400, 0, 16, 16),
     
@@ -81,10 +81,10 @@ sprites = {
   
     #---TOOLS---
     #Wooden
-    "woodenAxe": everythingSheet.get(0, 0, 16, 16),
-    "woodenPickaxe": everythingSheet.get(16, 0, 16, 16),
-    "woodenShovel": everythingSheet.get(32, 0, 16, 16),
-    "woodenSword": everythingSheet.get(48, 0, 16, 16),
+    Items.WoodenAxe: everythingSheet.get(0, 0, 16, 16),
+    Items.WoodenPickaxe: everythingSheet.get(16, 0, 16, 16),
+    Items.WoodenShovel: everythingSheet.get(32, 0, 16, 16),
+    Items.WoodenSword: everythingSheet.get(48, 0, 16, 16),
   
     #Stone
     "stoneAxe": everythingSheet.get(64, 0, 16, 16),
