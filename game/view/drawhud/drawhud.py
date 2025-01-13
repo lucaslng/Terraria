@@ -14,7 +14,7 @@ def drawHUD(model: Model, inventories: dict[str, tuple[Inventory, int, int, int]
 	'''Draw HUD'''
 
 	drawHealth(model.player.health, model.player.maxHealth)
-	drawInventory(*inventories["player"])  # noqa: F821
+	drawInventory(*inventories["player"])
 	drawHotbar(model.player.hotbar, model.player.heldSlotIndex)
 	
 	hoveredSlotRect = getHoveredSlotRect(*(v for v in inventories.values()))
