@@ -6,4 +6,4 @@ class CoalOreBlock(Block):
 	'''Stone block class'''
 
 	def __init__(self):
-		super().__init__(0.95, 3, BlockType.PICKAXE, Blocks.CoalOreBlock)
+		super().__init__(0.95, 3, BlockType.PICKAXE, Blocks.CoalOre)

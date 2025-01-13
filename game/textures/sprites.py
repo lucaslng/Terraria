@@ -45,8 +45,8 @@ sprites = {
     },
     
     #Ores
-    Blocks.CoalOreBlock: everythingSheet.get(352, 0, 16, 16, BLOCK_SIZE),
-    Blocks.IronOreBlock: everythingSheet.get(368, 0, 16, 16, BLOCK_SIZE),
+    Blocks.CoalOre: everythingSheet.get(352, 0, 16, 16, BLOCK_SIZE),
+    Blocks.IronOre: everythingSheet.get(368, 0, 16, 16, BLOCK_SIZE),
     "goldOre": everythingSheet.get(384, 0, 16, 16),
     "diamondOre": everythingSheet.get(400, 0, 16, 16),
     
@@ -71,7 +71,9 @@ sprites = {
     "oak plank": everythingSheet.get(544, 0, 16, 16),
     Blocks.Log: everythingSheet.get(560, 0, 16, 16, BLOCK_SIZE),
     Blocks.Leaves: weirdBlocksSheet.get(30, 5, 360, 360, BLOCK_SIZE),
-    
+    Blocks.CraftingTable: everythingSheet.get(592, 0, 14, 16, BLOCK_SIZE, BLOCK_SIZE),
+	Items.CraftingTable: everythingSheet.get(592, 0, 14, 16),
+
     #Misc
     "torch": everythingSheet.get(576, 0, 16, 16),
     

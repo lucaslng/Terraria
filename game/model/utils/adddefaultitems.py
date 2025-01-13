@@ -1,4 +1,5 @@
 from game.model.entity.entities.player import Player
+from game.model.items.craftingtableitem import CraftingTableItem
 from game.model.items.dirtitem import DirtItem
 from game.model.items.tools import WoodenAxe
 
@@ -8,3 +9,4 @@ def addDefaultItems(player: Player) -> None:
 	for _ in range (67):
 		player.inventory.addItem(DirtItem())
 	player.inventory.addItem(WoodenAxe())
+	player.inventory.addItem(CraftingTableItem())
