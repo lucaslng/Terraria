@@ -1,4 +1,3 @@
-from constants import BLOCK_SIZE
 from game.model.items.inventory.inventory import Inventory
 from game.model.model import Model
 from game.view.drawhud.drawhealth import drawHealth
