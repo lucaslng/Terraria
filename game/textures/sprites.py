@@ -56,16 +56,16 @@ sprites = {
 
     # Dirt
     Blocks.Dirt: everythingSheet.get(480, 0, 16, 16, BLOCK_SIZE),
-	Items.Dirt: everythingSheet.get(480, 0, 16, 16, BLOCK_SIZE),
+	Items.Dirt: everythingSheet.get(480, 0, 16, 16),
 	# Grass
     Blocks.Grass: everythingSheet.get(496, 0, 16, 16, BLOCK_SIZE),
-	Items.Grass: everythingSheet.get(496, 0, 16, 16, BLOCK_SIZE),
+	Items.Grass: everythingSheet.get(496, 0, 16, 16),
     # Stone
 	Blocks.Stone: everythingSheet.get(512, 0, 16, 16, BLOCK_SIZE),
-	Items.Stone: everythingSheet.get(512, 0, 16, 16, BLOCK_SIZE),
+	Items.Stone: everythingSheet.get(512, 0, 16, 16),
     # Cobblestone
     Blocks.Cobblestone: everythingSheet.get(528, 0, 16, 16, BLOCK_SIZE),
-	Items.Cobblestone: everythingSheet.get(528, 0, 16, 16, BLOCK_SIZE),
+	Items.Cobblestone: everythingSheet.get(528, 0, 16, 16),
     
     #Wood
     "oak plank": everythingSheet.get(544, 0, 16, 16),
@@ -117,7 +117,7 @@ sprites = {
     "flintAndSteel": everythingSheet.get(336, 0, 16, 16),
     
     #---HEARTS---
-    "empty heart": weirdBlocksSheet.get(0, 0, 9, 9, BLOCK_SIZE),
-    "half heart": weirdBlocksSheet.get(18, 0, 9, 9, BLOCK_SIZE),
-    "full heart": weirdBlocksSheet.get(9, 0, 9, 9, BLOCK_SIZE),
+    "empty heart": weirdBlocksSheet.get(0, 0, 9, 9),
+    "half heart": weirdBlocksSheet.get(18, 0, 9, 9),
+    "full heart": weirdBlocksSheet.get(9, 0, 9, 9),
 }
