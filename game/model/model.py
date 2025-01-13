@@ -116,6 +116,7 @@ class Model:
 				if itemType:
 					self.player.inventory.addItem(itemType())
 				
+				inventoryTypes = None
 				if isinstance(self.world[y][x], InventoryBlock):
 					inventoryTypes = [inventoryType for _, inventoryType in self.world[y][x].inventories]
 

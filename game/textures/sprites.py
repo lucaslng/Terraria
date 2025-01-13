@@ -69,7 +69,8 @@ sprites = {
 	Items.Cobblestone: everythingSheet.get(528, 0, 16, 16),
     
     #Wood
-    "oak plank": everythingSheet.get(544, 0, 16, 16),
+    Blocks.Planks: everythingSheet.get(544, 0, 16, 16, BLOCK_SIZE),
+	Items.Planks: everythingSheet.get(544, 0, 16, 16),
     Blocks.Log: everythingSheet.get(560, 0, 16, 16, BLOCK_SIZE),
     Blocks.Leaves: weirdBlocksSheet.get(30, 5, 360, 360, BLOCK_SIZE),
     Blocks.CraftingTable: everythingSheet.get(592, 0, 14, 16, BLOCK_SIZE, BLOCK_SIZE),

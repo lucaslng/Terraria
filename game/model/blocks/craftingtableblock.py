@@ -11,14 +11,9 @@ class CraftingTableBlock(Block, InventoryBlock):
 
 	def __init__(self):
 		self.craftingInInventory = Inventory(3, 3)
-		self.craftingOutInventory = Inventory(1, 1, lambda other: other.item is None)
+		self.craftingOutInventory = Inventory(1, 1, lambda other: other.item is None) # dont allow swapping items into this slot
 		super().__init__(0.94, 2.5, BlockType.AXE, Blocks.CraftingTable)
 	
 	@property
 	def inventories(self) -> tuple[Inventory, InventoryType]:
 		return (self.craftingInInventory, InventoryType.CraftingIn), (self.craftingOutInventory, InventoryType.CraftingOut)
-	
-	def __del__(self):
-		print("del")
-		del self.craftingInInventory
-		del self.craftingOutInventory

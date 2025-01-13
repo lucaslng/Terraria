@@ -10,6 +10,7 @@ class Blocks(Enum):
 	Stone = auto()
 	Cobblestone = auto()
 	Log = auto()
+	Planks = auto()
 	Leaves = auto()
 	CoalOre = auto()
 	IronOre = auto()

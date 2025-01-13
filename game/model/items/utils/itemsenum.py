@@ -14,3 +14,5 @@ class Items(Enum):
 	WoodenShovel = "Wooden Shovel"
 	WoodenSword = "Wooden Sword"
 	Torch = "Torch"
+	Log = "Log"
+	Planks = "Planks"
