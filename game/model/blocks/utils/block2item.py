@@ -4,7 +4,7 @@ from game.model.items.cobblestoneitem import CobblestoneItem
 from game.model.items.dirtitem import DirtItem
 
 
-block2Item = defaultdict(None)
+block2Item = defaultdict(lambda: None)
 
 block2Item[Blocks.Dirt] = DirtItem
 block2Item[Blocks.Grass] = DirtItem

@@ -10,6 +10,8 @@ from constants import FPS, SEED, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
 from game.model.blocks.dirtblock import DirtBlock
 from game.model.blocks.grassblock import GrassBlock
+from game.model.blocks.leavesblock import LeavesBlock
+from game.model.blocks.oaklogblock import LogBlock
 from game.model.blocks.stoneblock import StoneBlock
 from game.model.blocks.utils.block2item import block2Item
 from game.model.entity.entities.player import Player
@@ -152,6 +154,33 @@ class Model:
 					y >= grassHeight[x] and 
 					y < self.world.height):
 					self.world[y][x] = AirBlock()
+		
+		# generate trees
+		for x in range(self.world.width):
+			if isinstance(self.world[grassHeight[x]][x], GrassBlock):
+				if random.random() > 0.8:
+					self._generateTree(x, grassHeight[x] - 1)
+	
+	def _generateTree(self, x: int, y: int) -> None:
+		'''Place a tree with base at coordinates (x, y) and a random height'''
+		if not 3 <= x < WORLD_WIDTH - 3:
+			return
+		height = random.randint(3, 7)
+		for r in range(y - height - 1, y + 1):
+			for c in range(x - 2, x + 3):
+				if not isinstance(self.world[r][c], AirBlock):
+					return
+		for i in range(height):
+			self.world[y - i][x] = LogBlock()
+		self.world[y - height][x - 2] = LeavesBlock()
+		self.world[y - height][x - 1] = LeavesBlock()
+		self.world[y - height][x] = LeavesBlock()
+		self.world[y - height][x + 1] = LeavesBlock()
+		self.world[y - height][x + 2] = LeavesBlock()
+		self.world[y - height - 1][x - 1] = LeavesBlock()
+		self.world[y - height - 1][x] = LeavesBlock()
+		self.world[y - height - 1][x + 1] = LeavesBlock()
+		self.world[y + 1][x] = DirtBlock()
 
 	def _generateAllNoise(self, seed: int | None = None) -> dict[Noises, SimplexNoise]:
 		totalStartTime = time.perf_counter()

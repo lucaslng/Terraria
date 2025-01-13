@@ -6,7 +6,7 @@ from game.model.blocks.stoneblock import StoneBlock
 from game.model.items.utils.itemsenum import Items
 
 
-item2Block = defaultdict(None)
+item2Block = defaultdict(lambda: None)
 
 item2Block[Items.Dirt] = DirtBlock
 item2Block[Items.Grass] = GrassBlock

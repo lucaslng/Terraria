@@ -69,8 +69,8 @@ sprites = {
     
     #Wood
     "oak plank": everythingSheet.get(544, 0, 16, 16),
-    "oak log": everythingSheet.get(560, 0, 16, 16,),
-    "oak leaves": weirdBlocksSheet.get(30, 5, 360, 360),
+    Blocks.Log: everythingSheet.get(560, 0, 16, 16, BLOCK_SIZE),
+    Blocks.Leaves: weirdBlocksSheet.get(30, 5, 360, 360, BLOCK_SIZE),
     
     #Misc
     "torch": everythingSheet.get(576, 0, 16, 16),
