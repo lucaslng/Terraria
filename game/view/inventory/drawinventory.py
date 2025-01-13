@@ -5,7 +5,7 @@ from game.view.inventory.drawslot import drawSlot
 import pygame as pg
 
 
-def drawInventory(inventory: Inventory, inventoryx: int, inventoryy: int, slotSize: int) -> None:
+def drawInventory(inventory: Inventory, slotSize: int, inventoryx: int, inventoryy: int) -> None:
 	'''Draw player inventory on topleft of screen'''
 
 	for r, row in enumerate(inventory.array):
@@ -18,4 +18,3 @@ def drawInventory(inventory: Inventory, inventoryx: int, inventoryy: int, slotSi
 			pg.draw.rect(surfaces.hud, (90, 90, 90), (x, y, slotSize, slotSize), 2)
 
 			drawSlot(slot, x, y, slotSize)
-

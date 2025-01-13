@@ -11,7 +11,7 @@ from utils.updatescreen import updateScreen
 from widgets.button import Button
 
 
-def MainMenu():
+def mainMenu():
 	'''Main menu loop'''
 	button_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 36)
 	splash_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 28)

@@ -1,7 +1,7 @@
 import utils.installpackages  # noqa: F401
-from game.game import Game
+from game.game import game
 from game.utils.utils import sysexit
-from menu.menu import MainMenu
+from menu.menu import mainMenu
 from screens import Screens
 from initialize import initialize
 
@@ -16,9 +16,9 @@ def main():
 	while True:
 		match state:
 			case Screens.MENU:
-				state = MainMenu()
+				state = mainMenu()
 			case Screens.GAME:
-				state = Game()
+				state = game()
 			case Screens.QUIT:
 				sysexit()
 

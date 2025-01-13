@@ -1,6 +1,7 @@
 from math import dist
 import pygame as pg
 from game.model.utils.bresenham import bresenham
+from game.view.inventory.hoveredslot import getHoveredSlotSlot
 import keys
 from constants import BLOCK_SIZE, FRAME, WORLD_HEIGHT, WORLD_WIDTH, clock
 from game.view.draw import draw
@@ -9,13 +10,25 @@ from screens import Screens
 from utils.clearscreen import clearScreen
 from utils.updatescreen import updateScreen
 
-def Game():
+def game():
 	'''Main game loop'''
 	model = Model(WORLD_WIDTH, WORLD_HEIGHT)
 	model.start()
 
 	camera = FRAME.copy()
 	camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
+
+	inventories = {
+			"player":
+				(
+					model.player.inventory,
+					BLOCK_SIZE + 2,
+					15,
+					80,
+				)
+		}
+	
+	leftMousePressedTime = 0
 
 	while True:
 		clearScreen()
@@ -54,6 +67,24 @@ def Game():
 				return Screens.QUIT
 			elif event.type == 101:
 				print(f'fps: {round(clock.get_fps(), 2)}')
+			elif event.type == pg.MOUSEBUTTONDOWN:
+				if event.button == 1:
+					hoveredSlotData = getHoveredSlotSlot(inventories)
+					if hoveredSlotData:
+						leftMousePressedTime = pg.time.get_ticks()
+						hoveredSlotName, r, c = hoveredSlotData
+						print(f'hovered slot: {inventories[hoveredSlotName][0][r][c]}, cursor slot: {model.player.cursorSlot}')
+						inventories[hoveredSlotName][0][r][c], model.player.cursorSlot = model.player.cursorSlot, inventories[hoveredSlotName][0][r][c]
+						print(f'hovered slot: {inventories[hoveredSlotName][0][r][c]}, cursor slot: {model.player.cursorSlot}')
+			elif event.type == pg.MOUSEBUTTONUP:
+				if event.button == 1:
+					hoveredSlotData = getHoveredSlotSlot(inventories)
+					if hoveredSlotData:
+						if pg.time.get_ticks() - leftMousePressedTime > 150:
+							hoveredSlotName, r, c = hoveredSlotData
+							print(f'hovered slot: {inventories[hoveredSlotName][0][r][c]}, cursor slot: {model.player.cursorSlot}')
+							inventories[hoveredSlotName][0][r][c], model.player.cursorSlot = model.player.cursorSlot, inventories[hoveredSlotName][0][r][c]
+							print(f'hovered slot: {inventories[hoveredSlotName][0][r][c]}, cursor slot: {model.player.cursorSlot}')
 		
 		blockFacingCoord = bresenham(model.world.array, *pg.mouse.get_pos(), *FRAME.center, camera)
 		if blockFacingCoord and dist(map(lambda a: a + 0.5, blockFacingCoord), model.player.position) < model.player.reach:
@@ -65,6 +96,6 @@ def Game():
 		
 		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
 		
-		draw(model, camera)
+		draw(model, camera, inventories)
 		
 		updateScreen()

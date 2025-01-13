@@ -14,3 +14,9 @@ class Slot:
 
 		self.item = None
 		self.count = 0
+	
+	def __repr__(self):
+		if self.item:
+			return f'{self.item.enum.name} x {self.count}'
+		else:
+			return 'empty slot'
