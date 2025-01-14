@@ -18,6 +18,7 @@ def draw(model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int
 	drawLights(model.lights, camera)
 	drawPlayerLight(model.player.lightRadius)
 	drawPlayer(model.player)
+	# drawEntities(model.entities)
 	drawHUD(model, inventories)
 
 	surfaces.sunlight = transform.smoothscale(surfaces.sunlight, (FRAME.width // 15, FRAME.height // 20))

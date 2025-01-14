@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
 from typing import Optional
 
+from game.model.entity.entities.npc import Npc
 from utils.constants import FPS, SEED, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
 from game.model.blocks.coaloreblock import CoalOreBlock
@@ -75,6 +76,7 @@ class Model:
 		self._generateWorld()
 		self._generateWorldShapes()
 		print(f'World generation time: {round(time.perf_counter() - startTime, 2)} seconds')
+		self.spawnEntity(Npc(*self.player.position, self.world))
 	
 	def spawnEntity(self, entity: Entity):
 		'''Spawn a new entity into the game'''
