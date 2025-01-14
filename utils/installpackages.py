@@ -11,11 +11,12 @@ def _isPackageInstalled(name: str):
 
 for package in _required:
 		if not _isPackageInstalled(package):
-				print(f"{package} not found. Installing...")
+				# print(f"{package} not found. Installing...")
 				try:
+						# runs python -m pip install <package>
 						subprocess.check_call([sys.executable, '-m', 'pip', 'install', package], stdout=subprocess.DEVNULL)
-						print(f"Succesfully installed {package}.")
+						# print(f"Succesfully installed {package}.")
 				except subprocess.CalledProcessError as e:
 						print(f"Failed to install {package}: {e}.")
-		else:
-				print(f"{package} is already installed.")
+		# else:
+		# 		print(f"{package} is already installed.")
