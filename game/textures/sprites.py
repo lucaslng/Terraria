@@ -76,6 +76,7 @@ sprites = {
     Blocks.Leaves: weirdBlocksSheet.get(30, 5, 360, 360, BLOCK_SIZE),
     Blocks.CraftingTable: everythingSheet.get(592, 0, 14, 16, BLOCK_SIZE, BLOCK_SIZE),
 	Items.CraftingTable: everythingSheet.get(592, 0, 14, 16),
+	Items.Sticks: everythingSheet.get(606, 0, 16, 16),
 
     #Misc
     Blocks.Torch: everythingSheet.get(576, 0, 16, 16, BLOCK_SIZE),
