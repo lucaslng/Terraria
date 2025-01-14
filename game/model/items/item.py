@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-from typing import Self
-
 from game.model.items.utils.itemsenum import Items
 
 
@@ -11,7 +9,7 @@ class Item:
 	enum: Items
 	stackSize: int = 64
 
-	def __eq__(self, other: Self) -> bool:
+	def __eq__(self, other: 'Item') -> bool:
 		'''Override == operator to check for item enum'''
 		
 		if other is None:
