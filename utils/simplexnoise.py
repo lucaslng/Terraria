@@ -1,5 +1,4 @@
 import numpy as np
-from typing import Union, Tuple
 from utils.constants import BIG, SEED, WORLD_HEIGHT, WORLD_WIDTH
 
 
@@ -16,7 +15,7 @@ class SimplexNoise:
         else:
             raise ValueError("Dimension must be 1 or 2")
 
-    def __getitem__(self, x: int) -> Union[float, np.ndarray]:
+    def __getitem__(self, x: int) -> float | np.ndarray:
         return self.noise[x]
 
     @staticmethod
@@ -41,7 +40,7 @@ class SimplexNoise:
         return np.where(h % 2 == 0, 1, -1)
 
     @staticmethod
-    def _gradient2d(h: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def _gradient2d(h: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
         Vectorized 2D gradient computation.
         Returns two arrays for x and y components of the gradient vectors.
