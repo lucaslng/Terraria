@@ -20,17 +20,18 @@ def bresenham(blocks: list[list[Block]], x0: int, y0: int, x1: int, y1: int, cam
 			blockTouched = blocks[coordy][coordx]
 			if not isinstance(blockTouched, AirBlock):
 				return coordx, coordy
-			if d > 0: # the decision variable desides wether to increment y
+			# is the next ideal point closer to the current row/column, or should we move diagonally to stay closer to the true line?
+			if d > 0: # take a diagonal step, adjusting both x and y
 				y += yi
 				d += 2 * (dy - dx)
-			else:
+			else: # take a straight step by only adjusting x
 				d += 2 * dy
 			x += xi # iterates in steps of xi
 			if not 0 <= x < FRAME.width or not 0 <= y < FRAME.height:
 				return None
 		return None
 
-	def plotLineHigh(x0: int, y0: int, x1: int, y1: int) -> tuple[int, int] | None: # steep line
+	def plotLineHigh(x0: int, y0: int, x1: int, y1: int) -> tuple[int, int] | None: # steep line, same as the plotLineLow function but x and y are swapped
 		dx = abs(x1 - x0)
 		dy = abs(y1 - y0)
 		xi = -1 if x0 < x1 else 1
