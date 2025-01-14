@@ -2,8 +2,7 @@ from collections.abc import Callable
 
 from game.model.items.inventory.slot import Slot
 from game.model.items.item import Item
-from game.model.items.logitem import LogItem
-from game.model.items.planksitem import PlanksItem
+from game.model.items.utils.itemsenum import Items
 
 
 Recipe = Callable[[list[list[Slot]]], tuple[Item, int] | None]
@@ -20,10 +19,11 @@ def woodenPlanks(items: list[list[Slot]]) -> tuple[Item, int] | None:
 				filledSlots += 1
 				filledSlot = slot
 
-	if filledSlots == 1 and isinstance(filledSlot.item, LogItem):
+	if filledSlots == 1 and filledSlot.item.enum == Items.Log:
+		from game.model.items.planksitem import PlanksItem
 		return PlanksItem(), filledSlot.count * 4
 
 
-recipes: tuple[Recipe] = (
-	woodenPlanks
-)
+recipes: list[Recipe] = [
+	woodenPlanks,
+]

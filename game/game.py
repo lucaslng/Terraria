@@ -126,6 +126,10 @@ def game():
 			model.blockFacingCoord = blockFacingCoord
 		else:
 			model.blockFacingCoord = None
+		
+		for y in range(camera.top // BLOCK_SIZE, camera.bottom // BLOCK_SIZE + 1):
+			for x in range(camera.left // BLOCK_SIZE, camera.right // BLOCK_SIZE + 1):
+				model.world[y][x].update()
 
 		model.update()
 		

@@ -14,3 +14,7 @@ class Block:
 
 	isEmpty = False
 	amountBroken = 0
+
+	def update(self) -> None:
+		'''Update the block'''
+		pass
