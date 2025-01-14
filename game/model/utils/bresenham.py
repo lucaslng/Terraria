@@ -20,7 +20,7 @@ def bresenham(blocks: list[list[Block]], x0: int, y0: int, x1: int, y1: int, cam
 			blockTouched = blocks[coordy][coordx]
 			if not isinstance(blockTouched, AirBlock):
 				return coordx, coordy
-			# is the next ideal point closer to the current row/column, or should we move diagonally to stay closer to the true line?
+			# is the next ideal point closer to the current row/column, or should we move diagonally to stay closer to the real line?
 			if d > 0: # take a diagonal step, adjusting both x and y
 				y += yi
 				d += 2 * (dy - dx)
