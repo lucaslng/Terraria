@@ -1,4 +1,4 @@
-from constants import BLOCK_SIZE
+from utils.constants import BLOCK_SIZE
 from game.textures.sprites import sprites
 from game.view import surfaces
 

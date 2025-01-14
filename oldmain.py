@@ -10,7 +10,7 @@ from pygame.math import Vector2
 from game.model.blocks.utils.blocksenum import Blocks
 from game.model.blocks.utils.executable import Executable
 from game.model.blocks.utils.inventoryblock import InventoryBlock
-from constants import WIDTH, HEIGHT, BLOCK_SIZE, WORLD_HEIGHT, WORLD_WIDTH, SURF, SUNLIGHTSURF, FPS, font20, gravity, BIG, clock
+from utils.constants import WIDTH, HEIGHT, BLOCK_SIZE, WORLD_HEIGHT, WORLD_WIDTH, SURF, SUNLIGHTSURF, FPS, font20, gravity, BIG, clock
 from utils.customqueue import Queue
 from game.textures.sprites import sprites
 from game.utils.direction import NORTH, EAST, SOUTH, WEST
@@ -741,7 +741,7 @@ class Entity:
     self.velocity = Vector2()
     self.accel = Vector2()
     
-    # kinematic constants
+    # kinematic utils.constants
     self.HORIZONTAL_ACCEL = 1
     self.HORIZONTAL_FRICTION = 0.2
 

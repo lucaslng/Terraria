@@ -1,7 +1,7 @@
 from pygame import Rect
 import pygame as pg
 
-from constants import BLOCK_RECT
+from utils.constants import BLOCK_RECT
 from game.view import conversions, surfaces
 
 

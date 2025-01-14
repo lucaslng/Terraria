@@ -1,6 +1,6 @@
 import pygame as pg
 
-from constants import BLOCK_RECT
+from utils.constants import BLOCK_RECT
 from game.model.blocks.block import Block
 from game.textures.sprites import sprites
 from game.utils.backtint import BACK_TINT

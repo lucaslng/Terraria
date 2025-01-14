@@ -1,4 +1,4 @@
-from constants import FRAME
+from utils.constants import FRAME
 from game.model.entity.entities.player import Player
 from game.textures.animation import Animation
 from game.textures.sprites import sprites

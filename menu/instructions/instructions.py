@@ -1,6 +1,6 @@
 import pygame as pg
-from constants import HEIGHT, SURF, WIDTH
-from screens import Screens
+from utils.constants import HEIGHT, SURF, WIDTH
+from utils.screens import Screens
 from utils.updatescreen import updateScreen
 from widgets.button import Button
 

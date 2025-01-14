@@ -2,8 +2,8 @@ import math
 import pygame as pg
 import random
 
-from constants import HEIGHT, SURF, WIDTH, clock
-from screens import Screens
+from utils.constants import HEIGHT, SURF, WIDTH, clock
+from utils.screens import Screens
 from menu.instructions.instructions import instructionsScreen
 from menu.options.options import optionsScreen
 from menu.splashtexts import splashTexts
@@ -13,17 +13,17 @@ from widgets.button import Button
 
 def mainMenu():
 	'''Main menu loop'''
-	button_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 36)
-	splash_font = pg.font.Font("MinecraftRegular-Bmg3.otf", 28)
+	button_font = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 36)
+	splash_font = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 28)
 	button_text_colour = (240, 240, 240)
 	text_shadow = (20, 20, 20, 160)
 
-	bg_panorama = pg.image.load("title screen background animation.jpg").convert()
+	bg_panorama = pg.image.load("assets/title screen background animation.jpg").convert()
 	overlay = pg.Surface((WIDTH, HEIGHT))
 	overlay.fill((0, 0, 0))
 	overlay.set_alpha(40)
 
-	title_image = pg.image.load("title screen title.png").convert_alpha()
+	title_image = pg.image.load("assets/title screen title.png").convert_alpha()
 	title_image_rect = title_image.get_rect(center=(WIDTH // 2, HEIGHT // 4))
 
 	current_splash = random.choice(splashTexts)

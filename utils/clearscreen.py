@@ -1,4 +1,4 @@
-from constants import SURF
+from utils.constants import SURF
 from game.view import surfaces
 import utils.colours as colours
 

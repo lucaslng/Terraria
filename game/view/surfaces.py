@@ -1,6 +1,6 @@
 from pygame import SRCALPHA, Surface
 
-from constants import HEIGHT, WIDTH
+from utils.constants import HEIGHT, WIDTH
 
 
 world = Surface((WIDTH, HEIGHT), SRCALPHA)

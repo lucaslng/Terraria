@@ -1,5 +1,5 @@
 from pygame import Rect
-from constants import FRAME, SURF
+from utils.constants import FRAME, SURF
 from game.model.items.inventory.inventory import Inventory
 from game.model.model import Model
 from game.view import surfaces

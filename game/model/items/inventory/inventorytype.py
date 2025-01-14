@@ -1,5 +1,5 @@
 from enum import Enum
-from constants import BLOCK_SIZE, FRAME
+from utils.constants import BLOCK_SIZE, FRAME
 
 
 class InventoryType(Enum):

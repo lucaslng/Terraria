@@ -1,5 +1,5 @@
 from pygame import SRCALPHA, Surface
-from constants import BLOCK_SIZE
+from utils.constants import BLOCK_SIZE
 
 
 BACK_TINT = Surface((BLOCK_SIZE, BLOCK_SIZE), SRCALPHA)

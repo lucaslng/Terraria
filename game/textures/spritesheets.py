@@ -1,6 +1,6 @@
 from game.textures.spritesheet import SpriteSheet
 
 
-catSheet = SpriteSheet("cat.png")
-everythingSheet = SpriteSheet("everything.png")
-weirdBlocksSheet = SpriteSheet("weird block spritesheet.png")
+catSheet = SpriteSheet("assets/cat.png")
+everythingSheet = SpriteSheet("assets/everything.png")
+weirdBlocksSheet = SpriteSheet("assets/weird block spritesheet.png")

@@ -1,6 +1,6 @@
 from pygame import Rect
 
-from constants import BLOCK_SIZE
+from utils.constants import BLOCK_SIZE
 from game.model.blocks.airblock import AirBlock
 from game.model.world import World
 from game.view.drawblocks.drawblock import drawBlock

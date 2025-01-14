@@ -2,15 +2,14 @@ from math import dist, floor
 import pygame as pg
 from game.model.blocks.utils.inventoryblock import InventoryBlock
 from game.model.items.inventory.inventorytype import InventoryType
-from game.model.items.inventory.slot import Slot
 from game.model.utils.bresenham import bresenham
 from game.view import conversions
 from game.view.inventory.hoveredslot import getHoveredSlotSlot
-import keys
-from constants import BLOCK_SIZE, FRAME, WORLD_HEIGHT, WORLD_WIDTH, clock
+import utils.keys as keys
+from utils.constants import BLOCK_SIZE, FRAME, WORLD_HEIGHT, WORLD_WIDTH, clock
 from game.view.draw import draw
 from game.model.model import Model
-from screens import Screens
+from utils.screens import Screens
 from utils.clearscreen import clearScreen
 from utils.updatescreen import updateScreen
 

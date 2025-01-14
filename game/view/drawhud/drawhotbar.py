@@ -1,4 +1,4 @@
-from constants import BLOCK_SIZE, FRAME
+from utils.constants import BLOCK_SIZE, FRAME
 from game.model.items.inventory.slot import Slot
 import pygame as pg
 

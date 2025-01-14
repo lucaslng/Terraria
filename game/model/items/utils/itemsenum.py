@@ -16,3 +16,4 @@ class Items(Enum):
 	Torch = "Torch"
 	Log = "Log"
 	Planks = "Planks"
+	Sticks = "Sticks"

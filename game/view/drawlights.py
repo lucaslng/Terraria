@@ -1,5 +1,5 @@
 from pygame import Rect
-from constants import BLOCK_SIZE, FRAME
+from utils.constants import BLOCK_SIZE, FRAME
 from game.model.light import Light
 import pygame as pg
 

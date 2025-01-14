@@ -1,6 +1,6 @@
 import pygame as pg
 
-from constants import BLOCK_SIZE
+from utils.constants import BLOCK_SIZE
 from game.view import conversions, surfaces
 
 def drawSunlight(lightmap: list[list[int]], camera: pg.Rect) -> None:

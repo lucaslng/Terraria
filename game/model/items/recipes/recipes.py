@@ -23,7 +23,26 @@ def woodenPlanks(items: list[list[Slot]]) -> tuple[Item, int] | None:
 		from game.model.items.planksitem import PlanksItem
 		return PlanksItem(), filledSlot.count * 4
 
+def sticks(items: list[list[Slot]]) -> tuple[Item, int] | None:
+	'''sticks recipe'''
+
+	filledSlots = 0
+	for row in items:
+		for slot in row:
+			if slot.item:
+				if slot.item.enum != Items.Planks:
+					return None
+				filledSlots += 1
+	if filledSlots == 2:
+		for r in range(2):
+			for c, slot in enumerate(items[r]):
+				slotBelow = items[r + 1][c]
+				if slot and slotBelow:
+					from game.model.items.sticksitem import SticksItem
+					return SticksItem(), min(slot.count, slotBelow.count) * 4
+
 
 recipes: list[Recipe] = [
 	woodenPlanks,
+	sticks,
 ]

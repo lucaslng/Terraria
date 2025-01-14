@@ -1,5 +1,5 @@
 from pygame import Rect
-from constants import FRAME
+from utils.constants import FRAME
 from game.model.blocks.airblock import AirBlock
 from game.model.blocks.block import Block
 from game.view.conversions import pixel2Coordinate

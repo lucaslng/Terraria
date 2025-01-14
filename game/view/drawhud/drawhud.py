@@ -1,4 +1,4 @@
-from constants import BLOCK_SIZE
+from utils.constants import BLOCK_SIZE
 from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.inventorytype import InventoryType
 from game.model.model import Model
