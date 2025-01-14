@@ -20,6 +20,7 @@ class CraftingTableBlock(Block, InventoryBlock):
 		return (self.craftingInInventory, InventoryType.CraftingIn), (self.craftingOutInventory, InventoryType.CraftingOut)
 	
 	def update(self) -> None:
+		self.craftingOutInventory[0][0].clear()
 		for recipe in recipes:
 			output = recipe(self.craftingInInventory.array)
 			if output:

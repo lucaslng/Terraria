@@ -33,11 +33,12 @@ def sticks(items: list[list[Slot]]) -> tuple[Item, int] | None:
 				if slot.item.enum != Items.Planks:
 					return None
 				filledSlots += 1
+	
 	if filledSlots == 2:
 		for r in range(2):
 			for c, slot in enumerate(items[r]):
 				slotBelow = items[r + 1][c]
-				if slot and slotBelow:
+				if slot.item and slotBelow.item:
 					from game.model.items.sticksitem import SticksItem
 					return SticksItem(), min(slot.count, slotBelow.count) * 4
 
