@@ -10,7 +10,7 @@ def drawPlayer(player: Player):
 	
 	# print(round(player.velocity.x, 2), round(player.velocity.y, 2))
 	textures: dict[str, Animation] = sprites["cat"]
-
+	print(type(player.velocity))
 	if -0.05 < player.velocity.x < 0.05:
 		textures["sit"].drawAnimated(surfaces.world, FRAME.center)
 	else:
