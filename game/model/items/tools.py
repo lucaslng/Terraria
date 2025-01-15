@@ -3,7 +3,7 @@ from game.model.items.item import Item
 from game.model.items.specialitems.tool import Tool
 from game.model.items.utils.itemsenum import Items
 
-
+'''Wooden'''
 class WoodenPickaxe(Item, Tool):
 	def __init__(self):
 		Item.__init__(self, Items.WoodenPickaxe, 1)
@@ -23,3 +23,9 @@ class WoodenSword(Item, Tool):
 	def __init__(self):
 		Item.__init__(self, Items.WoodenSword, 1)
 		Tool.__init__(self, 1, 59, BlockType.SWORD)
+
+'''Stone'''
+class StonePickaxe(Item, Tool):
+    def __init__(self):
+        Item.__init__(self, Items.StonePickaxe, 1)
+        Tool.__init__(self, 3, 131, BlockType.PICKAXE)

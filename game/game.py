@@ -103,11 +103,17 @@ def game():
 			model.player.heldSlotIndex = 8
 		
 		if pg.mouse.get_pressed()[0]:
-			inventoryTypes = model.mineBlock()
-			if inventoryTypes:
-				for inventoryType in inventoryTypes:
-					if inventoryType in inventories:
-						del inventories[inventoryType]
+			#Check if the cursor is hovering over any inventory slot
+			hoveredSlotData = getHoveredSlotSlot(inventories)
+			
+			#Only mine blocks if we're not hovering over an inventory slot
+			if not hoveredSlotData:
+				inventoryTypes = model.mineBlock()
+				if inventoryTypes:
+					for inventoryType in inventoryTypes:
+						if inventoryType in inventories:
+							del inventories[inventoryType]
+      
 		elif pg.mouse.get_pressed()[2]:
 			if not getHoveredSlotSlot(inventories):
 				model.placeBlock(*conversions.pixel2Coordinate(*pg.mouse.get_pos(), camera))

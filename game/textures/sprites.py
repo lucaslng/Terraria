@@ -94,8 +94,8 @@ sprites = {
     Items.WoodenSword: everythingSheet.get(48, 0, 16, 16),
   
     #Stone
-    "stoneAxe": everythingSheet.get(64, 0, 16, 16),
-    "stonePickaxe": everythingSheet.get(80, 0, 16, 16),
+    Items.StoneAxe: everythingSheet.get(64, 0, 16, 16),
+    Items.StonePickaxe: everythingSheet.get(80, 0, 16, 16),
     "stoneShovel": everythingSheet.get(96, 0, 16, 16),
     "stoneSword": everythingSheet.get(112, 0, 16, 16),
     

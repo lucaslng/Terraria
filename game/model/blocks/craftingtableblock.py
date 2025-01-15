@@ -62,6 +62,16 @@ class CraftingTableBlock(Block, InventoryBlock):
     def update(self) -> None:
         output_slot = self.craftingOutInventory[0][0]
         
+        # First, check if we had a previous recipe and the ingredients are still valid
+        if self._last_recipe and output_slot.item:
+            current_result = self._last_recipe(self.craftingInInventory.array)
+            
+            # If the recipe is no longer valid, clear the output
+            if not current_result:
+                output_slot.clear()
+                self._last_recipe = None
+                self._last_consumption_map = None
+                
         # If output slot is empty, check for new recipe
         if output_slot.item is None:
             # Consume materials if we had a previous recipe
