@@ -33,8 +33,10 @@ def game():
 	leftMousePressedTime = 0
 
 	def swapSlot(hoveredSlotData: tuple[InventoryType, int, int]) -> None:
+		if hoveredSlotData is None:
+			return
+  
 		hoveredSlotName, r, c = hoveredSlotData
-		# print(f'hovered slot: {inventories[hoveredSlotName][0][r][c]}, cursor slot: {model.player.cursorSlot}')
 		if inventories[hoveredSlotName][0][r][c].condition(model.player.cursorSlot):
 			if model.player.cursorSlot.item and inventories[hoveredSlotName][0][r][c].item == model.player.cursorSlot.item:
 				add = min(model.player.cursorSlot.item.stackSize - inventories[hoveredSlotName][0][r][c].count, model.player.cursorSlot.count)
@@ -45,7 +47,30 @@ def game():
 					model.player.cursorSlot.clear()
 			else:
 				inventories[hoveredSlotName][0][r][c], model.player.cursorSlot = model.player.cursorSlot, inventories[hoveredSlotName][0][r][c]
-			# print(f'hovered slot: {inventories[hoveredSlotName][0][r][c]}, cursor slot: {model.player.cursorSlot}')
+   
+	def handleStackSplit(hoveredSlotData: tuple[InventoryType, int, int]) -> None:
+		if hoveredSlotData is None:
+			return
+
+		hoveredSlotName, r, c = hoveredSlotData
+  
+		#Split if cursor is empty and clicked slot has items
+		if (model.player.cursorSlot.item is None and 
+			inventories[hoveredSlotName][0][r][c].item is not None):
+			
+			source_slot = inventories[hoveredSlotName][0][r][c]
+			
+			#Can't split single items
+			if source_slot.count <= 1:
+				return
+				
+			#Calculate split amounts (odd numbers keep the extra in source)
+			split_amount = floor(source_slot.count / 2)
+			source_slot.count = source_slot.count - split_amount
+			
+			#Put split portion in cursor
+			model.player.cursorSlot.item = source_slot.item
+			model.player.cursorSlot.count = split_amount
 
 	while True:
 		clearScreen()
@@ -84,13 +109,16 @@ def game():
 					if inventoryType in inventories:
 						del inventories[inventoryType]
 		elif pg.mouse.get_pressed()[2]:
-			model.placeBlock(*conversions.pixel2Coordinate(*pg.mouse.get_pos(), camera))
+			if not getHoveredSlotSlot(inventories):
+				model.placeBlock(*conversions.pixel2Coordinate(*pg.mouse.get_pos(), camera))
 
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
 				return Screens.QUIT
+
 			elif event.type == 101:
 				print(f'fps: {round(clock.get_fps(), 2)}')
+    
 			elif event.type == pg.KEYDOWN and event.key == keys.interact:
 				if len(inventories) > 1:
 					inventories = {InventoryType.Player: inventories[InventoryType.Player]}
@@ -100,19 +128,23 @@ def game():
 							x = floor(model.player.position.x) - 1 + c
 							y = floor(model.player.position.y) - 1 + r
 							if isinstance(model.world[y][x], InventoryBlock):
-								print("interacted")
 								for inventory, inventoryType in model.world[y][x].inventories:
 									if inventoryType in inventories:
 										del inventories[inventoryType]
 									else:
 										slotSize, inventoryx, inventoryy = inventoryType.value
 										inventories[inventoryType] = inventory, slotSize, inventoryx, inventoryy
+          
 			elif event.type == pg.MOUSEBUTTONDOWN:
 				if event.button == 1:
 					hoveredSlotData = getHoveredSlotSlot(inventories)
 					if hoveredSlotData:
 						leftMousePressedTime = pg.time.get_ticks()
 						swapSlot(hoveredSlotData)
+      
+				elif event.button == 3:
+						handleStackSplit(hoveredSlotData)
+                        
 			elif event.type == pg.MOUSEBUTTONUP:
 				if event.button == 1:
 					hoveredSlotData = getHoveredSlotSlot(inventories)
@@ -121,6 +153,7 @@ def game():
 							swapSlot(hoveredSlotData)
 		
 		blockFacingCoord = bresenham(model.world.array, *pg.mouse.get_pos(), *FRAME.center, camera)
+  
 		if blockFacingCoord and dist(map(lambda a: a + 0.5, blockFacingCoord), model.player.position) < model.player.reach:
 			model.blockFacingCoord = blockFacingCoord
 		else:
@@ -130,10 +163,7 @@ def game():
 			for x in range(camera.left // BLOCK_SIZE, camera.right // BLOCK_SIZE + 1):
 				model.world[y][x].update()
 
-		model.update()
-		
-		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
-		
-		draw(model, camera, inventories)
-		
+		model.update()		
+		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE		
+		draw(model, camera, inventories)		
 		updateScreen()
