@@ -2,171 +2,150 @@ from game.model.blocks.block import Block
 from game.model.blocks.utils.blocksenum import Blocks
 from game.model.blocks.utils.blocktype import BlockType
 from game.model.blocks.utils.inventoryblock import InventoryBlock
+from game.model.items.item import Item
 from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.inventorytype import InventoryType
-from game.model.items.item import Item
 
 
 class FurnaceBlock(Block, InventoryBlock):
     '''
-    Furnace block that can smelt items using fuel.
-    Has three inventory slots:
-    - Input slot for items to smelt
-    - Fuel slot for burning materials
-    - Output slot for smelted items
+    Furnace block class that handles smelting operations.
+    Contains three inventories:
+    - Input: For items to be smelted
+    - Fuel: For fuel items that power the furnace
+    - Output: For the results of smelting
     '''
 
     def __init__(self):
-        # Create single-slot inventories for input, fuel, and output
+        # Create 1x1 inventories for input, fuel, and output slots
         self.inputInventory = Inventory(1, 1)
         self.fuelInventory = Inventory(1, 1)
         self.outputInventory = Inventory(1, 1, lambda other: other.item is None)
         
-        # Smelting progress (0.0 to 1.0)
-        self.progress = 0.0
-        # Remaining fuel burn time in ticks
-        self.burnTimeRemaining = 0
-        # Total burn time of current fuel item
-        self.totalBurnTime = 0
+        # Track smelting progress and fuel status
+        self.progress = 0.0  # Progress of current smelting operation (0.0 to 1.0)
+        self.fuel_remaining = 0.0  # Amount of fuel burn time remaining
+        self.smelting_time = 200  # Time needed to smelt one item (in ticks)
         
-        super().__init__(0.94, 3.5, BlockType.PICKAXE, Blocks.Furnace)
+        # Initialize the block properties
+        super().__init__(0.94, 3.0, BlockType.PICKAXE, Blocks.Furnace)
+        
+        # Track currently processing recipe for proper consumption
+        self._current_input = None
+        self._current_fuel = None
     
     @property
     def inventories(self) -> tuple[Inventory, InventoryType]:
-        '''Return all inventories this block contains'''
+        '''Return all inventories associated with the furnace'''
         return (
-            (self.inputInventory, InventoryType.FurnaceInput),
+            (self.inputInventory, InventoryType.FurnaceIn),
             (self.fuelInventory, InventoryType.FurnaceFuel),
-            (self.outputInventory, InventoryType.FurnaceOutput)
+            (self.outputInventory, InventoryType.FurnaceOut)
         )
     
-    def _canSmelt(self) -> tuple[Item, int] | None:
+    def _can_smelt(self) -> tuple[Item, int] | None:
         '''
-        Check if current input can be smelted.
-        Returns tuple of (output_item, count) if possible, None if not
+        Check if the current input can be smelted.
+        Returns (result_item, count) if smeltable, None otherwise.
         '''
         input_slot = self.inputInventory[0][0]
+        output_slot = self.outputInventory[0][0]
+        
         if not input_slot.item:
             return None
             
-        # Here you would check against your smelting recipes
-        # For example, if input_slot.item is an iron ore, return iron ingot
-        # This is a simplified example - you'll need to implement actual recipes
-        smelting_result = self._getSmeltingResult(input_slot.item)
-        if not smelting_result:
-            return None
-            
-        # Check if output slot can accept the result
-        output_slot = self.outputInventory[0][0]
-        if output_slot.item and (
-            output_slot.item != smelting_result or 
-            output_slot.count >= output_slot.item.stackSize
-        ):
-            return None
-            
-        return (smelting_result, 1)
-    
-    def _getSmeltingResult(self, item: Item) -> Item | None:
-        '''
-        Get the result of smelting an item.
-        You'll need to implement your actual smelting recipes here.
-        '''
-        # Example smelting recipes - replace with your actual items
-        smelting_recipes = {
-            'IronOre': 'IronIngot',
-            'GoldOre': 'GoldIngot',
-            'Sand': 'Glass',
-            # Add more recipes as needed
-        }
+        # Here you would implement your smelting recipes logic
+        # For example:
+        # result = smelting_recipes.get(input_slot.item.id)
+        # if result:
+        #     if not output_slot.item or (
+        #         output_slot.item.id == result.id and 
+        #         output_slot.count < output_slot.item.stack_size
+        #     ):
+        #         return result, 1
         
-        if item.name in smelting_recipes:
-            # You'll need to implement a way to get Item instances by name
-            return self._getItemByName(smelting_recipes[item.name])
-        return None
+        return None  # Placeholder - implement your smelting logic
     
-    def _getFuelBurnTime(self, item: Item) -> int:
+    def _can_use_fuel(self) -> float | None:
         '''
-        Get how many ticks an item can burn for.
-        Implement your fuel values here.
-        '''
-        # Example fuel burn times in ticks
-        fuel_times = {
-            'Coal': 1600,  # 80 seconds at 20 ticks/sec
-            'Wood': 300,   # 15 seconds
-            'Stick': 100,  # 5 seconds
-            # Add more fuels as needed
-        }
-        
-        return fuel_times.get(item.name, 0)
-    
-    def _consumeFuel(self) -> bool:
-        '''
-        Attempt to consume a fuel item.
-        Returns True if successful, False if no fuel available.
+        Check if the current fuel can be used.
+        Returns burn duration in ticks if usable, None otherwise.
         '''
         fuel_slot = self.fuelInventory[0][0]
+        
         if not fuel_slot.item:
-            return False
+            return None
             
-        burn_time = self._getFuelBurnTime(fuel_slot.item)
-        if burn_time <= 0:
-            return False
-            
-        # Consume one fuel item
+        # Here you would implement your fuel checking logic
+        # For example:
+        # return fuel_burn_times.get(fuel_slot.item.id)
+        
+        return None  # Placeholder - implement your fuel logic
+    
+    def _consume_fuel(self) -> None:
+        '''Consume one fuel item and update fuel remaining'''
+        fuel_slot = self.fuelInventory[0][0]
         if fuel_slot.count <= 1:
             fuel_slot.clear()
         else:
             fuel_slot.count -= 1
             
-        self.burnTimeRemaining = burn_time
-        self.totalBurnTime = burn_time
-        return True
+        self._current_fuel = fuel_slot.item
     
-    def _smeltItem(self) -> None:
-        '''Complete the smelting process for one item'''
-        result = self._canSmelt()
-        if not result:
-            return
-            
-        output_item, count = result
+    def _consume_input(self) -> None:
+        '''Consume one input item after successful smelting'''
         input_slot = self.inputInventory[0][0]
-        output_slot = self.outputInventory[0][0]
-        
-        # Consume input
         if input_slot.count <= 1:
             input_slot.clear()
         else:
             input_slot.count -= 1
-            
-        # Add to output
-        if output_slot.item is None:
-            output_slot.item = output_item
-            output_slot.count = count
-        else:
-            output_slot.count += count
     
     def update(self) -> None:
         '''
         Update the furnace state:
-        - Check if we can smelt
-        - Update fuel burning
-        - Progress smelting if conditions are met
+        - Check if we can start/continue smelting
+        - Update fuel and smelting progress
+        - Handle completion of smelting operations
         '''
-        can_smelt = self._canSmelt() is not None
+        can_smelt = self._can_smelt()
         
-        # Handle fuel burning
-        if self.burnTimeRemaining > 0:
-            self.burnTimeRemaining -= 1
+        # Reset progress if we can't smelt current input
+        if not can_smelt:
+            self.progress = 0.0
+            self._current_input = None
+            return
+            
+        # If we have no fuel, try to use new fuel
+        if self.fuel_remaining <= 0:
+            burn_time = self._can_use_fuel()
+            if burn_time:
+                self._consume_fuel()
+                self.fuel_remaining = burn_time
+            else:
+                self.progress = 0.0
+                return
         
-        # Try to consume new fuel if needed and we can smelt
-        elif can_smelt and self._consumeFuel():
-            self.burnTimeRemaining -= 1
+        # Track the current input item
+        input_slot = self.inputInventory[0][0]
+        if self._current_input != input_slot.item:
+            self._current_input = input_slot.item
+            self.progress = 0.0
         
         # Update smelting progress
-        if can_smelt and self.burnTimeRemaining > 0:
-            self.progress += 0.05  # Adjust speed as needed
+        if self.fuel_remaining > 0:
+            self.progress += 1.0 / self.smelting_time
+            self.fuel_remaining -= 1
+            
+            # Complete smelting if we've reached full progress
             if self.progress >= 1.0:
-                self._smeltItem()
+                result_item, count = can_smelt
+                output_slot = self.outputInventory[0][0]
+                
+                if output_slot.item:
+                    output_slot.count += count
+                else:
+                    output_slot.item = result_item
+                    output_slot.count = count
+                
+                self._consume_input()
                 self.progress = 0.0
-        elif not can_smelt:
-            self.progress = 0.0

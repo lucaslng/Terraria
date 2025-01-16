@@ -81,10 +81,12 @@ sprites = {
     #Misc
     Blocks.Torch: everythingSheet.get(576, 0, 16, 16, BLOCK_SIZE),
 	Items.Torch: everythingSheet.get(576, 0, 16, 16),
+    Blocks.Furnace: everythingSheet.get(622, 0, 16, 16, BLOCK_SIZE),
+    "furnaceOn": everythingSheet.get(638, 0, 16, 16, BLOCK_SIZE),
+    Items.Furnace: everythingSheet.get(622, 0, 16, 16),
     
     #---ITEMS---
     "coal": everythingSheet.get(416, 0, 16, 16, 15),
-  
   
     #---TOOLS---
     #Wooden
@@ -92,7 +94,7 @@ sprites = {
     Items.WoodenPickaxe: everythingSheet.get(16, 0, 16, 16),
     Items.WoodenShovel: everythingSheet.get(32, 0, 16, 16),
     Items.WoodenSword: everythingSheet.get(48, 0, 16, 16),
-  
+
     #Stone
     Items.StoneAxe: everythingSheet.get(64, 0, 16, 16),
     Items.StonePickaxe: everythingSheet.get(80, 0, 16, 16),

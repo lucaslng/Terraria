@@ -15,4 +15,5 @@ class Blocks(Enum):
 	CoalOre = auto()
 	IronOre = auto()
 	CraftingTable = auto()
+	Furnace = auto()
 	Torch = auto()

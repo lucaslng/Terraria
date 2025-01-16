@@ -25,5 +25,3 @@ def drawBlock(block: Block, x: int, y: int, camera: pg.Rect, isBack: bool = Fals
 	)
 
 	pg.draw.rect(surfaces.blockBreak, (0, 0, 0, 100), breakingRect)
-
-	

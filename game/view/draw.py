@@ -5,6 +5,7 @@ from game.model.model import Model
 from game.view import surfaces
 from game.view.drawblocks.drawblocks import drawBlocks
 from game.view.drawhud.drawhud import drawHUD
+from game.view.drawhud.drawminimap import drawMinimap
 from game.view.drawlights import drawLights, drawPlayerLight
 from game.view.drawplayer import drawPlayer
 from game.view.drawsunlight import drawSunlight
@@ -18,6 +19,14 @@ def draw(model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int
 	drawLights(model.lights, camera)
 	drawPlayerLight(model.player.lightRadius)
 	drawPlayer(model.player)
+ 
+	minimap_position = (
+			surfaces.world.get_width() - 220,  # 20 pixels from right edge
+			20                                 # 20 pixels from top edge
+		)
+	minimap_size = (200, 200)  # The minimap will be 200x200 pixels
+	
+	drawMinimap(model.world, camera, minimap_position, minimap_size)
 	# drawEntities(model.entities)
 	drawHUD(model, inventories)
 

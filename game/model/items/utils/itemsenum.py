@@ -9,6 +9,7 @@ class Items(Enum):
 	Stone = "Stone"
 	Cobblestone = "Cobblestone"
 	CraftingTable = "Crafting Table"
+	Furnace = "Furnace"
 	Torch = "Torch"
 	Log = "Log"
 	Planks = "Planks"
