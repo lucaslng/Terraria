@@ -14,6 +14,7 @@ class Npc(Entity):
 
 	def __init__(self, x: float, y: float, world: World):
 		super().__init__(x, y, 5, 1, 1, 20000, 4, 20, 10, 0.99, 18, world)
+		self.updateDistance = 10
 		self.npcColor: tuple[int, int, int] = tuple(np.random.choice(range(256), size=3))
 		self.message = choice(_messages)
 	
