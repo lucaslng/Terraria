@@ -16,3 +16,6 @@ class Npc(Entity):
 		super().__init__(x, y, 5, 1, 1, 20000, 4, 20, 10, 0.99, 18, world)
 		self.npcColor: tuple[int, int, int] = tuple(np.random.choice(range(256), size=3))
 		self.message = choice(_messages)
+	
+	def interact(self):
+		print(self.message)

@@ -1,6 +1,7 @@
 from math import dist, floor
 import pygame as pg
 from game.model.blocks.utils.inventoryblock import InventoryBlock
+from game.model.entity.entities.npc import Npc
 from game.model.items.inventory.inventorytype import InventoryType
 from game.model.utils.bresenham import bresenham
 from game.view import conversions
@@ -125,22 +126,27 @@ def game():
 			elif event.type == 101:
 				print(f'fps: {round(clock.get_fps(), 2)}')
     
-			elif event.type == pg.KEYDOWN and event.key == keys.interact:
-				if len(inventories) > 1:
-					inventories = {InventoryType.Player: inventories[InventoryType.Player]}
-				else:
-					for r in range(3):
-						for c in range(3):
-							x = floor(model.player.position.x) - 1 + c
-							y = floor(model.player.position.y) - 1 + r
-							if isinstance(model.world[y][x], InventoryBlock):
-								for inventory, inventoryType in model.world[y][x].inventories:
-									if inventoryType in inventories:
-										del inventories[inventoryType]
-									else:
-										slotSize, inventoryx, inventoryy = inventoryType.value
-										inventories[inventoryType] = inventory, slotSize, inventoryx, inventoryy
-          
+			elif event.type == pg.KEYDOWN:
+				if event.key == keys.interact:
+					if len(inventories) > 1:
+						inventories = {InventoryType.Player: inventories[InventoryType.Player]}
+					else:
+						for r in range(3):
+							for c in range(3):
+								x = floor(model.player.position.x) - 1 + c
+								y = floor(model.player.position.y) - 1 + r
+								if isinstance(model.world[y][x], InventoryBlock):
+									for inventory, inventoryType in model.world[y][x].inventories:
+										if inventoryType in inventories:
+											del inventories[inventoryType]
+										else:
+											slotSize, inventoryx, inventoryy = inventoryType.value
+											inventories[inventoryType] = inventory, slotSize, inventoryx, inventoryy
+				elif event.key == keys.interactEntity:
+					if model.entities:
+						model.entities.sort(key=lambda e: dist(e.position, model.player.position)) # sort by position to the player
+						if dist(model.entities[0].position, model.player.position) < 1.5:
+							model.entities[0].interact()
 			elif event.type == pg.MOUSEBUTTONDOWN:
 				if event.button == 1:
 					hoveredSlotData = getHoveredSlotSlot(inventories)
