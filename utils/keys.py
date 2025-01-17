@@ -15,3 +15,4 @@ slot8 = pg.K_8
 slot9 = pg.K_9
 
 interact = pg.K_e
+interactEntity = pg.K_f

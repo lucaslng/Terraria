@@ -56,3 +56,7 @@ class Entity(HasPhysics):
 
 	def update(self) -> None:
 		pass
+
+	def interact(self) -> None:
+		'''interact with the entity using keys.interactEntity'''
+		pass
