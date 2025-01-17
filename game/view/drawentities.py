@@ -1,4 +1,4 @@
-from pygame import Rect, Surface
+from pygame import Rect
 from game.model.entity.entities.npc import Npc
 from game.model.entity.entity import Entity
 from game.textures.animation import Animation

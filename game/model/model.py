@@ -63,12 +63,13 @@ class Model:
 		self.player.update()
 		for entity in self.entities:
 			entity.update()
-		
+		# start = time.perf_counter()
 		for i in range(steps):
 			self.space.step(1/FPS/steps) # step the simulation in 1/60 seconds
 			keepUpright(self.player)
 			for entity in self.entities:
 				keepUpright(entity)
+		# print(f'physics time: {round(time.perf_counter() - start, 3)}')
 
 	def start(self):
 		'''Start game'''
