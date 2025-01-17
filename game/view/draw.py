@@ -23,8 +23,6 @@ def draw(model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int
 	drawEntities(model.entities, camera)
 	
 	drawMinimap(model.world, model.lightmap, model.lights, camera, (200, 200))
- 
-	# drawEntities(model.entities)
 	drawHUD(model, inventories)
 
 	surfaces.sunlight = transform.smoothscale(surfaces.sunlight, (FRAME.width // 15, FRAME.height // 20))

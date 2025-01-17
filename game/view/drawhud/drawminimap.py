@@ -6,13 +6,15 @@ from game.utils.backtint import BACK_TINT
 from game.model.light import Light
 import pygame as pg
 
-def drawMinimap(world, lightmap, lights, camera: pg.Rect, minimap_size: tuple[int, int]):
-    """Draw a minimap of the world but at a smaller scale"""
+def drawMinimap(world, lightmap, lights: Light, camera: pg.Rect, minimap_size: tuple[int, int]) -> None:
+    """Draw a minimap of the surroundingworld but at a smaller scale"""
     #Calculate the center of the current view
     centerX = (camera.left + camera.right) // 2
     centerY = (camera.top + camera.bottom) // 2
     
     MINIMAP_SCALE = 4
+    border_width = 2
+    border_colour = (255, 0, 0)
     
     #Calculate visible blocks in minimap
     blocks_wide = minimap_size[0] // MINIMAP_SCALE
@@ -43,25 +45,21 @@ def drawMinimap(world, lightmap, lights, camera: pg.Rect, minimap_size: tuple[in
                 scaled_texture = pg.transform.scale(texture, (MINIMAP_SCALE, MINIMAP_SCALE))
                 surfaces.minimap.blit(scaled_texture, (minimap_x, minimap_y))
                 
-            #Draw light
+            #Draw natural light
             pg.draw.rect(surfaces.minimapLight, (0, 0, 0, lightmap[y][x]), (minimap_x, minimap_y, MINIMAP_SCALE, MINIMAP_SCALE))
     
-            # Draw basic light levels from lightmap
-            light_alpha = lightmap[y][x]
-            pg.draw.rect(surfaces.minimapLight, (0, 0, 0, light_alpha), 
-                        (minimap_x, minimap_y, MINIMAP_SCALE, MINIMAP_SCALE))
-    
-    # Draw dynamic light sources
+    #Draw light from blocks
     for light, lightx, lighty in lights:
-        # Convert world coordinates to minimap coordinates
+        #Convert world coordinates to minimap coordinates
         mini_light_x = (lightx - startX) * MINIMAP_SCALE
         mini_light_y = (lighty - startY) * MINIMAP_SCALE
         
-        # Scale the light radius to minimap scale
         scaled_radius = light.lightRadius * MINIMAP_SCALE
         
-        # Only draw if the light is in the visible minimap area
-        if (0 <= mini_light_x <= minimap_size[0] and 
-            0 <= mini_light_y <= minimap_size[1]):
-            pg.draw.circle(surfaces.minimapLight, (0, 0, 0, 0),
-                         (mini_light_x, mini_light_y), scaled_radius)
+        #Only draw if the light is visible in the minimap
+        if (0 <= mini_light_x <= minimap_size[0] and 0 <= mini_light_y <= minimap_size[1]):
+            pg.draw.circle(surfaces.minimapLight, (255, 255, 255, 0), (mini_light_x, mini_light_y), scaled_radius)
+            
+    #Draw border around the minimap
+    border_rect = pg.Rect(0, 0, minimap_size[0], minimap_size[1])
+    pg.draw.rect(surfaces.minimap, border_colour, border_rect, border_width)
