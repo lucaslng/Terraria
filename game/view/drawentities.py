@@ -25,7 +25,6 @@ def drawEntities(entities: list[Entity], camera: Rect):
 			else:
 				textures["walk"].drawAnimated(surfaces.world, pos, flipped)
 		if isinstance(entity, Npc):
-			print(entity.npcColor)
 			cx, cy = pos
 			cx += 3
 			cy += 5
