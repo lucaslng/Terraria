@@ -177,5 +177,5 @@ def game():
 
 		model.update()		
 		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE		
-		draw(model, camera, inventories)		
+		draw(model, camera, inventories)
 		updateScreen()

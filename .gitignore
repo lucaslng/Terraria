@@ -2,11 +2,6 @@
 .DS_Store
 desktop.ini
 .vscode
-.replit
-pyproject.toml
-replit.nix
-uv.lock
 
 test.py
-
 __pycache__/
