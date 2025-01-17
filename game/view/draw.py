@@ -1,4 +1,5 @@
 from pygame import Rect
+from game.view.drawentities import drawEntities
 from utils.constants import FRAME, SURF
 from game.model.items.inventory.inventory import Inventory
 from game.model.model import Model
@@ -19,6 +20,7 @@ def draw(model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int
 	drawLights(model.lights, camera)
 	drawPlayerLight(model.player.lightRadius)
 	drawPlayer(model.player)
+	drawEntities(model.entities, camera)
  
 	minimap_position = (
 			surfaces.world.get_width() - 220,  # 20 pixels from right edge

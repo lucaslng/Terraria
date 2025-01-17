@@ -81,7 +81,10 @@ class Model:
 	def spawnEntity(self, entity: Entity):
 		'''Spawn a new entity into the game'''
 		self.entities.append(entity)
-		self.space.add(entity, pm.Poly.create_box(entity, (entity.width, entity.height)))
+		entityShape = pm.Poly.create_box(entity, (entity.width, entity.height))
+		entityShape.mass = entity.mass
+		entityShape.friction = entity.friction
+		self.space.add(entity, entityShape)
 	
 	def placeBlock(self, x: int, y: int):
 		'''place a block at coordinates (x, y)'''
