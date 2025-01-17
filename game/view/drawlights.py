@@ -10,13 +10,11 @@ def drawLight(lightRadius: float, x: int, y: int):
 	pg.draw.circle(surfaces.sunlight, (0, 0, 0, 0), (x, y), lightRadius * BLOCK_SIZE)
 
 def drawPlayerLight(lightRadius: float):
-	'''Draw light for the player'''
-	
+	'''Draw light for the player'''	
 	drawLight(lightRadius, *FRAME.center)
 
 def drawLights(lights: list[tuple[Light, int, int]], camera: Rect) -> None:
 	'''Draw all visible lights in the world'''
-
 	for lightData in lights:
 		light, lightx, lighty = lightData
 		drawLight(light.lightRadius, *conversions.coordinate2Pixel(lightx, lighty, camera))

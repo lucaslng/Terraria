@@ -26,5 +26,4 @@ BLOCK_RECT = pg.rect.Rect(0, 0, BLOCK_SIZE, BLOCK_SIZE)
 WORLD_HEIGHT = 100
 WORLD_WIDTH = 200    #default is 1000
 
-# other helpful stuff
 BIG = 2147483647
