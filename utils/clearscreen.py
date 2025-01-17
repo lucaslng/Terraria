@@ -8,3 +8,5 @@ def clearScreen():
 	surfaces.blockBreak.fill(colours.CLEAR)
 	surfaces.sunlight.fill(colours.CLEAR)
 	surfaces.hud.fill(colours.CLEAR)
+	surfaces.minimap.fill(colours.CLEAR)
+	surfaces.minimapLight.fill(colours.CLEAR)

@@ -1,6 +1,6 @@
 from pygame import Rect
 from game.view.drawentities import drawEntities
-from utils.constants import FRAME, SURF
+from utils.constants import FRAME, SURF, WIDTH
 from game.model.items.inventory.inventory import Inventory
 from game.model.model import Model
 from game.view import surfaces
@@ -21,14 +21,9 @@ def draw(model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int
 	drawPlayerLight(model.player.lightRadius)
 	drawPlayer(model.player)
 	drawEntities(model.entities, camera)
- 
-	minimap_position = (
-			surfaces.world.get_width() - 220,  # 20 pixels from right edge
-			20                                 # 20 pixels from top edge
-		)
-	minimap_size = (200, 200)  # The minimap will be 200x200 pixels
 	
-	drawMinimap(model.world, camera, minimap_position, minimap_size)
+	drawMinimap(model.world, model.lightmap, model.lights, camera, (200, 200))
+ 
 	# drawEntities(model.entities)
 	drawHUD(model, inventories)
 
@@ -39,5 +34,7 @@ def draw(model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int
 		(surfaces.world, (0, 0)),
 		(surfaces.blockBreak, (0, 0)),
 		(surfaces.sunlight, (0, 0)),
-		(surfaces.hud, (0, 0))
+		(surfaces.hud, (0, 0)),
+		(surfaces.minimap, (WIDTH - 220, 20)),
+		(surfaces.minimapLight, (WIDTH - 220, 20))
 	))
