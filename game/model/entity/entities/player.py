@@ -16,6 +16,7 @@ class Player(Entity, Light):
 	
 	def __init__(self, x: float, y: float, world: World):
 		super().__init__(x, y, 4, 1, 1, 20000, 7, 60, 20, 0.99, 18, world)
+		del self.updateDistance # unneeded
 	
 	@property
 	def hotbar(self) -> list[Slot]:
@@ -38,8 +39,6 @@ class Player(Entity, Light):
 		return self.hotbar[self._heldSlotIndex]
 	
 	def update(self) -> None:
-		super().update()
-		
 		if self.heldSlot.item and isinstance(self.heldSlot.item, Light):
 			self.lightRadius = self.heldSlot.item.lightRadius
 		else:

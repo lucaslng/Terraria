@@ -1,4 +1,4 @@
-from math import ceil, floor
+from math import ceil, degrees, dist, floor, atan2, pi
 import time
 from game.model.entity.hasphysics import HasPhysics
 from game.model.world import World
@@ -32,6 +32,7 @@ class Entity(HasPhysics):
 		self.health = maxHealth
 		self.world = world
 		self.minyvelo = 100
+		self.updateDistance = 1
 	
 	def walkLeft(self) -> None:
 		'''Walk the entity to the left using walkForce'''
@@ -54,8 +55,23 @@ class Entity(HasPhysics):
 			return not (self.world[ceil(self.position.y)][floor(self.position.x)].isEmpty and self.world[ceil(self.position.y)][ceil(self.position.x)].isEmpty)
 		return False
 
-	def update(self) -> None:
-		pass
+	def update(self, goal: tuple[float, float]) -> None:
+		'''weird variation of a* algorithm'''
+		# find reachable blocks
+		if dist(self.position, goal) > self.updateDistance:
+			x, y = map(int, self.position)
+			reachables = {(x, y)}
+			if self.world[y][x - 1].isEmpty:
+				reachables.add((x - 1, y))
+			if self.world[y][x + 1].isEmpty:
+				reachables.add((x + 1, y))
+			best = min(reachables, key=lambda p: dist(p, goal))
+			if best != (x, y):
+				if best[0] < x:
+					self.walkLeft()
+				else:
+					self.walkRight()
+		
 
 	def interact(self) -> None:
 		'''interact with the entity using keys.interactEntity'''

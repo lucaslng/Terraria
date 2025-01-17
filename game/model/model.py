@@ -62,7 +62,7 @@ class Model:
 		'''Update the model, should be called every frame. steps increases the accuracy of the physics simulation but sacrifices performance'''
 		self.player.update()
 		for entity in self.entities:
-			entity.update()
+			entity.update(self.player.position)
 		# start = time.perf_counter()
 		for i in range(steps):
 			self.space.step(1/FPS/steps) # step the simulation in 1/60 seconds
