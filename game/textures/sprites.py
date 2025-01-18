@@ -4,7 +4,7 @@ from utils.constants import BLOCK_SIZE
 from game.model.blocks.utils.blocksenum import Blocks
 from game.model.items.utils.itemsenum import Items
 from game.textures.animation import Animation
-from game.textures.spritesheets import catSheet, everythingSheet, weirdBlocksSheet
+from game.textures.spritesheets import catSheet, rabbitsSheet, everythingSheet, weirdBlocksSheet
 
 sprites = {
     "cat": {
@@ -44,6 +44,8 @@ sprites = {
         catSheet.get(104, 16, 16, 16, BLOCK_SIZE),
         ),
     },
+	
+    "rabbit": rabbitsSheet.get(0, 18, 100, 100),
     
     #Ores
     Blocks.CoalOre: everythingSheet.get(352, 0, 16, 16, BLOCK_SIZE),
@@ -74,7 +76,7 @@ sprites = {
     Blocks.Log: everythingSheet.get(560, 0, 16, 16, BLOCK_SIZE),
 	Items.Log: everythingSheet.get(560, 0, 16, 16),
     Blocks.Leaves: weirdBlocksSheet.get(30, 5, 360, 360, BLOCK_SIZE),
-    Blocks.CraftingTable: everythingSheet.get(592, 0, 14, 16, BLOCK_SIZE, BLOCK_SIZE),
+    Blocks.CraftingTable: everythingSheet.get(592, 0, 14, 16, BLOCK_SIZE),
 	Items.CraftingTable: everythingSheet.get(592, 0, 14, 16),
 	Items.Sticks: everythingSheet.get(606, 0, 16, 16),
 

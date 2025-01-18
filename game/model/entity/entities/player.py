@@ -38,6 +38,12 @@ class Player(Entity, Light):
 		'''returns the held slot'''
 		return self.hotbar[self._heldSlotIndex]
 	
+	@property
+	def damage(self) -> int:
+		'''returns the damage that the player does currently'''
+		#TODO: implement weapons
+		return 1
+	
 	def update(self) -> None:
 		if self.heldSlot.item and isinstance(self.heldSlot.item, Light):
 			self.lightRadius = self.heldSlot.item.lightRadius

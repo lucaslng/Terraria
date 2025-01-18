@@ -2,6 +2,7 @@ from math import dist, floor
 import pygame as pg
 from game.model.blocks.utils.inventoryblock import InventoryBlock
 from game.model.entity.entities.npc import Npc
+from game.model.entity.entities.rabbit import Rabbit
 from game.model.items.inventory.inventorytype import InventoryType
 from game.model.utils.bresenham import bresenham
 from game.view import conversions
@@ -137,7 +138,15 @@ def game():
 					if model.entities:
 						model.entities.sort(key=lambda e: dist(e.position, model.player.position)) # sort by position to the player
 						if dist(model.entities[0].position, model.player.position) < 1.5:
-							model.entities[0].interact()
+							if isinstance(model.entities[0], Rabbit):
+								model.entities[0].interact(model.player.damage)
+								if not model.entities[0].isAlive:
+									if model.entities[0].droppedItem:
+										model.player.inventory.addItem(model.entities[0].droppedItem)
+									model.space.remove(model.entities[0], model.entities[0].shape)
+									del model.entities[0]
+							else:
+								model.entities[0].interact()
 			elif event.type == pg.MOUSEBUTTONDOWN:
 				if event.button == 1:
 					hoveredSlotData = getHoveredSlotSlot(inventories)
@@ -166,7 +175,9 @@ def game():
 			for x in range(camera.left // BLOCK_SIZE, camera.right // BLOCK_SIZE + 1):
 				model.world[y][x].update()
 
-		model.update()		
+		if not model.update():
+			print("player died")
+			return Screens.MENU
 		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE		
 		draw(model, camera, inventories)
 		updateScreen()

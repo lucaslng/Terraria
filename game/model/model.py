@@ -8,6 +8,7 @@ from functools import partial
 from typing import Optional
 
 from game.model.entity.entities.npc import Npc
+from game.model.entity.entities.rabbit import Rabbit
 from utils.constants import FPS, SEED, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
 from game.model.blocks.coaloreblock import CoalOreBlock
@@ -58,11 +59,15 @@ class Model:
 
 		self.blockFacingCoord: tuple[int, int] | None = None
 
-	def update(self, steps=20):
-		'''Update the model, should be called every frame. steps increases the accuracy of the physics simulation but sacrifices performance'''
+	def update(self, steps=20) -> bool:
+		'''Update the model, should be called every frame. steps increases the accuracy of the physics simulation but sacrifices performance. returns whether the player is alive'''
 		self.player.update()
-		for entity in self.entities:
+		if not self.player.isAlive:
+			return False
+		for i, entity in enumerate(self.entities):
 			entity.update(self.player.position)
+			if not entity.isAlive:
+				del self.entities[i]
 		# start = time.perf_counter()
 		for i in range(steps):
 			self.space.step(1/FPS/steps) # step the simulation in 1/60 seconds
@@ -70,22 +75,28 @@ class Model:
 			for entity in self.entities:
 				keepUpright(entity)
 		# print(f'physics time: {round(time.perf_counter() - start, 3)}')
+		return True
 
 	def start(self):
 		'''Start game'''
 		startTime = time.perf_counter()
 		self._generateWorld()
 		self._generateWorldShapes()
+		self._spawnEntities()
 		print(f'World generation time: {round(time.perf_counter() - startTime, 2)} seconds')
-		self.spawnEntity(Npc(*self.player.position, self.world))
 	
-	def spawnEntity(self, entity: Entity):
+	def _spawnEntities(self) -> None:
+		px, py = self.player.position
+		self.spawnEntity(Npc(px + 1, py, self.world))
+		self.spawnEntity(Rabbit(px - 2, py, self.world))
+
+	def spawnEntity(self, entity: Entity) -> None:
 		'''Spawn a new entity into the game'''
+		entity.shape = pm.Poly.create_box(entity, (entity.width, entity.height))
+		entity.shape.mass = entity.mass
+		entity.shape.friction = entity.friction
+		self.space.add(entity, entity.shape)
 		self.entities.append(entity)
-		entityShape = pm.Poly.create_box(entity, (entity.width, entity.height))
-		entityShape.mass = entity.mass
-		entityShape.friction = entity.friction
-		self.space.add(entity, entityShape)
 	
 	def placeBlock(self, x: int, y: int):
 		'''place a block at coordinates (x, y)'''
