@@ -41,8 +41,10 @@ class Player(Entity, Light):
 	@property
 	def damage(self) -> int:
 		'''returns the damage that the player does currently'''
-		#TODO: implement weapons
-		return 1
+		if self.heldSlot.item:
+			return self.heldSlot.item.damage
+		else:
+			return 1
 	
 	def consume(self) -> None:
 		'''eat the item in the held slot'''

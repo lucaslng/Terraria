@@ -8,6 +8,7 @@ class Item:
 
 	enum: Items
 	stackSize: int = 64
+	damage: int = 1
 
 	def __eq__(self, other: 'Item') -> bool:
 		'''Override == operator to check for item enum'''
