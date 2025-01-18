@@ -94,9 +94,12 @@ class Model:
 		px, py = self.player.position
 		self.spawnEntity(Npc(px + 1, self.world.topy(px + 1) - 1, self.world))
 		self.spawnEntity(Rabbit(px - 2, self.world.topy(px - 2) - 1, self.world))
+		for _ in range(self.world.width // 10):
+			x = random.randint(0, self.world.width - 1)
+			self.spawnEntity(Rabbit(x, self.world.topy(x) - 1, self.world))
 
 	def spawnEntitiesRandom(self) -> None:
-		if self.entityCounter[Rabbit] < self.world.width // 10:
+		for _ in range(self.world.width // 10 - self.entityCounter[Rabbit]):
 			x = random.randint(0, self.world.width - 1)
 			self.spawnEntity(Rabbit(x, self.world.topy(x) - 1, self.world))
 
@@ -155,7 +158,6 @@ class Model:
 				if isinstance(self.world[y][x], InventoryBlock):
 					inventoryTypes = [inventoryType for _, inventoryType in self.world[y][x].inventories]
 
-				print(len(self.space.shapes))
 				self.space.remove(self.world[y][x].shape)
 				if isinstance(self.world[y][x], Light):
 					self.lights.remove(self.world[y][x])

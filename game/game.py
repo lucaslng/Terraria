@@ -123,7 +123,8 @@ def game():
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
 				return Screens.QUIT
-    
+			elif event.type == 101:
+				model.spawnEntitiesRandom()
 			elif event.type == pg.KEYDOWN:
 				if event.key == keys.interact:
 					if len(inventories) > 1:
