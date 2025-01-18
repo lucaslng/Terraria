@@ -69,8 +69,8 @@ class Model:
 			return False
 		for i, entity in enumerate(self.entities):
 			entity.update(self.player.position)
-			if not entity.isAlive:
-				del self.entities[i]
+			if not entity.isAlive or not 0 < entity.position.x < self.world.width or not 0 < entity.position.y < self.world.height:
+				self.deleteEntity(i, entity)
 		# start = time.perf_counter()
 		for i in range(steps):
 			self.space.step(1/FPS/steps) # step the simulation in 1/60 seconds
@@ -109,6 +109,12 @@ class Model:
 		self.entities.append(entity)
 		if type(entity) in self.entityCounter:
 			self.entityCounter[type(entity)] += 1
+	
+	def deleteEntity(self, i: int, entity: Entity) -> None:
+		if type(entity) in self.entityCounter:
+			self.entityCounter[type(entity)] -= 1
+		self.space.remove(entity, entity.shape)
+		del self.entities[i]
 	
 	def placeBlock(self, x: int, y: int):
 		'''place a block at coordinates (x, y)'''

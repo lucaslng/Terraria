@@ -149,8 +149,7 @@ def game():
 								if not model.entities[0].isAlive:
 									if model.entities[0].droppedItem:
 										model.player.inventory.addItem(model.entities[0].droppedItem)
-									model.space.remove(model.entities[0], model.entities[0].shape)
-									del model.entities[0]
+									model.deleteEntity(0, model.entities[0])
 							else:
 								model.entities[0].interact()
 			elif event.type == pg.MOUSEBUTTONDOWN:
