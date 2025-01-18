@@ -55,6 +55,8 @@ class Entity(HasPhysics):
 
 	@property
 	def isOnGround(self) -> bool:
+		if ceil(self.position.y) == self.world.height:
+			return True
 		if (self.position.y - self.height / 2) % 1 < 0.05:
 			return not (self.world[ceil(self.position.y)][floor(self.position.x)].isEmpty and self.world[ceil(self.position.y)][ceil(self.position.x)].isEmpty)
 		return False
@@ -64,7 +66,7 @@ class Entity(HasPhysics):
 		return self.health > 0
 
 	def update(self, goal: tuple[float, float]) -> None:
-		'''weird variation of a* algorithm'''
+		'''very dumb pathfinding'''
 		# find reachable blocks
 		if dist(self.position, goal) > self.updateDistance:
 			x, y = map(int, self.position)

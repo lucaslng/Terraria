@@ -1,4 +1,5 @@
-from utils.constants import BLOCK_SIZE, WORLD_HEIGHT, WORLD_WIDTH
+from game.model.world import World
+from utils.constants import BLOCK_SIZE
 from game.model.blocks.airblock import AirBlock
 from game.view import surfaces
 from game.textures.sprites import sprites
@@ -27,7 +28,7 @@ class MinimapCache:
 
 minimap_cache = MinimapCache(4)
 
-def drawMinimap(world, lightmap, lights: Light, camera: pg.Rect, minimap_size: tuple[int, int]) -> None:
+def drawMinimap(world: World, lightmap: list[list[int]], lights: Light, camera: pg.Rect, minimap_size: tuple[int, int]) -> None:
     """Draw a minimap of the surrounding world but at a smaller scale"""
     MINIMAP_SCALE = 4
     border_width = 2
@@ -39,9 +40,9 @@ def drawMinimap(world, lightmap, lights: Light, camera: pg.Rect, minimap_size: t
     blocks_wide = minimap_size[0] // MINIMAP_SCALE
     blocks_high = minimap_size[1] // MINIMAP_SCALE
     startX = max(0, (centerX // BLOCK_SIZE) - (blocks_wide // 2))
-    endX = min(WORLD_WIDTH, startX + blocks_wide)
+    endX = min(world.width, startX + blocks_wide)
     startY = max(0, (centerY // BLOCK_SIZE) - (blocks_high // 2))
-    endY = min(WORLD_HEIGHT, startY + blocks_high)
+    endY = min(world.height, startY + blocks_high)
     
     light_surface = pg.Surface(minimap_size, pg.SRCALPHA)
     

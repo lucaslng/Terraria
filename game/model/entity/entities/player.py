@@ -52,6 +52,7 @@ class Player(Entity, Light):
 			self.heldSlot.clear()
 
 	def update(self) -> None:
+		# print(self.position)
 		if self.heldSlot.item and isinstance(self.heldSlot.item, Light):
 			self.lightRadius = self.heldSlot.item.lightRadius
 		else:

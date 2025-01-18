@@ -179,7 +179,8 @@ def game():
 		
 		for y in range(camera.top // BLOCK_SIZE, camera.bottom // BLOCK_SIZE + 1):
 			for x in range(camera.left // BLOCK_SIZE, camera.right // BLOCK_SIZE + 1):
-				model.world[y][x].update()
+				if 0 <= y < model.world.height and 0 <= x < model.world.width:
+					model.world[y][x].update()
 
 		if not model.update():
 			print("player died")

@@ -146,7 +146,7 @@ class Model:
 		if self.blockFacingCoord:
 			x, y = self.blockFacingCoord
 			if self.world[y][x].amountBroken < self.world[y][x].hardness:
-				miningSpeed = 1
+				miningSpeed = 20
 				if self.player.heldSlot.item and isinstance(self.player.heldSlot.item, Tool) and self.player.heldSlot.item.blockType == self.world[y][x].blockType:
 					miningSpeed = self.player.heldSlot.item.speed
 				self.world[y][x].amountBroken += miningSpeed / FPS

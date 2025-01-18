@@ -17,8 +17,9 @@ def bresenham(blocks: list[list[Block]], x0: int, y0: int, x1: int, y1: int, cam
 		x = x1
 		while x != x0 - xi: # loop, iterates backward from the endpoint
 			coordx, coordy = pixel2Coordinate(x, y, camera)
-			blockTouched = blocks[coordy][coordx]
-			if not isinstance(blockTouched, AirBlock):
+			if not 0 <= x < FRAME.width or not 0 <= y < FRAME.height or not 0 <= coordy < len(blocks) or not 0 <= coordx < len(blocks[0]):
+				return None
+			if not isinstance(blocks[coordy][coordx], AirBlock):
 				return coordx, coordy
 			# is the next ideal point closer to the current row/column, or should we move diagonally to stay closer to the real line?
 			if d > 0: # take a diagonal step, adjusting both x and y
@@ -27,8 +28,6 @@ def bresenham(blocks: list[list[Block]], x0: int, y0: int, x1: int, y1: int, cam
 			else: # take a straight step by only adjusting x
 				d += 2 * dy
 			x += xi # iterates in steps of xi
-			if not 0 <= x < FRAME.width or not 0 <= y < FRAME.height:
-				return None
 		return None
 
 	def plotLineHigh(x0: int, y0: int, x1: int, y1: int) -> tuple[int, int] | None: # steep line, same as the plotLineLow function but x and y are swapped
@@ -41,8 +40,9 @@ def bresenham(blocks: list[list[Block]], x0: int, y0: int, x1: int, y1: int, cam
 		y = y1
 		while y != y0 - yi:
 			coordx, coordy = pixel2Coordinate(x, y, camera)
-			blockTouched = blocks[coordy][coordx]
-			if not isinstance(blockTouched, AirBlock):
+			if not 0 <= x < FRAME.width or not 0 <= y < FRAME.height or not 0 <= coordy < len(blocks) or not 0 <= coordx < len(blocks[0]):
+				return None
+			if not isinstance(blocks[coordy][coordx], AirBlock):
 				return coordx, coordy
 			if d > 0:
 				x += xi
@@ -50,8 +50,6 @@ def bresenham(blocks: list[list[Block]], x0: int, y0: int, x1: int, y1: int, cam
 			else:
 				d += 2 * dx
 			y += yi
-			if not 0 <= x < FRAME.width or not 0 <= y < FRAME.height:
-				return None
 		return None
 
 	if abs(y1 - y0) < abs(x1 - x0):
