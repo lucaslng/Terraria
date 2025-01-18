@@ -18,7 +18,7 @@ class Recipe:
 
 
 def woodenPlanks(items: list[list[Slot]]) -> tuple[Item, int] | None:
-    '''wooden planks recipe'''
+    '''Wooden planks recipe'''
     filledSlots = 0
     
     for row in items:
@@ -33,7 +33,7 @@ def woodenPlanks(items: list[list[Slot]]) -> tuple[Item, int] | None:
 
 
 def sticks(items: list[list[Slot]]) -> tuple[Item, int] | None:
-    '''sticks recipe'''
+    '''Sticks recipe'''
     filledSlots = 0
     
     for row in items:
@@ -55,17 +55,12 @@ def sticks(items: list[list[Slot]]) -> tuple[Item, int] | None:
 def createPickaxeRecipe(items: list[list[Slot]], top_material: Items, tool_class: Type[Item]) -> tuple[Item, int] | None:
     """
     Generic recipe function for pickaxes
-    [M][M][M]  M = material (planks, cobblestone, etc.)
-    [ ][S][ ]  S = stick
-    [ ][S][ ]
     
-    Args:
-        items: The crafting grid slots
-        top_material: The Items enum value for the required top row material
-        tool_class: The class of the tool to create (WoodenPickaxe, StonePickaxe, etc.)
+    items: The crafting grid slots
+    top_material: The Items enum value for the required top row material
+    tool_class: The class of the tool to create (WoodenPickaxe, StonePickaxe, etc.)
     
-    Returns:
-        A tuple of (created item, count) or None if recipe doesn't match
+    Returns: A tuple of (created item, count) or None if recipe doesn't match
     """
     
     #Check top row material
@@ -95,6 +90,7 @@ stonePickaxe = partial(
     top_material=Items.Cobblestone,
     tool_class=StonePickaxe
 )
+
 
 
 recipes: list[Recipe] = [

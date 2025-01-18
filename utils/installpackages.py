@@ -2,7 +2,7 @@ import subprocess
 import sys
 import importlib.util
 
-#currently most backward tested version
+#currently most backward tested version (3.10.12)
 requiredPythonVersion = (3, 10, 12)
 
 def _checkPythonVersion():
@@ -18,11 +18,11 @@ if not _checkPythonVersion():
           f"Current version is {sys.version.split()[0]}")
     sys.exit(1)
 
-_required = {'numpy', 'pymunk'}
-for package in _required:
+_requiredLibraries = {"pygame", "numpy", "pymunk"}
+for package in _requiredLibraries:
     if not _isPackageInstalled(package):
         try:
-            #runs python -m pip install <package>
+            #Runs python -m pip install <package>
             subprocess.check_call([sys.executable, '-m', 'pip', 'install', package], 
                                stdout=subprocess.DEVNULL)
         except subprocess.CalledProcessError as e:

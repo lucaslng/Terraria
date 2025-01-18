@@ -13,12 +13,13 @@ import pygame as pg
 
 
 def drawHUD(model: Model, inventories: dict[InventoryType, tuple[Inventory, int, int, int]]):
-	'''Draw HUD'''
+	'''Draw all HUD on the screen'''
 
 	drawHealth(model.player.health, model.player.maxHealth)
+	drawHotbar(model.player.hotbar, model.player.heldSlotIndex)
+ 
 	for inventoryKey in inventories:
 		drawInventory(*inventories[inventoryKey])
-	drawHotbar(model.player.hotbar, model.player.heldSlotIndex)
 	
 	hoveredSlotRect = getHoveredSlotRect(*(v for v in inventories.values()))
 	if hoveredSlotRect:

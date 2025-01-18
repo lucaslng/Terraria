@@ -7,7 +7,7 @@ from game.model.utils.bresenham import bresenham
 from game.view import conversions
 from game.view.inventory.hoveredslot import getHoveredSlotSlot
 import utils.keys as keys
-from utils.constants import BLOCK_SIZE, FRAME, WORLD_HEIGHT, WORLD_WIDTH, clock
+from utils.constants import BLOCK_SIZE, FRAME, WORLD_HEIGHT, WORLD_WIDTH
 from game.view.draw import draw
 from game.model.model import Model
 from utils.screens import Screens
@@ -23,13 +23,7 @@ def game():
 	camera = FRAME.copy()
 	camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
 
-	inventories = {
-			InventoryType.Player:
-				(
-					model.player.inventory,
-					*InventoryType.Player.value
-				),
-		}
+	inventories = {InventoryType.Player: (model.player.inventory, *InventoryType.Player.value)}
 	
 	leftMousePressedTime = 0
 
@@ -122,9 +116,6 @@ def game():
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
 				return Screens.QUIT
-
-			elif event.type == 101:
-				print(f'fps: {round(clock.get_fps(), 2)}')
     
 			elif event.type == pg.KEYDOWN:
 				if event.key == keys.interact:

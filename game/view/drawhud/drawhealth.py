@@ -13,14 +13,14 @@ def drawHealth(health: int, maxHealth: int) -> None:
 	halfHeart = health % 2
 	emptyHearts = (maxHealth - health) // 2
 
-	# Full hearts
+	#Full hearts
 	for i in range(fullHearts):
 		surfaces.hud.blit(sprites["full heart"], (x + i * spacing, y))
 	
-	# Half heart
+	#Half hearts
 	if halfHeart:
 		surfaces.hud.blit(sprites["half heart"], (x + fullHearts * spacing, y))
 
-	# Empty hearts
+	#Empty hearts
 	for i in range(emptyHearts):
 		surfaces.hud.blit(sprites["empty heart"], (x + (fullHearts + halfHeart + i) * spacing, y))
