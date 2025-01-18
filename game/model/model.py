@@ -104,7 +104,7 @@ class Model:
 			if self.player.heldSlot.item and isinstance(self.player.heldSlot.item, Placeable):
 				self.player.heldSlot.count -= 1
 				self.world[y][x] = self.player.heldSlot.item.getBlock()()
-				if self.player.heldSlot.count == 0:
+				if not self.player.heldSlot.count:
 					self.player.heldSlot.clear()
 				if isinstance(self.world[y][x], Light):
 					self.lights.append((self.world[y][x], x, y))

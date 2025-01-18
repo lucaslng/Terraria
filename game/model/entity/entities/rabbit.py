@@ -1,4 +1,5 @@
 from game.model.entity.entity import Entity
+from game.model.items.rabbitmeat import RabbitMeat
 from game.model.world import World
 
 class Rabbit(Entity):
@@ -9,7 +10,7 @@ class Rabbit(Entity):
 		self.pathFindToPlayer = False
 		self.updateDistance = 3
 		self.isScared = False
-		# self.droppedItem = 
+		self.droppedItem = RabbitMeat()
 	
 	def interact(self, damage: int) -> None:
 		print("attacked rabbit")

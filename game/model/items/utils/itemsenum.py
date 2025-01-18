@@ -22,3 +22,5 @@ class Items(Enum):
  
 	StonePickaxe = "Stone Pickaxe"
 	StoneAxe = "Stone Axe"
+
+	RabbitMeat = "Rabbit Meat"

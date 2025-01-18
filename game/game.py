@@ -1,12 +1,13 @@
 from math import dist, floor
 import pygame as pg
 from game.model.blocks.utils.inventoryblock import InventoryBlock
-from game.model.entity.entities.npc import Npc
 from game.model.entity.entities.rabbit import Rabbit
 from game.model.items.inventory.inventorytype import InventoryType
+from game.model.items.specialitems.edible import Edible
 from game.model.utils.bresenham import bresenham
 from game.view import conversions
 from game.view.inventory.hoveredslot import getHoveredSlotSlot
+from sound import channels, sounds
 import utils.keys as keys
 from utils.constants import BLOCK_SIZE, FRAME, WORLD_HEIGHT, WORLD_WIDTH
 from game.view.draw import draw
@@ -97,6 +98,11 @@ def game():
 			model.player.heldSlotIndex = 7
 		if pressedKeys[keys.slot9]:
 			model.player.heldSlotIndex = 8
+		
+		if pressedKeys[keys.consume]:
+			if model.player.heldSlot.item and isinstance(model.player.heldSlot.item, Edible) and not channels.consume.get_busy():
+				channels.consume.play(sounds.consume)
+				model.player.consume()
 		
 		if pg.mouse.get_pressed()[0]:
 			#Check if the cursor is hovering over any inventory slot

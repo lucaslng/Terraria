@@ -86,6 +86,7 @@ sprites = {
     Blocks.Furnace: everythingSheet.get(622, 0, 16, 16, BLOCK_SIZE),
     "furnaceOn": everythingSheet.get(638, 0, 16, 16, BLOCK_SIZE),
     Items.Furnace: everythingSheet.get(622, 0, 16, 16),
+	Items.RabbitMeat: everythingSheet.get(654, 0, 16, 16),
     
     #---ITEMS---
     "coal": everythingSheet.get(416, 0, 16, 16, 15),

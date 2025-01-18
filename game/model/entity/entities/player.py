@@ -44,6 +44,13 @@ class Player(Entity, Light):
 		#TODO: implement weapons
 		return 1
 	
+	def consume(self) -> None:
+		'''eat the item in the held slot'''
+		self.health = min(self.maxHealth, self.health + self.heldSlot.item.healing)
+		self.heldSlot.count -= 1
+		if not self.heldSlot.count:
+			self.heldSlot.clear()
+
 	def update(self) -> None:
 		if self.heldSlot.item and isinstance(self.heldSlot.item, Light):
 			self.lightRadius = self.heldSlot.item.lightRadius
