@@ -1,6 +1,9 @@
 from pygame import Rect
+import pygame as pg
 
-from utils.constants import BLOCK_SIZE
+from game.view import conversions, surfaces
+from utils import colours
+from utils.constants import BLOCK_RECT, BLOCK_SIZE
 from game.model.blocks.airblock import AirBlock
 from game.model.world import World
 from game.view.drawblocks.drawblock import drawBlock
@@ -14,3 +17,7 @@ def drawBlocksBlocks(world: World, camera: Rect):
 					drawBlock(world.back[y][x], x, y, camera, isBack=True)
 				if not isinstance(world[y][x], AirBlock):
 					drawBlock(world[y][x], x, y, camera)
+			else:
+				rect = BLOCK_RECT.copy()
+				rect.topleft = conversions.coordinate2Pixel(x, y, camera)
+				pg.draw.rect(surfaces.world, colours.BLACK, rect)
