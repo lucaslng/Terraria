@@ -59,6 +59,7 @@ class Model:
 		self.space.add(self.player, self.playerShape)
 		self.worldBody = pm.Body(body_type=pm.Body.STATIC)
 		self.space.add(self.worldBody)
+		self._generateBoundaryShapes()
 
 		self.blockFacingCoord: tuple[int, int] | None = None
 
@@ -370,8 +371,37 @@ class Model:
 				if not light_found:
 					self.lightmap[r][c] = 255
 	
-	def _generateWorldShapes(self):
-		'''Generate pymunk shapes using NumPy operations to identify solid blocks'''
+	def _generateBoundaryShapes(self) -> None:
+		'''generate pymunk shapes for the boundary of the world'''
+		self.space.add(
+			pm.Poly(self.worldBody, (
+				(-1, 0),
+				(-1, self.world.height),
+				(0, self.world.height),
+				(0, 0)
+			)),
+			pm.Poly(self.worldBody, (
+				(0, -1),
+				(0, 0),
+				(self.world.width, 0),
+				(self.world.width, -1)
+			)),
+			pm.Poly(self.worldBody, (
+				(self.world.width, 0),
+				(self.world.width, self.world.height),
+				(self.world.width + 1, self.world.height),
+				(self.world.width + 1, 0)
+			)),
+			pm.Poly(self.worldBody, (
+				(0, self.world.height),
+				(0, self.world.height + 1),
+				(self.world.width, self.world.height + 1),
+				(self.world.width, self.world.height)
+			)),
+		)
+
+	def _generateWorldShapes(self) -> None:
+		'''generate pymunk shapes using numpy to identify solid blocks'''
 		# Create mask for non-empty blocks
 		solid_mask = ~np.vectorize(lambda x: x.isEmpty)(self.world.array)
 		
