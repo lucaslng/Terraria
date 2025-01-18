@@ -46,6 +46,9 @@ class Model:
 		]
 		self.lights: list[tuple[Light, int, int]] = []
 		self.entities: list[Entity] = [] # list of the entities in the world except the player
+		self.entityCounter = {
+			Rabbit: 0,
+		}
 		
 		self.space = Space()
 		self.space.gravity = 0, 20 # earth's gravity is 9.81 m/s
@@ -82,13 +85,20 @@ class Model:
 		startTime = time.perf_counter()
 		self._generateWorld()
 		self._generateWorldShapes()
-		self._spawnEntities()
+		self._generateEntities()
 		print(f'World generation time: {round(time.perf_counter() - startTime, 2)} seconds')
-	
-	def _spawnEntities(self) -> None:
 		px, py = self.player.position
-		self.spawnEntity(Npc(px + 1, py, self.world))
-		self.spawnEntity(Rabbit(px - 2, py, self.world))
+		self.player.position = px, self.world.topy(px) - 1
+	
+	def _generateEntities(self) -> None:
+		px, py = self.player.position
+		self.spawnEntity(Npc(px + 1, self.world.topy(px + 1) - 1, self.world))
+		self.spawnEntity(Rabbit(px - 2, self.world.topy(px - 2) - 1, self.world))
+
+	def spawnEntitiesRandom(self) -> None:
+		if self.entityCounter[Rabbit] < self.world.width // 10:
+			x = random.randint(0, self.world.width - 1)
+			self.spawnEntity(Rabbit(x, self.world.topy(x) - 1, self.world))
 
 	def spawnEntity(self, entity: Entity) -> None:
 		'''Spawn a new entity into the game'''
@@ -97,6 +107,8 @@ class Model:
 		entity.shape.friction = entity.friction
 		self.space.add(entity, entity.shape)
 		self.entities.append(entity)
+		if type(entity) in self.entityCounter:
+			self.entityCounter[type(entity)] += 1
 	
 	def placeBlock(self, x: int, y: int):
 		'''place a block at coordinates (x, y)'''
