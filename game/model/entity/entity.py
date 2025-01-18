@@ -58,7 +58,7 @@ class Entity(HasPhysics):
 		if ceil(self.position.y) == self.world.height:
 			return True
 		if (self.position.y - self.height / 2) % 1 < 0.05:
-			return not (self.world[ceil(self.position.y)][floor(self.position.x)].isEmpty and self.world[ceil(self.position.y)][ceil(self.position.x)].isEmpty)
+			return not self.world[ceil(self.position.y)][floor(self.position.x)].isEmpty or not self.world[ceil(self.position.y)][ceil(self.position.x)].isEmpty
 		return False
 	
 	@property
