@@ -94,7 +94,7 @@ class Entity(HasPhysics):
     def update(self, goal: tuple[float, float]) -> None:
         '''Update entity state'''      
         if self.updateDistance is not None:
-            if (dist(self.position, goal) > self.updateDistance) if self.pathFindToPlayer else (dist(self.position, goal) < self.updateDistance):
+            if dist(self.position, goal) < self.updateDistance:
                 x, y = map(int, self.position)
                 if 0 <= x < self.world.width - 1 and 0 <= y < self.world.height - 1:
                     reachables = {(x, y)}

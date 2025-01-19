@@ -1,4 +1,5 @@
 from pygame import Rect, Surface
+from game.model.entity.entities.dog import Dog
 from game.model.entity.entities.npc import Npc
 from game.model.entity.entities.rabbit import Rabbit
 from game.model.entity.entity import Entity
@@ -9,7 +10,7 @@ import pygame as pg
 
 from game.view.wraptext import drawText
 from utils import colours
-from utils.constants import BLOCK_SIZE, font12
+from utils.constants import BLOCK_SIZE, FRAME, font12
 
 def drawNpc(npc: Npc, pos: tuple[int, int]) -> None:
 	textures: dict[str, Animation] = sprites["cat"]
@@ -41,6 +42,15 @@ def drawRabbit(rabbit: Rabbit, pos: tuple[int, int]) -> None:
 		texture = pg.transform.flip(texture, True, False)
 	surfaces.world.blit(texture, texture.get_rect(center=pos))
 
+def drawDog(dog: Dog, pos: tuple[int, int]) -> None:
+	texture: Animation = sprites["dog"]
+	
+	if -0.05 < dog.velocity.x < 0.05:
+		texture.drawFrame(surfaces.world, pos, 1, pos[0] > FRAME.centerx)
+	else:
+		texture.drawAnimated(surfaces.world, pos, pos[0] > FRAME.centerx)
+
+
 def drawEntities(entities: list[Entity], camera: Rect):
 	'''Draw entities'''
 	
@@ -50,3 +60,5 @@ def drawEntities(entities: list[Entity], camera: Rect):
 			drawNpc(entity, pos)
 		elif isinstance(entity, Rabbit):
 			drawRabbit(entity, pos)
+		elif isinstance(entity, Dog):
+			drawDog(entity, pos)

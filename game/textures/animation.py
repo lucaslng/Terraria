@@ -25,3 +25,4 @@ class Animation:
         if flipped:
             texture = pg.transform.flip(texture, True, False).convert_alpha()
         surface.blit(texture, texture.get_rect(center=center))
+        # pg.draw.rect(surface, (0, 0, 0), texture.get_rect(center=center), 1)

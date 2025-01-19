@@ -46,11 +46,10 @@ sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
         ),
     },
 	
-    "dog": {
-        "idk": Animation(
-            dogSheet.get(0, 0, 16, 16),
-        )
-    },
+    "dog": Animation(
+            dogSheet.get(30, 36, 195, 195, BLOCK_SIZE),
+            dogSheet.get(250, 36, 195, 195, BLOCK_SIZE),
+        ),
 	
     "rabbit": rabbitsSheet.get(0, 18, 100, 100),
     

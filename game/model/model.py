@@ -9,6 +9,7 @@ from typing import Optional, Type
 
 from game.model.blocks.diamondoreblock import DiamondOreBlock
 from game.model.blocks.goldoreblock import GoldOreBlock
+from game.model.entity.entities.dog import Dog
 from game.model.entity.entities.npc import Npc
 from game.model.entity.entities.rabbit import Rabbit
 from utils.constants import FIRST_MESSAGE, FPS, NPC_RARITY, RABBIT_RARITY, SEED, WORLD_HEIGHT, WORLD_WIDTH
@@ -99,6 +100,7 @@ class Model:
 	def _generateEntities(self) -> None:
 		px, py = self.player.position
 		self.spawnEntity(Npc(px + 1, self.world.topy(px + 1) - 1, self.world, FIRST_MESSAGE))
+		self.spawnEntity(Dog(px - 2, self.world.topy(px - 2) - 1, self.world))
 		for _ in range(self.world.width // RABBIT_RARITY):
 			x = random.randint(0, self.world.width - 1)
 			self.spawnEntity(Rabbit(x, self.world.topy(x) - 1, self.world))

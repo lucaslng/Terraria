@@ -1,6 +1,7 @@
 from math import dist, floor
 import pygame as pg
 from game.model.blocks.utils.inventoryblock import InventoryBlock
+from game.model.entity.entities.dog import Dog
 from game.model.entity.entities.rabbit import Rabbit
 from game.model.items.inventory.slot import Slot
 from game.model.entity.entities.npc import Npc
@@ -172,7 +173,7 @@ def game():
 					if model.entities:
 						model.entities.sort(key=lambda e: dist(e.position, model.player.position)) # sort by position to the player
 						if dist(model.entities[0].position, model.player.position) < 1.5:
-							if isinstance(model.entities[0], Rabbit):
+							if isinstance(model.entities[0], Rabbit) or isinstance(model.entities[0], Dog):
 								model.entities[0].interact(model.player.damage)
 								model.entities[0].apply_impulse_at_local_point((model.entities[0].position - model.player.position) * 40, (0, 0.5))
 								if not model.entities[0].isAlive:
