@@ -23,7 +23,7 @@ _messageGroups = (
 		"Meow",
 		"Meoww",
 		"Meowww",
-	)
+	),
 )
 
 class Npc(Entity):
@@ -31,7 +31,6 @@ class Npc(Entity):
 
 	def __init__(self, x: float, y: float, world: World, customMessage: tuple[str] | None=None):
 		super().__init__(x, y, 5, 1, 1, 20000, 4, 20, 10, 0.99, 18, world)
-		self.updateDistance = 10
 		self.npcColor: tuple[int, int, int] = tuple(np.random.choice(range(256), size=3))
 		if customMessage:
 			self.messages = customMessage
@@ -46,13 +45,11 @@ class Npc(Entity):
 	
 	@property
 	def isTalking(self) -> bool:
-		return pg.time.get_ticks() - self.interactTime <= 3000
+		return pg.time.get_ticks() - self.interactTime <= 3500
 	
 	def interact(self):
 		self.currentMessageIndex += 1
-		if not self.isTalking:
-			self.interactTime = pg.time.get_ticks()
-			print(self.currentMessage)
+		self.interactTime = pg.time.get_ticks() # extend window time
 	
 	def update(self, goal: tuple[float, float]) -> None:
 		super().update(goal)

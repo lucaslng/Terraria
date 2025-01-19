@@ -189,6 +189,8 @@ def game():
 						swapSlot(hoveredSlotData)
       
 				elif event.button == 3:
+					hoveredSlotData = getHoveredSlotSlot(inventories)
+					if hoveredSlotData:
 						handleStackSplit(hoveredSlotData)
                         
 			elif event.type == pg.MOUSEBUTTONUP:

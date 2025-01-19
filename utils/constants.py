@@ -33,5 +33,8 @@ NPC_RARITY = 30 # 1 npc every 20 blocks on avg
 FIRST_MESSAGE = (
 	"Welcome to TerraCraft!",
 	"Mine trees to get wood!",
-	"Use the crafting table to craft sticks and make a wooden pickaxe!",
+	"Use the crafting table to craft!",
+	"Craft planks with logs!",
+	"Craft sticks with 2 planks!",
+	"Craft a pickaxe with 2 sticks and 3 planks!"
 )
