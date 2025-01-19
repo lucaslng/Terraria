@@ -9,7 +9,7 @@ from typing import Optional, Type
 
 from game.model.entity.entities.npc import Npc
 from game.model.entity.entities.rabbit import Rabbit
-from utils.constants import FPS, SEED, WORLD_HEIGHT, WORLD_WIDTH
+from utils.constants import FIRST_MESSAGE, FPS, NPC_RARITY, RABBIT_RARITY, SEED, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
 from game.model.blocks.coaloreblock import CoalOreBlock
 from game.model.blocks.dirtblock import DirtBlock
@@ -93,11 +93,13 @@ class Model:
 	
 	def _generateEntities(self) -> None:
 		px, py = self.player.position
-		self.spawnEntity(Npc(px + 1, self.world.topy(px + 1) - 1, self.world))
-		self.spawnEntity(Rabbit(px - 2, self.world.topy(px - 2) - 1, self.world))
-		for _ in range(self.world.width // 10):
+		self.spawnEntity(Npc(px + 1, self.world.topy(px + 1) - 1, self.world, FIRST_MESSAGE))
+		for _ in range(self.world.width // RABBIT_RARITY):
 			x = random.randint(0, self.world.width - 1)
 			self.spawnEntity(Rabbit(x, self.world.topy(x) - 1, self.world))
+		for _ in range(self.world.width // NPC_RARITY):
+			x = random.randint(0, self.world.width - 1)
+			self.spawnEntity(Npc(x, self.world.topy(x) - 1, self.world))
 
 	def spawnEntitiesRandom(self) -> None:
 		for _ in range(self.world.width // 10 - self.entityCounter[Rabbit]):

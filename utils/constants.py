@@ -26,3 +26,12 @@ WORLD_HEIGHT = 100
 WORLD_WIDTH = 200    #default is 1000
 
 BIG = 2147483647
+
+RABBIT_RARITY = 10 # 1 rabbit every 10 blocks on avg
+NPC_RARITY = 30 # 1 npc every 20 blocks on avg
+
+FIRST_MESSAGE = (
+	"Welcome to TerraCraft!",
+	"Mine trees to get wood!",
+	"Use the crafting table to craft sticks and make a wooden pickaxe!",
+)
