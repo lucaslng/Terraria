@@ -15,7 +15,7 @@ from game.model.entity.entities.npc import Npc
 from game.model.entity.entities.rabbit import Rabbit
 from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.slot import Slot
-from utils.constants import FIRST_MESSAGE, FPS, NPC_RARITY, RABBIT_RARITY, WORLD_HEIGHT, WORLD_WIDTH
+from utils.constants import DOG_RARITY, FIRST_MESSAGE, FPS, NPC_RARITY, RABBIT_RARITY, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
 from game.model.blocks.coaloreblock import CoalOreBlock
 from game.model.blocks.dirtblock import DirtBlock
@@ -61,6 +61,7 @@ class Model:
 		self.entities: list[Entity] = [] # list of the entities in the world except the player
 		self.entityCounter: dict[Type[Entity], int] = {
 			Rabbit: 0,
+			Dog: 0,
 		}
 		self.lights: list[tuple[Light, int, int]] = []
 		self.space = Space()
@@ -112,13 +113,15 @@ class Model:
 	def _generateEntities(self) -> None:
 		px, py = self.player.position
 		self.spawnEntity(Npc(px + 1, self.world.topy(px + 1) - 1, self.world, FIRST_MESSAGE))
-		self.spawnEntity(Dog(px - 2, self.world.topy(px - 2) - 1, self.world))
 		for _ in range(self.world.width // RABBIT_RARITY):
 			x = random.randint(0, self.world.width - 1)
 			self.spawnEntity(Rabbit(x, self.world.topy(x) - 1, self.world))
 		for _ in range(self.world.width // NPC_RARITY):
 			x = random.randint(0, self.world.width - 1)
 			self.spawnEntity(Npc(x, self.world.topy(x) - 1, self.world))
+		for _ in range(self.world.width // DOG_RARITY):
+			x = random.randint(0, self.world.width - 1)
+			self.spawnEntity(Dog(x, self.world.topy(x) - 1, self.world))
 
 	def spawnEntitiesRandom(self) -> None:
 		for _ in range(self.world.width // 10 - self.entityCounter[Rabbit]):

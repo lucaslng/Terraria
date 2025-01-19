@@ -24,6 +24,7 @@ BIG = 2147483647
 
 RABBIT_RARITY = 10 # 1 rabbit every 10 blocks on avg
 NPC_RARITY = 30 # 1 npc every 20 blocks on avg
+DOG_RARITY = 50
 
 FIRST_MESSAGE = (
 	"Welcome to TerraCraft!",

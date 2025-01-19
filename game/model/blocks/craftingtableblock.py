@@ -30,10 +30,10 @@ class CraftingTableBlock(Block, InventoryBlock):
         
         craftsPerformed = outputCount // recipe.outputMultiplier
         
-        for row, row in enumerate(self.craftingInInventory.array):
-            for col, slot in enumerate(row):
+        for r, row in enumerate(self.craftingInInventory.array):
+            for c, slot in enumerate(row):
                 if slot.item:
-                    consumptionMap[(row, col)] = craftsPerformed
+                    consumptionMap[(r, c)] = craftsPerformed
         
         return consumptionMap
 
