@@ -167,7 +167,7 @@ def game():
 						if dist(model.entities[0].position, model.player.position) < 1.5:
 							if isinstance(model.entities[0], Rabbit):
 								model.entities[0].interact(model.player.damage)
-								model.entities[0].apply_impulse_at_local_point((model.entities[0].position - model.player.position) * 40)
+								model.entities[0].apply_impulse_at_local_point((model.entities[0].position - model.player.position) * 40, (0, 0.5))
 								if not model.entities[0].isAlive:
 									if model.entities[0].droppedItem:
 										model.player.inventory.addItem(model.entities[0].droppedItem)
