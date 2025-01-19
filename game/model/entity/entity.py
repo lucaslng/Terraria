@@ -63,8 +63,8 @@ class Entity(HasPhysics):
     def isOnGround(self) -> bool:
         if ceil(self.position.y) == self.world.height:
             return True
-        if (self.position.y - self.height / 2) % 1 < 0.05:
-            return not self.world[ceil(self.position.y)][floor(self.position.x)].isEmpty or not self.world[ceil(self.position.y)][ceil(self.position.x)].isEmpty
+        if (self.position.y - self.height / 2) % 1 < 0.05: # at the bottom of a possibly empty block
+            return (not self.world[ceil(self.position.y)][floor(self.position.x)].isEmpty) or (not self.world[ceil(self.position.y)][ceil(self.position.x)].isEmpty)
         return False
 
     @property

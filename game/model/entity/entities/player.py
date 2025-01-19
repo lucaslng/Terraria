@@ -64,7 +64,7 @@ class Player(Entity, Light):
         if not self.heldSlot.count:
             self.heldSlot.clear()
 
-    def update(self, goal: tuple[float, float] = None) -> None:
+    def update(self) -> None:
         '''Update player state including fall damage and light radius.'''
 
         current_velocity = self.velocity.y
