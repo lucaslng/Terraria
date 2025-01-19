@@ -66,19 +66,21 @@ class Model:
 	def update(self, steps=20) -> bool:
 		'''Update the model, should be called every frame. steps increases the accuracy of the physics simulation but sacrifices performance. returns whether the player is alive'''
 		self.player.update()
+  
 		if not self.player.isAlive:
 			return False
+
 		for i, entity in enumerate(self.entities):
 			entity.update(self.player.position)
 			if not entity.isAlive or not 0 < entity.position.x < self.world.width or not 0 < entity.position.y < self.world.height:
 				self.deleteEntity(i, entity)
-		# start = time.perf_counter()
+    
 		for i in range(steps):
 			self.space.step(1/FPS/steps) # step the simulation in 1/60 seconds
 			keepUpright(self.player)
 			for entity in self.entities:
 				keepUpright(entity)
-		# print(f'physics time: {round(time.perf_counter() - start, 3)}')
+    
 		return True
 
 	def start(self):

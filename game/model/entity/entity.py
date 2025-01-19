@@ -41,7 +41,7 @@ class Entity(HasPhysics):
         self.lastVerticalVelocity = 0
         self.fallDamageThreshold = 15  		#Minimum velocity to start taking damage
         self.fallDamageMultiplier = 0.8  	#Damage per unit of excess velocity
-        self.invulnerability_frames = 0
+        self.invulnerabilityFrames = 0
 
     def walkLeft(self) -> None:
         '''Walk the entity to the left using walkForce'''
@@ -70,22 +70,26 @@ class Entity(HasPhysics):
     @property
     def isAlive(self) -> bool:
         return self.health > 0
+    
+    def takeDamage(self, amount: int) -> None:
+        '''Apply damage to the entity'''
+        self.health = max(0, self.health - amount)
 
     def update(self, goal: tuple[float, float]) -> None:
         current_velocity = self.velocity.y
         if (
             self.lastVerticalVelocity > self.fallDamageThreshold
             and abs(current_velocity) < self.fallDamageThreshold * 0.5
-            and self.invulnerability_frames == 0
+            and self.invulnerabilityFrames == 0
         ):
             excess_velocity = self.lastVerticalVelocity - self.fallDamageThreshold
             damage = int(excess_velocity * self.fallDamageMultiplier)
             self.takeDamage(damage)
-            self.invulnerability_frames = 10
+            self.invulnerabilityFrames = 10
 
         self.lastVerticalVelocity = current_velocity
-        if self.invulnerability_frames > 0:
-            self.invulnerability_frames -= 1
+        if self.invulnerabilityFrames > 0:
+            self.invulnerabilityFrames -= 1
 
         #Pathfinding logic
         if dist(self.position, goal) > self.updateDistance:
@@ -105,7 +109,3 @@ class Entity(HasPhysics):
     def interact(self) -> None:
         '''Interact with the entity using the interact key'''
         pass
-
-    def takeDamage(self, amount: int) -> None:
-        '''Apply damage to the entity'''
-        self.health = max(0, self.health - amount)
