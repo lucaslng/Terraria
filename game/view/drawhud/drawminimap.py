@@ -50,7 +50,7 @@ def drawMinimap(world: World, lightmap: list[list[int]], lights: Light, camera: 
     startY = max(0, (centerY // BLOCK_SIZE) - (blocks_high // 2))
     endY = min(WORLD_HEIGHT, startY + blocks_high)
     
-    light_surface = pg.Surface(minimapSize, pg.SRCALPHA)
+    lightSurf = pg.Surface(minimapSize, pg.SRCALPHA)
     
     for y in range(startY, endY):
         for x in range(startX, endX):
@@ -69,7 +69,7 @@ def drawMinimap(world: World, lightmap: list[list[int]], lights: Light, camera: 
                     (minimapX, minimapY)
                 )
             
-            pg.draw.rect(light_surface, (0, 0, 0, lightmap[y][x]), (minimapX, minimapY, MINIMAP_SCALE, MINIMAP_SCALE))
+            pg.draw.rect(lightSurf, (0, 0, 0, lightmap[y][x]), (minimapX, minimapY, MINIMAP_SCALE, MINIMAP_SCALE))
     
     for light, lightx, lighty in lights:
         minimapLightX = (lightx - startX) * MINIMAP_SCALE
@@ -78,9 +78,9 @@ def drawMinimap(world: World, lightmap: list[list[int]], lights: Light, camera: 
         
         if (0 <= minimapX <= minimapSize[0] and 
             0 <= minimapY <= minimapSize[1]):
-            pg.draw.circle(light_surface, (255, 255, 255, 0), (minimapLightX, minimapLightY), scaledRadius)
+            pg.draw.circle(lightSurf, (255, 255, 255, 0), (minimapLightX, minimapLightY), scaledRadius)
     
-    surfaces.minimapLight.blit(light_surface, (0, 0))
+    surfaces.minimapLight.blit(lightSurf, (0, 0))
     
     #Draw border
     pg.draw.rect(surfaces.minimap, borderColour, pg.Rect(0, 0, minimapSize[0], minimapSize[1]), borderWidth)
