@@ -2,6 +2,9 @@ from game.model.entity.entity import Entity
 from game.model.world import World
 import numpy as np
 from random import choice
+import pygame as pg
+
+from utils.constants import BIG
 
 _messageGroups = (
 	(
@@ -35,14 +38,21 @@ class Npc(Entity):
 		else:
 			self.messages = choice(_messageGroups)
 		self.currentMessageIndex = 0
+		self.interactTime = -BIG
 	
 	@property
 	def currentMessage(self) -> str:
 		return self.messages[self.currentMessageIndex % len(self.messages)]
 	
+	@property
+	def isTalking(self) -> bool:
+		return pg.time.get_ticks() - self.interactTime <= 3000
+	
 	def interact(self):
-		print(self.currentMessage)
-		self.currentMessageIndex += 1
+		if not self.isTalking:
+			self.interactTime = pg.time.get_ticks()
+			print(self.currentMessage)
+			self.currentMessageIndex += 1
 	
 	def update(self, goal: tuple[float, float]) -> None:
 		pass

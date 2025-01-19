@@ -38,8 +38,9 @@ def draw(model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int
 		(surfaces.world, (0, 0)),
 		(surfaces.blockBreak, (0, 0)),
 		(surfaces.sunlight, (0, 0)),
+		(surfaces.dialogue, (0, 0)),
 		(surfaces.hud, (0, 0)),
-  		(fpsSurf, (WIDTH - 300, 20)),
+  	(fpsSurf, (WIDTH - 300, 20)),
 		(surfaces.minimap, (WIDTH - 220, 20)),
 		(surfaces.minimapLight, (WIDTH - 220, 20)),
 	))

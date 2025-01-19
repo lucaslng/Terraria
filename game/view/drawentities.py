@@ -7,6 +7,7 @@ from game.textures.sprites import sprites
 from game.view import conversions, surfaces
 import pygame as pg
 
+from utils import colours
 from utils.constants import BLOCK_SIZE
 
 def drawNpc(npc: Npc, pos: tuple[int, int]) -> None:
@@ -22,10 +23,13 @@ def drawNpc(npc: Npc, pos: tuple[int, int]) -> None:
 			textures["jump"].drawFrame(surfaces.world, pos, 4, flipped)
 		else:
 			textures["walk"].drawAnimated(surfaces.world, pos, flipped)
-	cx, cy = pos
-	cx += 3
-	cy += 5
-	pg.draw.circle(surfaces.world, npc.npcColor, (cx, cy), 3)
+	x, y = pos
+	pg.draw.circle(surfaces.world, npc.npcColor, (x + 3, y + 5), 3)
+
+	if npc.isTalking:
+		dialogueRect = Rect(x - 0.5 * BLOCK_SIZE, y - 1.8 * BLOCK_SIZE, BLOCK_SIZE * 2.8, BLOCK_SIZE * 1.4)
+		pg.draw.rect(surfaces.dialogue, (240, 240, 240, 210), dialogueRect, border_radius=4)
+		pg.draw.rect(surfaces.dialogue, (0, 0, 0), dialogueRect, width=1, border_radius=4)
 
 def drawRabbit(rabbit: Rabbit, pos: tuple[int, int]) -> None:
 	texture: Surface = sprites["rabbit"]
