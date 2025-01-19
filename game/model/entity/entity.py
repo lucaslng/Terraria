@@ -39,9 +39,10 @@ class Entity(HasPhysics):
         self.droppedItem: Item | None = None
 
         self.lastVerticalVelocity = 0
-        self.fallDamageThreshold = 15  		#Minimum velocity to start taking damage
-        self.fallDamageMultiplier = 0.8  	#Damage per unit of excess velocity
+        self.fallDamageThreshold = 15  		    #Minimum velocity to start taking damage
+        self.fallDamageMultiplier = 0.8  	    #Damage per unit of excess velocity
         self.invulnerabilityFrames = 0
+        self.invulnerabilityDuration = 10       #How long entity stays invulnerable after taking damage
 
     def walkLeft(self) -> None:
         '''Walk the entity to the left using walkForce'''
@@ -72,39 +73,44 @@ class Entity(HasPhysics):
         return self.health > 0
     
     def takeDamage(self, amount: int) -> None:
-        '''Apply damage to the entity'''
-        self.health = max(0, self.health - amount)
-
-    def update(self, goal: tuple[float, float]) -> None:
-        current_velocity = self.velocity.y
-        if (
-            self.lastVerticalVelocity > self.fallDamageThreshold
-            and abs(current_velocity) < self.fallDamageThreshold * 0.5
-            and self.invulnerabilityFrames == 0
-        ):
-            excess_velocity = self.lastVerticalVelocity - self.fallDamageThreshold
-            damage = int(excess_velocity * self.fallDamageMultiplier)
+        '''Damage entity if not currently invulnerable'''
+        
+        if self.invulnerabilityFrames == 0:
+            self.health = max(0, self.health - amount)
+            self.invulnerabilityFrames = self.invulnerabilityDuration
+        
+    def updateFallDamage(self) -> None:
+        '''Handle fall damage logic'''
+        currentVelo = self.velocity.y
+        if (self.lastVerticalVelocity > self.fallDamageThreshold and abs(currentVelo) < self.fallDamageThreshold * 0.5):
+            excessVelo = self.lastVerticalVelocity - self.fallDamageThreshold
+            damage = int(excessVelo * self.fallDamageMultiplier)
             self.takeDamage(damage)
-            self.invulnerabilityFrames = 10
 
-        self.lastVerticalVelocity = current_velocity
+        self.lastVerticalVelocity = currentVelo
+        
         if self.invulnerabilityFrames > 0:
             self.invulnerabilityFrames -= 1
 
-        #Pathfinding logic
-        if dist(self.position, goal) > self.updateDistance:
-            x, y = map(int, self.position)
-            reachables = {(x, y)}
-            if self.world[y][x - 1].isEmpty:
-                reachables.add((x - 1, y))
-            if self.world[y][x + 1].isEmpty:
-                reachables.add((x + 1, y))
-            best = min(reachables, key=lambda p: dist(p, goal)) if self.pathFindToPlayer else max(reachables, key=lambda p: dist(p, goal))
-            if best != (x, y):
-                if best[0] < x:
-                    self.walkLeft()
-                else:
-                    self.walkRight()
+    def update(self, goal: tuple[float, float]) -> None:
+        '''Update entity state'''
+        self.updateFallDamage()
+        
+        # Only do pathfinding if updateDistance is not None
+        if self.updateDistance is not None:
+            if dist(self.position, goal) > self.updateDistance:
+                x, y = map(int, self.position)
+                reachables = {(x, y)}
+                if self.world[y][x - 1].isEmpty:
+                    reachables.add((x - 1, y))
+                if self.world[y][x + 1].isEmpty:
+                    reachables.add((x + 1, y))
+                best = min(reachables, key=lambda p: dist(p, goal)) if self.pathFindToPlayer else max(reachables, key=lambda p: dist(p, goal))
+                if best != (x, y):
+                    if best[0] < x:
+                        self.walkLeft()
+                    else:
+                        self.walkRight()
 
     def interact(self) -> None:
         '''Interact with the entity using the interact key'''
