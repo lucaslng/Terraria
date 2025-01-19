@@ -104,10 +104,15 @@ class Entity(HasPhysics):
                         reachables.add((x + 1, y))
                     best = min(reachables, key=lambda p: dist(p, goal)) if self.pathFindToPlayer else max(reachables, key=lambda p: dist(p, goal))
                     if best != (x, y):
-                        if best[0] < x:
+                        bestx, besty = best
+                        if bestx < x:
+                            if 0 <= bestx - 1 and (not self.world[besty][bestx - 2].isEmpty or not self.world[besty][bestx - 1].isEmpty):
+                                self.jump()
                             self.walkLeft()
                         else:
                             self.walkRight()
+                            if bestx + 1 < self.world.width and (not self.world[besty][bestx - 2].isEmpty or not self.world[besty][bestx - 1].isEmpty):
+                                self.jump()
 
     def interact(self) -> None:
         '''Interact with the entity using the interact key'''
