@@ -34,7 +34,7 @@ def drawNpc(npc: Npc, pos: tuple[int, int]) -> None:
 def drawRabbit(rabbit: Rabbit, pos: tuple[int, int]) -> None:
 	texture: Surface = sprites["rabbit"]
 	texture = pg.transform.scale(texture, (rabbit.width * BLOCK_SIZE, rabbit.height * BLOCK_SIZE))
-	if rabbit.velocity.x < 0:
+	if rabbit.velocity.x < 0.05:
 		texture = pg.transform.flip(texture, True, False)
 	surfaces.world.blit(texture, texture.get_rect(center=pos))
 
