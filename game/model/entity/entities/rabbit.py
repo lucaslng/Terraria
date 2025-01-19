@@ -13,7 +13,6 @@ class Rabbit(Entity):
 		self.droppedItem = RabbitMeat()
 	
 	def interact(self, damage: int) -> None:
-		print("attacked rabbit")
 		self.isScared = True
 		self.health -= damage
 	
