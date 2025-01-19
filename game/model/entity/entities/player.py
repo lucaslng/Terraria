@@ -19,9 +19,6 @@ class Player(Entity, Light):
     
     def __init__(self, x: float, y: float, world: World):
         super().__init__(x, y, 4, 1, 1, 20000, 7, 60, 20, 0.99, 18, world)
-
-        self.updateDistance = None
-        self.pathFindToPlayer = False
         
         #Fall damage
         self.lastVerticalVelo = 0

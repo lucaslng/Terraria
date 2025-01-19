@@ -34,7 +34,7 @@ class Entity(HasPhysics):
         self.health = maxHealth
         self.world = world
         self.minyvelo = 100
-        self.updateDistance = 1
+        self.updateDistance: int | None = None
         self.pathFindToPlayer = True
         self.droppedItem: Item | None = None
 
@@ -98,7 +98,7 @@ class Entity(HasPhysics):
         
         #Only do pathfinding if updateDistance is not None
         if self.updateDistance is not None:
-            if dist(self.position, goal) > self.updateDistance:
+            if (dist(self.position, goal) > self.updateDistance) if self.pathFindToPlayer else (dist(self.position, goal) < self.updateDistance):
                 x, y = map(int, self.position)
                 reachables = {(x, y)}
                 if self.world[y][x - 1].isEmpty:
