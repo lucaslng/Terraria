@@ -17,8 +17,8 @@ def drawText(surface: Surface, text: str, rect: Rect, font: Font, lineSpacing: i
 		while font.size(text[:i])[0] < rect.width and i < len(text): # determine characters in this line
 			i += 1
 		
-		# if i < len(text):
-		# 	i = text.rfind(" ", 0, i) + i # wrap to the last word (find the last space)
+		if i < len(text):
+			i = text.rfind(" ", 0, i) + 1 # wrap to the last word (find the last space)
 		
 		image = font.render(text[:i], True, colour)
 		surface.blit(image, (rect.left, y))
