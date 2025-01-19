@@ -7,8 +7,9 @@ from game.textures.sprites import sprites
 from game.view import conversions, surfaces
 import pygame as pg
 
+from game.view.wraptext import drawText
 from utils import colours
-from utils.constants import BLOCK_SIZE
+from utils.constants import BLOCK_SIZE, font12
 
 def drawNpc(npc: Npc, pos: tuple[int, int]) -> None:
 	textures: dict[str, Animation] = sprites["cat"]
@@ -30,6 +31,8 @@ def drawNpc(npc: Npc, pos: tuple[int, int]) -> None:
 		dialogueRect = Rect(x - 0.5 * BLOCK_SIZE, y - 1.8 * BLOCK_SIZE, BLOCK_SIZE * 2.8, BLOCK_SIZE * 1.4)
 		pg.draw.rect(surfaces.dialogue, (240, 240, 240, 210), dialogueRect, border_radius=4)
 		pg.draw.rect(surfaces.dialogue, (0, 0, 0), dialogueRect, width=1, border_radius=4)
+		textRect = dialogueRect.scale_by(0.9, 0.9)
+		drawText(surfaces.dialogue, npc.currentMessage, textRect, font12)
 
 def drawRabbit(rabbit: Rabbit, pos: tuple[int, int]) -> None:
 	texture: Surface = sprites["rabbit"]
