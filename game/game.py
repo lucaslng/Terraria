@@ -204,8 +204,8 @@ def game():
 					model.world[y][x].update()
 
 		if not model.update():
-			print("player died")
 			return Screens.MENU
+
 		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE		
 		draw(model, camera, inventories)
 		updateScreen()
