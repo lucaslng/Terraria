@@ -13,6 +13,8 @@ class Blocks(Enum):
 	Leaves = auto()
 	CoalOre = auto()
 	IronOre = auto()
+	GoldOre = auto()
+	DiamondOre = auto()
 	CraftingTable = auto()
 	Furnace = auto()
 	Torch = auto()

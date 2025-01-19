@@ -2,7 +2,9 @@ from collections import defaultdict
 from game.model.blocks.cobblestoneblock import CobblestoneBlock
 from game.model.blocks.craftingtableblock import CraftingTableBlock
 from game.model.blocks.dirtblock import DirtBlock
+from game.model.blocks.goldoreblock import GoldOreBlock
 from game.model.blocks.grassblock import GrassBlock
+from game.model.blocks.ironoreblock import IronOreBlock
 from game.model.blocks.oaklogblock import LogBlock
 from game.model.blocks.planksblock import PlanksBlock
 from game.model.blocks.stoneblock import StoneBlock
@@ -20,3 +22,6 @@ item2Block[Items.CraftingTable] = CraftingTableBlock
 item2Block[Items.Torch] = TorchBlock
 item2Block[Items.Log] = LogBlock
 item2Block[Items.Planks] = PlanksBlock
+
+item2Block[Items.IronOre] = IronOreBlock
+item2Block[Items.GoldOre] = GoldOreBlock

@@ -7,3 +7,5 @@ class Noises(Enum):
 	CAVES = 3
 	COAL = 4
 	IRON = 5
+	GOLD = 6
+	DIAMOND = 7

@@ -3,7 +3,9 @@ from game.model.blocks.utils.blocksenum import Blocks
 from game.model.items.cobblestoneitem import CobblestoneItem
 from game.model.items.craftingtableitem import CraftingTableItem
 from game.model.items.dirtitem import DirtItem
+from game.model.items.ingots import CoalItem, DiamondItem
 from game.model.items.logitem import LogItem
+from game.model.items.ores import GoldOreItem, IronOreItem
 from game.model.items.planksitem import PlanksItem
 from game.model.items.torchitem import TorchItem
 
@@ -18,3 +20,8 @@ block2Item[Blocks.CraftingTable] = CraftingTableItem
 block2Item[Blocks.Torch] = TorchItem
 block2Item[Blocks.Log] = LogItem
 block2Item[Blocks.Planks] = PlanksItem
+
+block2Item[Blocks.CoalOre] = CoalItem
+block2Item[Blocks.IronOre] = IronOreItem
+block2Item[Blocks.GoldOre] = GoldOreItem
+block2Item[Blocks.DiamondOre] = DiamondItem

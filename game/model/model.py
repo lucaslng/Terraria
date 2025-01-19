@@ -7,6 +7,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
 from typing import Optional, Type
 
+from game.model.blocks.diamondoreblock import DiamondOreBlock
+from game.model.blocks.goldoreblock import GoldOreBlock
 from game.model.entity.entities.npc import Npc
 from game.model.entity.entities.rabbit import Rabbit
 from utils.constants import FIRST_MESSAGE, FPS, NPC_RARITY, RABBIT_RARITY, SEED, WORLD_HEIGHT, WORLD_WIDTH
@@ -180,7 +182,7 @@ class Model:
 		self._placeTerrain(noises[Noises.GRASSHEIGHT], noises[Noises.STONEHEIGHT], noises[Noises.CAVES])
 		print(f"Terrain time: {round(time.perf_counter() - start, 4)} seconds")
 		
-		self._placeOres(noises[Noises.COAL], noises[Noises.IRON])
+		self._placeOres(noises[Noises.COAL], noises[Noises.IRON], noises[Noises.GOLD], noises[Noises.DIAMOND])
 		
 		start = time.perf_counter()
 		self.generateLight()
@@ -244,7 +246,7 @@ class Model:
 		self.world[y - height - 1][x + 1] = LeavesBlock()
 		self.world[y + 1][x] = DirtBlock()
 
-	def _placeOres(self, coalNoise: SimplexNoise, ironNoise: SimplexNoise):
+	def _placeOres(self, coalNoise: SimplexNoise, ironNoise: SimplexNoise, goldNoise: SimplexNoise, diamondNoise: SimplexNoise):
 		'''Place ores'''
 		for y in range(self.world.height):
 			for x in range(self.world.width):
@@ -253,6 +255,11 @@ class Model:
 						self.world[y][x] = CoalOreBlock()
 					elif ironNoise[y][x] > 0.38:
 						self.world[y][x] = IronOreBlock()
+					elif goldNoise[y][x] > 0.42:
+						self.world[y][x] = GoldOreBlock()
+					elif diamondNoise[y][x] > 0.46:
+						self.world[y][x] = DiamondOreBlock()
+					
 
 	def _generateAllNoise(self, seed: int | None = None) -> dict[Noises, SimplexNoise]:
 		totalStartTime = time.perf_counter()		
@@ -274,6 +281,8 @@ class Model:
 			(Noises.CAVES, 9, 2),
 			(Noises.COAL, 3.9, 2),
 			(Noises.IRON, 3.2, 2),
+			(Noises.GOLD, 2.5, 2),
+			(Noises.DIAMOND, 1.2, 2),
 		)
 
 		with ThreadPoolExecutor() as executor:

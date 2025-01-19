@@ -57,8 +57,15 @@ sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
     #Ores
     Blocks.CoalOre: everythingSheet.get(352, 0, 16, 16, BLOCK_SIZE),
     Blocks.IronOre: everythingSheet.get(368, 0, 16, 16, BLOCK_SIZE),
-    "goldOre": everythingSheet.get(384, 0, 16, 16),
-    "diamondOre": everythingSheet.get(400, 0, 16, 16),
+	Items.IronOre: everythingSheet.get(368, 0, 16, 16),
+    Blocks.GoldOre: everythingSheet.get(384, 0, 16, 16, BLOCK_SIZE),
+	Items.GoldOre: everythingSheet.get(384, 0, 16, 16),
+    Blocks.DiamondOre: everythingSheet.get(400, 0, 16, 16, BLOCK_SIZE),
+	#Ingots
+    Items.Coal: everythingSheet.get(416, 0, 16, 16),
+    Items.IronIngot: everythingSheet.get(432, 0, 16, 16),
+	Items.GoldIngot: everythingSheet.get(448, 0, 16, 16),
+	Items.Diamond: everythingSheet.get(464, 0, 16, 16),
     
     #---BLOCKS---
 	
@@ -94,9 +101,6 @@ sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
     "furnaceOn": everythingSheet.get(638, 0, 16, 16, BLOCK_SIZE),
     Items.Furnace: everythingSheet.get(622, 0, 16, 16),
 	Items.RabbitMeat: everythingSheet.get(654, 0, 16, 16),
-    
-    #---ITEMS---
-    "coal": everythingSheet.get(416, 0, 16, 16, 15),
   
     #---TOOLS---
     #Wooden

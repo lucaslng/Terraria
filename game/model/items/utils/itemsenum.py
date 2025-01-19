@@ -6,6 +6,14 @@ class Items(Enum):
 	Dirt = "Dirt"
 	Grass = "Grass"
 	Stone = "Stone"
+
+	Coal = "Coal"
+	IronOre = "Iron Ore"
+	IronIngot = "Iron Ingot"
+	GoldOre = "Gold Ore"
+	GoldIngot = "Gold Ingot"
+	Diamond = "Diamond"
+
 	Cobblestone = "Cobblestone"
 	CraftingTable = "Crafting Table"
 	Furnace = "Furnace"
