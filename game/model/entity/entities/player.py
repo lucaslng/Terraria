@@ -39,7 +39,23 @@ class Player(Entity, Light):
 		'''returns the held slot'''
 		return self.hotbar[self._heldSlotIndex]
 	
+	@property
+	def damage(self) -> int:
+		'''returns the damage that the player does currently'''
+		if self.heldSlot.item:
+			return self.heldSlot.item.damage
+		else:
+			return 1
+	
+	def consume(self) -> None:
+		'''eat the item in the held slot'''
+		self.health = min(self.maxHealth, self.health + self.heldSlot.item.healing)
+		self.heldSlot.count -= 1
+		if not self.heldSlot.count:
+			self.heldSlot.clear()
+
 	def update(self) -> None:
+		# print(self.position)
 		if self.heldSlot.item and isinstance(self.heldSlot.item, Light):
 			self.lightRadius = self.heldSlot.item.lightRadius
 		else:

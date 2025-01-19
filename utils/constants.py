@@ -12,7 +12,6 @@ SURF = pg.display.set_mode((WIDTH, HEIGHT))
 FRAME = SURF.get_rect()
 
 clock = pg.time.Clock()
-pg.time.set_timer(101, 500)
 pg.display.set_caption("Terraria")
 
 SEED = time.time()

@@ -5,9 +5,10 @@ import time
 from pymunk import Space
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
-from typing import Optional
+from typing import Optional, Type
 
 from game.model.entity.entities.npc import Npc
+from game.model.entity.entities.rabbit import Rabbit
 from utils.constants import FPS, SEED, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
 from game.model.blocks.coaloreblock import CoalOreBlock
@@ -45,6 +46,9 @@ class Model:
 		]
 		self.lights: list[tuple[Light, int, int]] = []
 		self.entities: list[Entity] = [] # list of the entities in the world except the player
+		self.entityCounter: dict[Type[Entity], int] = {
+			Rabbit: 0,
+		}
 		
 		self.space = Space()
 		self.space.gravity = 0, 20 # earth's gravity is 9.81 m/s
@@ -55,14 +59,19 @@ class Model:
 		self.space.add(self.player, self.playerShape)
 		self.worldBody = pm.Body(body_type=pm.Body.STATIC)
 		self.space.add(self.worldBody)
+		self._generateBoundaryShapes()
 
 		self.blockFacingCoord: tuple[int, int] | None = None
 
-	def update(self, steps=20):
-		'''Update the model, should be called every frame. steps increases the accuracy of the physics simulation but sacrifices performance'''
+	def update(self, steps=20) -> bool:
+		'''Update the model, should be called every frame. steps increases the accuracy of the physics simulation but sacrifices performance. returns whether the player is alive'''
 		self.player.update()
-		for entity in self.entities:
+		if not self.player.isAlive:
+			return False
+		for i, entity in enumerate(self.entities):
 			entity.update(self.player.position)
+			if not entity.isAlive or not 0 < entity.position.x < self.world.width or not 0 < entity.position.y < self.world.height:
+				self.deleteEntity(i, entity)
 		# start = time.perf_counter()
 		for i in range(steps):
 			self.space.step(1/FPS/steps) # step the simulation in 1/60 seconds
@@ -70,22 +79,46 @@ class Model:
 			for entity in self.entities:
 				keepUpright(entity)
 		# print(f'physics time: {round(time.perf_counter() - start, 3)}')
+		return True
 
 	def start(self):
 		'''Start game'''
 		startTime = time.perf_counter()
 		self._generateWorld()
 		self._generateWorldShapes()
+		self._generateEntities()
 		print(f'World generation time: {round(time.perf_counter() - startTime, 2)} seconds')
-		self.spawnEntity(Npc(*self.player.position, self.world))
+		px, py = self.player.position
+		self.player.position = px, self.world.topy(px) - 1
 	
-	def spawnEntity(self, entity: Entity):
+	def _generateEntities(self) -> None:
+		px, py = self.player.position
+		self.spawnEntity(Npc(px + 1, self.world.topy(px + 1) - 1, self.world))
+		self.spawnEntity(Rabbit(px - 2, self.world.topy(px - 2) - 1, self.world))
+		for _ in range(self.world.width // 10):
+			x = random.randint(0, self.world.width - 1)
+			self.spawnEntity(Rabbit(x, self.world.topy(x) - 1, self.world))
+
+	def spawnEntitiesRandom(self) -> None:
+		for _ in range(self.world.width // 10 - self.entityCounter[Rabbit]):
+			x = random.randint(0, self.world.width - 1)
+			self.spawnEntity(Rabbit(x, self.world.topy(x) - 1, self.world))
+
+	def spawnEntity(self, entity: Entity) -> None:
 		'''Spawn a new entity into the game'''
+		entity.shape = pm.Poly.create_box(entity, (entity.width, entity.height))
+		entity.shape.mass = entity.mass
+		entity.shape.friction = entity.friction
+		self.space.add(entity, entity.shape)
 		self.entities.append(entity)
-		entityShape = pm.Poly.create_box(entity, (entity.width, entity.height))
-		entityShape.mass = entity.mass
-		entityShape.friction = entity.friction
-		self.space.add(entity, entityShape)
+		if type(entity) in self.entityCounter:
+			self.entityCounter[type(entity)] += 1
+	
+	def deleteEntity(self, i: int, entity: Entity) -> None:
+		if type(entity) in self.entityCounter:
+			self.entityCounter[type(entity)] -= 1
+		self.space.remove(entity, entity.shape)
+		del self.entities[i]
 	
 	def placeBlock(self, x: int, y: int):
 		'''place a block at coordinates (x, y)'''
@@ -93,7 +126,7 @@ class Model:
 			if self.player.heldSlot.item and isinstance(self.player.heldSlot.item, Placeable):
 				self.player.heldSlot.count -= 1
 				self.world[y][x] = self.player.heldSlot.item.getBlock()()
-				if self.player.heldSlot.count == 0:
+				if not self.player.heldSlot.count:
 					self.player.heldSlot.clear()
 				if isinstance(self.world[y][x], Light):
 					self.lights.append((self.world[y][x], x, y))
@@ -126,7 +159,6 @@ class Model:
 				if isinstance(self.world[y][x], InventoryBlock):
 					inventoryTypes = [inventoryType for _, inventoryType in self.world[y][x].inventories]
 
-				print(len(self.space.shapes))
 				self.space.remove(self.world[y][x].shape)
 				if isinstance(self.world[y][x], Light):
 					self.lights.remove(self.world[y][x])
@@ -223,13 +255,13 @@ class Model:
 
 		def generateNoise(noiseType: Noises, scale: float, dimension: int, width: int = WORLD_WIDTH, 
 						height: int = WORLD_HEIGHT, seed: int = SEED) -> tuple[Noises, SimplexNoise, float]:
-			start_time = time.perf_counter()
+			startTime = time.perf_counter()
 			
 			noise = SimplexNoise(scale=scale, dimension=dimension, width=width, height=height, seed=seed)
 			
 			# Calculate the time taken for this noise generation
-			generation_time = time.perf_counter() - start_time
-			return noiseType, noise, generation_time
+			generationTime = time.perf_counter() - startTime
+			return noiseType, noise, generationTime
 
 		noiseParameters = (
 			(Noises.GRASSHEIGHT, 19, 1),
@@ -245,23 +277,23 @@ class Model:
 			
 
 			noises = {}
-			timing_data = {}
+			timingData = {}
 			
 			for future in as_completed(futures):
-				noise_type, noise_obj, generation_time = future.result()
-				noises[noise_type] = noise_obj
-				timing_data[noise_type] = generation_time
+				noiseType, noiseObj, generationTime = future.result()
+				noises[noiseType] = noiseObj
+				timingData[noiseType] = generationTime
 		
-		total_time = time.perf_counter() - totalStartTime
+		totalTime = time.perf_counter() - totalStartTime
 		
 		#Print timing information
 		print("\nNoise Generation Timing:")
 		print(f"{'Noise Type':<15} | {'Time (seconds)':<10}")
 		print("-" * 30)
-		for noise_type, time_taken in timing_data.items():
-			print(f"{noise_type.name:<15} | {time_taken:.4f}s")
+		for noiseType, timeTaken in timingData.items():
+			print(f"{noiseType.name:<15} | {timeTaken:.4f}s")
 		print("-" * 30)
-		print(f"{'Total':<15} | {total_time:.4f}s\n")
+		print(f"{'Total':<15} | {totalTime:.4f}s\n")
 
 		return noises
  
@@ -272,21 +304,17 @@ class Model:
 		stopr = min(self.world.height, (self.world.height if originr is None else originr + 7))
 		stopc = min(self.world.width, (self.world.width if originc is None else originc + 7))
 		
-		# Pre-calculate world dimensions for boundary checks
-		world_width = self.world.width
-		world_height = self.world.height
-		
 		# Direction vectors for neighbor calculation
 		DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 		
-		def is_dark(x: int, y: int) -> bool:
+		def isDark(x: int, y: int) -> bool:
 			"""Check if a block position is considered dark (both front and back are empty)."""
 			return self.world[y][x].isEmpty and self.world.back[y][x].isEmpty
 
 		# Initialize lightmap if not already created
 		if not hasattr(self, 'lightmap'):
-			self.lightmap = [[255 for _ in range(world_width)] 
-							for _ in range(world_height)]
+			self.lightmap = [[255 for _ in range(self.world.width)] 
+							for _ in range(self.world.height)]
 		
 		# Reusable queue and visited set to reduce memory allocations
 		bfs = Queue()
@@ -306,7 +334,7 @@ class Model:
 				visited.add((c, r))
 				
 				level = 0
-				light_found = False
+				lightFound = False
 				
 				# Continue BFS until we find light or reach max level
 				while bfs.size() > 0 and level <= 6:
@@ -321,34 +349,63 @@ class Model:
 					x, y = cur
 					
 					# Check if current block is dark
-					if is_dark(x, y):
+					if isDark(x, y):
 						self.lightmap[r][c] = max(0, (level - 1) * 51)
-						light_found = True
+						lightFound = True
 						break
 					
 					# Add unvisited neighbors within bounds
 					for dx, dy in DIRECTIONS:
 						nx, ny = x + dx, y + dy
-						if (0 <= nx < world_width and 
-							0 <= ny < world_height and 
+						if (0 <= nx < self.world.width and 
+							0 <= ny < self.world.height and 
 							(nx, ny) not in visited):
 							visited.add((nx, ny))
 							bfs.add((nx, ny))
 				
 				# If no dark blocks found in range, set to full brightness
-				if not light_found:
+				if not lightFound:
 					self.lightmap[r][c] = 255
 	
-	def _generateWorldShapes(self):
-		'''Generate pymunk shapes using NumPy operations to identify solid blocks'''
+	def _generateBoundaryShapes(self) -> None:
+		'''generate pymunk shapes for the boundary of the world'''
+		self.space.add(
+			pm.Poly(self.worldBody, (
+				(-1, 0),
+				(-1, self.world.height),
+				(0, self.world.height),
+				(0, 0)
+			)),
+			pm.Poly(self.worldBody, (
+				(0, -1),
+				(0, 0),
+				(self.world.width, 0),
+				(self.world.width, -1)
+			)),
+			pm.Poly(self.worldBody, (
+				(self.world.width, 0),
+				(self.world.width, self.world.height),
+				(self.world.width + 1, self.world.height),
+				(self.world.width + 1, 0)
+			)),
+			pm.Poly(self.worldBody, (
+				(0, self.world.height),
+				(0, self.world.height + 1),
+				(self.world.width, self.world.height + 1),
+				(self.world.width, self.world.height)
+			)),
+		)
+
+	def _generateWorldShapes(self) -> None:
+		'''generate pymunk shapes using numpy to identify solid blocks'''
 		# Create mask for non-empty blocks
-		solid_mask = ~np.vectorize(lambda x: x.isEmpty)(self.world.array)
+		solidMask = ~np.vectorize(lambda x: x.isEmpty)(self.world.array)
 		
 		# Get coordinates of solid blocks
-		solid_coords = np.where(solid_mask)
+		solidCoords = np.where(solidMask)
 		
 		# Generate shapes for all solid blocks at once
-		for y, x in zip(*solid_coords):
+		for y, x in zip(*solidCoords):
 			vertices = (
 				(x, y),
 				(x, y + 1),

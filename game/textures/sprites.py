@@ -4,9 +4,9 @@ from utils.constants import BLOCK_SIZE
 from game.model.blocks.utils.blocksenum import Blocks
 from game.model.items.utils.itemsenum import Items
 from game.textures.animation import Animation
-from game.textures.spritesheets import catSheet, everythingSheet, weirdBlocksSheet
+from game.textures.spritesheets import catSheet, rabbitsSheet, everythingSheet, weirdBlocksSheet
 
-sprites = {
+sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
     "cat": {
         "walk": Animation(
         catSheet.get(9, 144, 16, 16, BLOCK_SIZE),
@@ -44,6 +44,8 @@ sprites = {
         catSheet.get(104, 16, 16, 16, BLOCK_SIZE),
         ),
     },
+	
+    "rabbit": rabbitsSheet.get(0, 18, 100, 100),
     
     #Ores
     Blocks.CoalOre: everythingSheet.get(352, 0, 16, 16, BLOCK_SIZE),
@@ -74,7 +76,7 @@ sprites = {
     Blocks.Log: everythingSheet.get(560, 0, 16, 16, BLOCK_SIZE),
 	Items.Log: everythingSheet.get(560, 0, 16, 16),
     Blocks.Leaves: weirdBlocksSheet.get(30, 5, 360, 360, BLOCK_SIZE),
-    Blocks.CraftingTable: everythingSheet.get(592, 0, 14, 16, BLOCK_SIZE, BLOCK_SIZE),
+    Blocks.CraftingTable: everythingSheet.get(592, 0, 14, 16, BLOCK_SIZE),
 	Items.CraftingTable: everythingSheet.get(592, 0, 14, 16),
 	Items.Sticks: everythingSheet.get(606, 0, 16, 16),
 
@@ -84,6 +86,7 @@ sprites = {
     Blocks.Furnace: everythingSheet.get(622, 0, 16, 16, BLOCK_SIZE),
     "furnaceOn": everythingSheet.get(638, 0, 16, 16, BLOCK_SIZE),
     Items.Furnace: everythingSheet.get(622, 0, 16, 16),
+	Items.RabbitMeat: everythingSheet.get(654, 0, 16, 16),
     
     #---ITEMS---
     "coal": everythingSheet.get(416, 0, 16, 16, 15),
@@ -98,26 +101,26 @@ sprites = {
     #Stone
     Items.StoneAxe: everythingSheet.get(64, 0, 16, 16),
     Items.StonePickaxe: everythingSheet.get(80, 0, 16, 16),
-    "stoneShovel": everythingSheet.get(96, 0, 16, 16),
-    "stoneSword": everythingSheet.get(112, 0, 16, 16),
+    Items.StoneShovel: everythingSheet.get(96, 0, 16, 16),
+    Items.StoneSword: everythingSheet.get(112, 0, 16, 16),
     
     #Iron
-    "ironAxe": everythingSheet.get(128, 0, 16, 16),
-    "ironPickaxe": everythingSheet.get(144, 0, 16, 16),
-    "ironShovel": everythingSheet.get(160, 0, 16, 16),
-    "ironSword": everythingSheet.get(176, 0, 16, 16),
+    Items.IronAxe: everythingSheet.get(128, 0, 16, 16),
+    Items.IronPickaxe: everythingSheet.get(144, 0, 16, 16),
+    Items.IronShovel: everythingSheet.get(160, 0, 16, 16),
+    Items.IronSword: everythingSheet.get(176, 0, 16, 16),
     
     #Gold
-    "goldAxe": everythingSheet.get(192, 0, 16, 16),
-    "goldPickaxe": everythingSheet.get(208, 0, 16, 16),
-    "goldShovel": everythingSheet.get(224, 0, 16, 16),
-    "goldSword": everythingSheet.get(240, 0, 16, 16),
+    Items.GoldAxe: everythingSheet.get(192, 0, 16, 16),
+    Items.GoldPickaxe: everythingSheet.get(208, 0, 16, 16),
+    Items.GoldShovel: everythingSheet.get(224, 0, 16, 16),
+    Items.GoldSword: everythingSheet.get(240, 0, 16, 16),
     
     #Diamond
-    "diamondAxe": everythingSheet.get(256, 0, 16, 16),
-    "diamondPickaxe": everythingSheet.get(272, 0, 16, 16),
-    "diamondShovel": everythingSheet.get(288, 0, 16, 16),
-    "diamondSword": everythingSheet.get(304, 0, 16, 16),
+    Items.DiamondAxe: everythingSheet.get(256, 0, 16, 16),
+    Items.DiamondPickaxe: everythingSheet.get(272, 0, 16, 16),
+    Items.DiamondShovel: everythingSheet.get(288, 0, 16, 16),
+    Items.DiamondSword: everythingSheet.get(304, 0, 16, 16),
     
     #Misc
     "shears": everythingSheet.get(320, 0, 16, 16),

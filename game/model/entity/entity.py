@@ -1,6 +1,7 @@
-from math import ceil, degrees, dist, floor, atan2, pi
+from math import ceil, dist, floor
 import time
 from game.model.entity.hasphysics import HasPhysics
+from game.model.items.item import Item
 from game.model.world import World
 
 
@@ -33,6 +34,8 @@ class Entity(HasPhysics):
 		self.world = world
 		self.minyvelo = 100
 		self.updateDistance = 1
+		self.pathFindToPlayer = True
+		self.droppedItem: Item | None = None
 	
 	def walkLeft(self) -> None:
 		'''Walk the entity to the left using walkForce'''
@@ -46,17 +49,24 @@ class Entity(HasPhysics):
 	
 	def jump(self) -> None:
 		'''Jump the entity using jumpForce'''
-		if self.isOnGround() and time.time() - self.previousJumpTime > 0.1:
+		if self.isOnGround and time.time() - self.previousJumpTime > 0.1:
 			self.apply_impulse_at_local_point((0, -self.jumpImpulse))
 			self.previousJumpTime = time.time()
 
+	@property
 	def isOnGround(self) -> bool:
+		if ceil(self.position.y) == self.world.height:
+			return True
 		if (self.position.y - self.height / 2) % 1 < 0.05:
-			return not (self.world[ceil(self.position.y)][floor(self.position.x)].isEmpty and self.world[ceil(self.position.y)][ceil(self.position.x)].isEmpty)
+			return not self.world[ceil(self.position.y)][floor(self.position.x)].isEmpty or not self.world[ceil(self.position.y)][ceil(self.position.x)].isEmpty
 		return False
+	
+	@property
+	def isAlive(self) -> bool:
+		return self.health > 0
 
 	def update(self, goal: tuple[float, float]) -> None:
-		'''weird variation of a* algorithm'''
+		'''very dumb pathfinding'''
 		# find reachable blocks
 		if dist(self.position, goal) > self.updateDistance:
 			x, y = map(int, self.position)
@@ -65,7 +75,7 @@ class Entity(HasPhysics):
 				reachables.add((x - 1, y))
 			if self.world[y][x + 1].isEmpty:
 				reachables.add((x + 1, y))
-			best = min(reachables, key=lambda p: dist(p, goal))
+			best = min(reachables, key=lambda p: dist(p, goal)) if self.pathFindToPlayer else max(reachables, key=lambda p: dist(p, goal))
 			if best != (x, y):
 				if best[0] < x:
 					self.walkLeft()

@@ -21,3 +21,22 @@ class Items(Enum):
  
 	StonePickaxe = "Stone Pickaxe"
 	StoneAxe = "Stone Axe"
+	StoneShovel = "Stone Shovel"
+	StoneSword = "Stone Sword"
+
+	IronPickaxe = "Iron Pickaxe"
+	IronAxe = "Iron Axe"
+	IronShovel = "Iron Shovel"
+	IronSword = "Iron Sword"
+
+	GoldPickaxe = "Gold Pickaxe"
+	GoldAxe = "Gold Axe"
+	GoldShovel = "Gold Shovel"
+	GoldSword = "Gold Sword"
+
+	DiamondPickaxe = "Diamond Pickaxe"
+	DiamondAxe = "Diamond Axe"
+	DiamondShovel = "Diamond Shovel"
+	DiamondSword = "Diamond Sword"
+
+	RabbitMeat = "Rabbit Meat"

@@ -20,3 +20,6 @@ class Npc(Entity):
 	
 	def interact(self):
 		print(self.message)
+	
+	def update(self, goal: tuple[float, float]) -> None:
+		pass

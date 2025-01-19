@@ -479,11 +479,11 @@ class Slot:
       OVERLAY.blit(texture, textureRect.topleft)
 
       if self.count > 1:
-        count_text = font20.render(str(self.count), True, (255, 255, 255))
+        countText = font20.render(str(self.count), True, (255, 255, 255))
         
         #item counter in the bottom right of the slot
-        text_rect = count_text.get_rect(topleft=textureRect.center)
-        OVERLAY.blit(count_text, text_rect.topleft)       
+        textRect = countText.get_rect(topleft=textureRect.center)
+        OVERLAY.blit(countText, textRect.topleft)       
         
         
 @dataclass

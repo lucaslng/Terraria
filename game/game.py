@@ -1,12 +1,15 @@
 from math import dist, floor
 import pygame as pg
 from game.model.blocks.utils.inventoryblock import InventoryBlock
+from game.model.entity.entities.rabbit import Rabbit
 from game.model.items.inventory.slot import Slot
 from game.model.entity.entities.npc import Npc
 from game.model.items.inventory.inventorytype import InventoryType
+from game.model.items.specialitems.edible import Edible
 from game.model.utils.bresenham import bresenham
 from game.view import conversions
 from game.view.inventory.hoveredslot import getHoveredSlotSlot
+from sound import channels, sounds
 import utils.keys as keys
 from utils.constants import BLOCK_SIZE, FRAME, WORLD_HEIGHT, WORLD_WIDTH
 from game.view.draw import draw
@@ -72,19 +75,19 @@ def game():
 		if (model.player.cursorSlot.item is None and 
 			inventories[hoveredSlotName][0][r][c].item is not None):
 			
-			source_slot = inventories[hoveredSlotName][0][r][c]
+			sourceSlot = inventories[hoveredSlotName][0][r][c]
 			
 			#Can't split single items
-			if source_slot.count <= 1:
+			if sourceSlot.count <= 1:
 				return
 				
 			#Calculate split amounts (odd numbers keep the extra in source)
-			split_amount = floor(source_slot.count / 2)
-			source_slot.count = source_slot.count - split_amount
+			splitAmount = floor(sourceSlot.count / 2)
+			sourceSlot.count = sourceSlot.count - splitAmount
 			
 			#Put split portion in cursor
-			model.player.cursorSlot.item = source_slot.item
-			model.player.cursorSlot.count = split_amount
+			model.player.cursorSlot.item = sourceSlot.item
+			model.player.cursorSlot.count = splitAmount
 
 	while True:
 		clearScreen()
@@ -116,6 +119,11 @@ def game():
 		if pressedKeys[keys.slot9]:
 			model.player.heldSlotIndex = 8
 		
+		if pressedKeys[keys.consume]:
+			if model.player.heldSlot.item and isinstance(model.player.heldSlot.item, Edible) and not channels.consume.get_busy():
+				channels.consume.play(sounds.consume)
+				model.player.consume()
+		
 		if pg.mouse.get_pressed()[0]:
 			#Check if the cursor is hovering over any inventory slot
 			hoveredSlotData = getHoveredSlotSlot(inventories)
@@ -135,7 +143,8 @@ def game():
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
 				return Screens.QUIT
-    
+			elif event.type == 101:
+				model.spawnEntitiesRandom()
 			elif event.type == pg.KEYDOWN:
 				if event.key == keys.interact:
 					if len(inventories) > 1:
@@ -156,7 +165,15 @@ def game():
 					if model.entities:
 						model.entities.sort(key=lambda e: dist(e.position, model.player.position)) # sort by position to the player
 						if dist(model.entities[0].position, model.player.position) < 1.5:
-							model.entities[0].interact()
+							if isinstance(model.entities[0], Rabbit):
+								model.entities[0].interact(model.player.damage)
+								model.entities[0].apply_impulse_at_local_point((model.entities[0].position - model.player.position) * 40)
+								if not model.entities[0].isAlive:
+									if model.entities[0].droppedItem:
+										model.player.inventory.addItem(model.entities[0].droppedItem)
+									model.deleteEntity(0, model.entities[0])
+							else:
+								model.entities[0].interact()
 			elif event.type == pg.MOUSEBUTTONDOWN:
 				if event.button == 1:
 					hoveredSlotData = getHoveredSlotSlot(inventories)
@@ -183,9 +200,12 @@ def game():
 		
 		for y in range(camera.top // BLOCK_SIZE, camera.bottom // BLOCK_SIZE + 1):
 			for x in range(camera.left // BLOCK_SIZE, camera.right // BLOCK_SIZE + 1):
-				model.world[y][x].update()
+				if 0 <= y < model.world.height and 0 <= x < model.world.width:
+					model.world[y][x].update()
 
-		model.update()		
+		if not model.update():
+			print("player died")
+			return Screens.MENU
 		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE		
 		draw(model, camera, inventories)
 		updateScreen()
