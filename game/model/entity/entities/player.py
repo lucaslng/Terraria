@@ -10,6 +10,7 @@ class Player(Entity, Light):
 	_heldSlotIndex = 0
 	reach = 4
 	inventory = Inventory(4, 9)
+	helmetSlot = Slot()
 	cursorSlot = Slot()
 	defaultLightRadius = 0.8
 	lightRadius = defaultLightRadius

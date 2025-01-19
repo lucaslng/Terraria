@@ -14,7 +14,6 @@ def drawInventory(inventory: Inventory, slotSize: int, inventoryx: int, inventor
 			y = inventoryy + r * slotSize
 
 			pg.draw.rect(surfaces.hud, (200, 200, 200, 160), (x, y, slotSize, slotSize))
-
 			pg.draw.rect(surfaces.hud, (90, 90, 90), (x, y, slotSize, slotSize), 2)
 
 			drawSlot(slot, x, y, slotSize)

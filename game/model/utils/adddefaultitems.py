@@ -7,12 +7,12 @@ from game.model.items.torchitem import TorchItem
 
 
 def addDefaultItems(player: Player) -> None:
-	'''Add default items to the player'''
+	'''Add default items to the player's inventory'''
 	
 	player.inventory.addItems(
 		*[TorchItem() for _ in range(64)],
+		RabbitMeat(),
 		CraftingTableItem(),
 		DiamondAxe(),
-		*[PlanksItem() for _ in range(66)],
-		*[RabbitMeat() for _ in range(64)],
+		*[PlanksItem() for _ in range(66)]
 		)
