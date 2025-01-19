@@ -55,19 +55,19 @@ def game():
 		if (model.player.cursorSlot.item is None and 
 			inventories[hoveredSlotName][0][r][c].item is not None):
 			
-			source_slot = inventories[hoveredSlotName][0][r][c]
+			sourceSlot = inventories[hoveredSlotName][0][r][c]
 			
 			#Can't split single items
-			if source_slot.count <= 1:
+			if sourceSlot.count <= 1:
 				return
 				
 			#Calculate split amounts (odd numbers keep the extra in source)
-			split_amount = floor(source_slot.count / 2)
-			source_slot.count = source_slot.count - split_amount
+			splitAmount = floor(sourceSlot.count / 2)
+			sourceSlot.count = sourceSlot.count - splitAmount
 			
 			#Put split portion in cursor
-			model.player.cursorSlot.item = source_slot.item
-			model.player.cursorSlot.count = split_amount
+			model.player.cursorSlot.item = sourceSlot.item
+			model.player.cursorSlot.count = splitAmount
 
 	while True:
 		clearScreen()

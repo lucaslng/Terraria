@@ -5,7 +5,7 @@ import time
 from pymunk import Space
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
-from typing import Optional
+from typing import Optional, Type
 
 from game.model.entity.entities.npc import Npc
 from game.model.entity.entities.rabbit import Rabbit
@@ -46,7 +46,7 @@ class Model:
 		]
 		self.lights: list[tuple[Light, int, int]] = []
 		self.entities: list[Entity] = [] # list of the entities in the world except the player
-		self.entityCounter = {
+		self.entityCounter: dict[Type[Entity], int] = {
 			Rabbit: 0,
 		}
 		
@@ -277,23 +277,23 @@ class Model:
 			
 
 			noises = {}
-			timing_data = {}
+			timingData = {}
 			
 			for future in as_completed(futures):
-				noise_type, noise_obj, generation_time = future.result()
-				noises[noise_type] = noise_obj
-				timing_data[noise_type] = generation_time
+				noiseType, noiseObj, generationTime = future.result()
+				noises[noiseType] = noiseObj
+				timingData[noiseType] = generationTime
 		
-		total_time = time.perf_counter() - totalStartTime
+		totalTime = time.perf_counter() - totalStartTime
 		
 		#Print timing information
 		print("\nNoise Generation Timing:")
 		print(f"{'Noise Type':<15} | {'Time (seconds)':<10}")
 		print("-" * 30)
-		for noise_type, time_taken in timing_data.items():
-			print(f"{noise_type.name:<15} | {time_taken:.4f}s")
+		for noiseType, timeTaken in timingData.items():
+			print(f"{noiseType.name:<15} | {timeTaken:.4f}s")
 		print("-" * 30)
-		print(f"{'Total':<15} | {total_time:.4f}s\n")
+		print(f"{'Total':<15} | {totalTime:.4f}s\n")
 
 		return noises
  
@@ -304,10 +304,6 @@ class Model:
 		stopr = min(self.world.height, (self.world.height if originr is None else originr + 7))
 		stopc = min(self.world.width, (self.world.width if originc is None else originc + 7))
 		
-		# Pre-calculate world dimensions for boundary checks
-		world_width = self.world.width
-		world_height = self.world.height
-		
 		# Direction vectors for neighbor calculation
 		DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 		
@@ -317,8 +313,8 @@ class Model:
 
 		# Initialize lightmap if not already created
 		if not hasattr(self, 'lightmap'):
-			self.lightmap = [[255 for _ in range(world_width)] 
-							for _ in range(world_height)]
+			self.lightmap = [[255 for _ in range(self.world.width)] 
+							for _ in range(self.world.height)]
 		
 		# Reusable queue and visited set to reduce memory allocations
 		bfs = Queue()
@@ -338,7 +334,7 @@ class Model:
 				visited.add((c, r))
 				
 				level = 0
-				light_found = False
+				lightFound = False
 				
 				# Continue BFS until we find light or reach max level
 				while bfs.size() > 0 and level <= 6:
@@ -355,20 +351,20 @@ class Model:
 					# Check if current block is dark
 					if is_dark(x, y):
 						self.lightmap[r][c] = max(0, (level - 1) * 51)
-						light_found = True
+						lightFound = True
 						break
 					
 					# Add unvisited neighbors within bounds
 					for dx, dy in DIRECTIONS:
 						nx, ny = x + dx, y + dy
-						if (0 <= nx < world_width and 
-							0 <= ny < world_height and 
+						if (0 <= nx < self.world.width and 
+							0 <= ny < self.world.height and 
 							(nx, ny) not in visited):
 							visited.add((nx, ny))
 							bfs.add((nx, ny))
 				
 				# If no dark blocks found in range, set to full brightness
-				if not light_found:
+				if not lightFound:
 					self.lightmap[r][c] = 255
 	
 	def _generateBoundaryShapes(self) -> None:
@@ -403,13 +399,13 @@ class Model:
 	def _generateWorldShapes(self) -> None:
 		'''generate pymunk shapes using numpy to identify solid blocks'''
 		# Create mask for non-empty blocks
-		solid_mask = ~np.vectorize(lambda x: x.isEmpty)(self.world.array)
+		solidMask = ~np.vectorize(lambda x: x.isEmpty)(self.world.array)
 		
 		# Get coordinates of solid blocks
-		solid_coords = np.where(solid_mask)
+		solidCoords = np.where(solidMask)
 		
 		# Generate shapes for all solid blocks at once
-		for y, x in zip(*solid_coords):
+		for y, x in zip(*solidCoords):
 			vertices = (
 				(x, y),
 				(x, y + 1),

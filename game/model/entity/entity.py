@@ -1,4 +1,4 @@
-from math import ceil, degrees, dist, floor, atan2, pi
+from math import ceil, dist, floor
 import time
 from game.model.entity.hasphysics import HasPhysics
 from game.model.items.item import Item

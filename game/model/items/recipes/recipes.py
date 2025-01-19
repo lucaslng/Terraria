@@ -6,6 +6,7 @@ from game.model.items.inventory.slot import Slot
 from game.model.items.item import Item
 from game.model.items.utils.itemsenum import Items
 from game.model.items.tools import WoodenPickaxe, StonePickaxe
+from oldmain import IronPickaxe
 
 
 @dataclass
@@ -52,7 +53,7 @@ def sticks(items: list[list[Slot]]) -> tuple[Item, int] | None:
                     return SticksItem(), min(slot.count, slotBelow.count) * 4
 
 
-def createPickaxeRecipe(items: list[list[Slot]], top_material: Items, tool_class: Type[Item]) -> tuple[Item, int] | None:
+def createPickaxeRecipe(items: list[list[Slot]], topMaterial: Items, toolClass: Type[Item]) -> tuple[Item, int] | None:
     """
     Generic recipe function for pickaxes
     
@@ -64,7 +65,7 @@ def createPickaxeRecipe(items: list[list[Slot]], top_material: Items, tool_class
     """
     
     #Check top row material
-    if not all(items[0][i].item and items[0][i].item.enum == top_material for i in range(3)):
+    if not all(items[0][i].item and items[0][i].item.enum == topMaterial for i in range(3)):
         return None
 
     #Check for sticks in the middle and bottom center
@@ -76,7 +77,7 @@ def createPickaxeRecipe(items: list[list[Slot]], top_material: Items, tool_class
     if any(items[r][c].item for r, c in [(1,0), (1,2), (2,0), (2,2)]):
         return None
 
-    return tool_class(), 1
+    return toolClass(), 1
 
 
 woodenPickaxe = partial(
