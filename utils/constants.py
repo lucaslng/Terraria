@@ -1,6 +1,4 @@
 import pygame as pg
-import random
-import time
 
 WIDTH = 1280
 HEIGHT = 720
@@ -13,9 +11,6 @@ FRAME = SURF.get_rect()
 
 clock = pg.time.Clock()
 pg.display.set_caption("Terraria")
-
-SEED = time.time()
-random.seed(SEED)
 
 font12 = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 12)
 font16 = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 16)

@@ -1,13 +1,12 @@
 import numpy as np
-from utils.constants import BIG, SEED, WORLD_HEIGHT, WORLD_WIDTH
+from utils.constants import BIG, WORLD_HEIGHT, WORLD_WIDTH
 
 
 class SimplexNoise:
     '''https://github.com/SRombauts/SimplexNoise/blob/master/src/SimplexNoise.cpp'''
-    def __init__(self, scale: float, dimension: int, width: int = WORLD_WIDTH, height: int = WORLD_HEIGHT, seed: int = SEED):
-        self.seed = int(seed)
-        
-        self.rng = np.random.RandomState(self.seed)
+    def __init__(self, scale: float, dimension: int, width: int = WORLD_WIDTH, height: int = WORLD_HEIGHT):
+
+        self.rng = np.random.RandomState()
         
         if dimension == 1:
             self.noise = self._noise1d(width, scale)

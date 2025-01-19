@@ -1,14 +1,13 @@
-import gc
 from math import dist, floor
 import pygame as pg
 from game.model.blocks.utils.inventoryblock import InventoryBlock
 from game.model.entity.entities.dog import Dog
 from game.model.entity.entities.rabbit import Rabbit
 from game.model.items.inventory.slot import Slot
-from game.model.entity.entities.npc import Npc
 from game.model.items.inventory.inventorytype import InventoryType
 from game.model.items.specialitems.edible import Edible
 from game.model.utils.bresenham import bresenham
+import game.utils.saving as saving
 from game.view import conversions
 from game.view.inventory.hoveredslot import getHoveredSlotSlot
 from sound import channels, sounds
@@ -19,23 +18,23 @@ from game.model.model import Model
 from utils.screens import Screens
 from utils.clearscreen import clearScreen
 from utils.updatescreen import updateScreen
-from menu.gameOver.deathScreen import deathScreen
 
 
 def initGame():
-    '''Initialize or reinitialize game components'''
-    model = Model(WORLD_WIDTH, WORLD_HEIGHT)
-    model.start()
+		'''Initialize or reinitialize game components'''
+		model = saving.load()
+		if not model:
+			model = Model(WORLD_WIDTH, WORLD_HEIGHT)
     
-    camera = FRAME.copy()
-    camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
-    
-    inventories = {
-        InventoryType.Player: (model.player.inventory, *InventoryType.Player.value),
-        InventoryType.HelmetSlot: (model.player.helmetSlot, *InventoryType.HelmetSlot.value)
-    }
-    
-    return model, camera, inventories
+		camera = FRAME.copy()
+		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
+
+		inventories = {
+				InventoryType.Player: (model.player.inventory, *InventoryType.Player.value),
+				InventoryType.HelmetSlot: (model.player.helmetSlot, *InventoryType.HelmetSlot.value)
+		}
+
+		return model, camera, inventories
 
 def game() -> Screens:
 	'''Main game loop'''
@@ -151,6 +150,7 @@ def game() -> Screens:
 
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
+				saving.save(model)
 				return Screens.QUIT
 			elif event.type == 101:
 				model.spawnEntitiesRandom()
@@ -216,6 +216,7 @@ def game() -> Screens:
 
 		#player death
 		if not model.update():
+			saving.clear()
 			return Screens.DEATH
 
 		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE		

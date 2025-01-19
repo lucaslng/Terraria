@@ -13,7 +13,7 @@ from game.model.blocks.goldoreblock import GoldOreBlock
 from game.model.entity.entities.dog import Dog
 from game.model.entity.entities.npc import Npc
 from game.model.entity.entities.rabbit import Rabbit
-from utils.constants import FIRST_MESSAGE, FPS, NPC_RARITY, RABBIT_RARITY, SEED, WORLD_HEIGHT, WORLD_WIDTH
+from utils.constants import FIRST_MESSAGE, FPS, NPC_RARITY, RABBIT_RARITY, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
 from game.model.blocks.coaloreblock import CoalOreBlock
 from game.model.blocks.dirtblock import DirtBlock
@@ -43,17 +43,24 @@ class Model:
 		'''initialize the game'''
 		self.world = World(worldWidth, worldHeight)
 		self.player = Player(worldWidth * 0.5, worldHeight * 0.55, self.world)
-		addDefaultItems(self.player)
+		
 
 		self.lightmap = [
 			[0 for x in range(worldWidth)] for y in range(worldHeight)
 		]
-		self.lights: list[tuple[Light, int, int]] = []
+		self.initialise()
+		self._generate()
+		addDefaultItems(self.player)
+
+
+	def initialise(self):
+		'''things that need to be done when both generating and from loading the save'''
+		
 		self.entities: list[Entity] = [] # list of the entities in the world except the player
 		self.entityCounter: dict[Type[Entity], int] = {
 			Rabbit: 0,
 		}
-		
+		self.lights: list[tuple[Light, int, int]] = []
 		self.space = Space()
 		self.space.gravity = 0, 20 # earth's gravity is 9.81 m/s
 
@@ -64,7 +71,6 @@ class Model:
 		self.worldBody = pm.Body(body_type=pm.Body.STATIC)
 		self.space.add(self.worldBody)
 		self._generateBoundaryShapes()
-
 		self.blockFacingCoord: tuple[int, int] | None = None
 
 	def update(self, steps=20) -> bool:
@@ -91,8 +97,8 @@ class Model:
     
 		return True
 
-	def start(self):
-		'''Start game'''
+	def _generate(self):
+		'''generate game'''
 		startTime = time.perf_counter()
 		self._generateWorld()
 		self._generateWorldShapes()
@@ -267,15 +273,14 @@ class Model:
 						self.world[y][x] = DiamondOreBlock()
 					
 
-	def _generateAllNoise(self, seed: int | None = None) -> dict[Noises, SimplexNoise]:
-		totalStartTime = time.perf_counter()		
-		random.seed(seed)
+	def _generateAllNoise(self) -> dict[Noises, SimplexNoise]:
+		totalStartTime = time.perf_counter()
 
 		def generateNoise(noiseType: Noises, scale: float, dimension: int, width: int = WORLD_WIDTH, 
-						height: int = WORLD_HEIGHT, seed: int = SEED) -> tuple[Noises, SimplexNoise, float]:
+						height: int = WORLD_HEIGHT) -> tuple[Noises, SimplexNoise, float]:
 			startTime = time.perf_counter()
 			
-			noise = SimplexNoise(scale=scale, dimension=dimension, width=width, height=height, seed=seed)
+			noise = SimplexNoise(scale=scale, dimension=dimension, width=width, height=height)
 			
 			# Calculate the time taken for this noise generation
 			generationTime = time.perf_counter() - startTime
@@ -446,3 +451,21 @@ class Model:
 		shape = pm.Poly(self.worldBody, vertices)
 		shape.friction = self.world[y][x].friction
 		self.space.add(shape)
+
+	def __getstate__(self):
+		return self.world, self.lightmap, self.player.position, self.player.inventory, self.player.health, self.player.cursorSlot, self.player.helmetSlot
+	
+	def __setstate__(self, state):
+		self.world, self.lightmap, playerPosition, playerInventory, playerHealth, playerCursorSlot, playerHelmetSlot = state
+		self.player = Player(*playerPosition, self.world)
+		self.player.inventory = playerInventory
+		self.player.health = playerHealth
+		self.player.cursorSlot = playerCursorSlot
+		self.player.helmetSlot = playerHelmetSlot
+		self.initialise()
+		self._generateEntities()
+		for y, row in enumerate(self.world.array):
+			for x, block in enumerate(row):
+				if isinstance(block, Light):
+					self.lights.append((self.world[y][x], x, y))
+		self._generateWorldShapes()

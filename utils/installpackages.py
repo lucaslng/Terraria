@@ -18,7 +18,7 @@ if not _checkPythonVersion():
           f"Current version is {sys.version.split()[0]}")
     sys.exit(1)
 
-_requiredLibraries = {"pygame", "numpy", "pymunk"}
+_requiredLibraries = {"pygame", "numpy", "pymunk", "dill"}
 for package in _requiredLibraries:
     if not _isPackageInstalled(package):
         try:
