@@ -6,7 +6,6 @@ from game.model.items.inventory.slot import Slot
 from game.model.items.item import Item
 from game.model.items.utils.itemsenum import Items
 from game.model.items.tools import WoodenPickaxe, StonePickaxe
-from oldmain import IronPickaxe
 
 
 @dataclass
