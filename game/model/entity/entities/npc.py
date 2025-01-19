@@ -8,7 +8,7 @@ from utils.constants import BIG
 
 _messageGroups = (
 	(
-		"Cling onto walls to reduce fall damage!",
+		"Hold space near a wall to negate fall damage!",
 		"Don't die!",
 	),
 	(
@@ -52,4 +52,4 @@ class Npc(Entity):
 		self.interactTime = pg.time.get_ticks() # extend window time
 	
 	def update(self, goal: tuple[float, float]) -> None:
-		pass
+		self.updateFallDamage()

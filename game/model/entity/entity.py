@@ -73,8 +73,7 @@ class Entity(HasPhysics):
         return self.health > 0
     
     def takeDamage(self, amount: int) -> None:
-        '''Damage entity if not invulnerable'''
-        
+        '''Damage entity if not invulnerable'''       
         if self.invulnerabilityFrames == 0:
             self.health = max(0, self.health - amount)
             self.invulnerabilityFrames = self.invulnerabilityDuration
@@ -93,8 +92,7 @@ class Entity(HasPhysics):
             self.invulnerabilityFrames -= 1
 
     def update(self, goal: tuple[float, float]) -> None:
-        '''Update entity state'''
-        
+        '''Update entity state'''      
         if self.updateDistance is not None:
             if (dist(self.position, goal) > self.updateDistance) if self.pathFindToPlayer else (dist(self.position, goal) < self.updateDistance):
                 x, y = map(int, self.position)
