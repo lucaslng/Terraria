@@ -13,6 +13,8 @@ from game.model.blocks.goldoreblock import GoldOreBlock
 from game.model.entity.entities.dog import Dog
 from game.model.entity.entities.npc import Npc
 from game.model.entity.entities.rabbit import Rabbit
+from game.model.items.inventory.inventory import Inventory
+from game.model.items.inventory.slot import Slot
 from utils.constants import FIRST_MESSAGE, FPS, NPC_RARITY, RABBIT_RARITY, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
 from game.model.blocks.coaloreblock import CoalOreBlock
@@ -452,10 +454,12 @@ class Model:
 		shape.friction = self.world[y][x].friction
 		self.space.add(shape)
 
-	def __getstate__(self):
+	def __getstate__(self) -> tuple[World, list[list[int]], tuple[float, float], Inventory, int, Slot, Slot]:
+		print("Saving world...")
 		return self.world, self.lightmap, self.player.position, self.player.inventory, self.player.health, self.player.cursorSlot, self.player.helmetSlot
 	
-	def __setstate__(self, state):
+	def __setstate__(self, state: tuple[World, list[list[int]], tuple[float, float], Inventory, int, Slot, Slot]):
+		print("Loading existing save...")
 		self.world, self.lightmap, playerPosition, playerInventory, playerHealth, playerCursorSlot, playerHelmetSlot = state
 		self.player = Player(*playerPosition, self.world)
 		self.player.inventory = playerInventory
