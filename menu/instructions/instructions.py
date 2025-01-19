@@ -51,7 +51,7 @@ def instructionsScreen():
                 return Screens.QUIT
 
             if event.type in (pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP):
-                back_button.handle_event(event, mouse_pos)
+                back_button.handleEvent(event, mouse_pos)
 
             if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
                 if back_button.rect.collidepoint(mouse_pos):

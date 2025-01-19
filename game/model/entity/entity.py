@@ -73,7 +73,7 @@ class Entity(HasPhysics):
         return self.health > 0
     
     def takeDamage(self, amount: int) -> None:
-        '''Damage entity if not currently invulnerable'''
+        '''Damage entity if not invulnerable'''
         
         if self.invulnerabilityFrames == 0:
             self.health = max(0, self.health - amount)
@@ -96,7 +96,7 @@ class Entity(HasPhysics):
         '''Update entity state'''
         self.updateFallDamage()
         
-        # Only do pathfinding if updateDistance is not None
+        #Only do pathfinding if updateDistance is not None
         if self.updateDistance is not None:
             if dist(self.position, goal) > self.updateDistance:
                 x, y = map(int, self.position)

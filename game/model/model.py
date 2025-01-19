@@ -67,6 +67,7 @@ class Model:
 		'''Update the model, should be called every frame. steps increases the accuracy of the physics simulation but sacrifices performance. returns whether the player is alive'''
 		self.player.update()
   
+		#if player is dead
 		if not self.player.isAlive:
 			return False
 

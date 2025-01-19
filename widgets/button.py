@@ -1,5 +1,4 @@
 import pygame as pg
-
 from utils.constants import SURF
 
 class Button:
@@ -28,7 +27,7 @@ class Button:
         else:
             self.press_animation += (0 - self.press_animation) * 0.2
         
-    def handle_event(self, event, mouse_pos):
+    def handleEvent(self, event, mouse_pos):
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(mouse_pos):
                 self.is_pressed = True
@@ -43,11 +42,11 @@ class Button:
         button_rect = self.rect.copy()
         button_rect.y -= hover_offset - press_offset
         
-        self._draw_button(button_rect, current_color)
-        self._draw_text(font, text_colour, shadow_colour, button_rect)
+        self._drawButton(button_rect, current_color)
+        self._drawText(font, text_colour, shadow_colour, button_rect)
         
-    def _draw_button(self, button_rect, colour):
-        # Draw shadow first
+    def _drawButton(self, button_rect, colour):
+        #Draw shadow first
         shadow_rect = button_rect.copy()
         shadow_rect.y += 4
         pg.draw.rect(SURF, (0, 0, 0, 64), shadow_rect, border_radius=self.corner_radius)
@@ -74,7 +73,7 @@ class Button:
         SURF.blit(button_surface, button_rect)
         SURF.blit(final_highlight, button_rect)
         
-    def _draw_text(self, font, text_colour, shadow_color, button_rect):
+    def _drawText(self, font, text_colour, shadow_color, button_rect):
         #Scale text with the hover animation
         scale_factor = 1 + self.hover_animation * 0.05
         

@@ -65,8 +65,7 @@ class Player(Entity, Light):
             self.heldSlot.clear()
 
     def update(self) -> None:
-        '''Update player state including fall damage and light radius.'''
-        
+        '''Update player state including fall damage and light radius.'''       
         self.updateFallDamage()
             
         #Update light radius based on held item
