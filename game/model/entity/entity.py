@@ -110,9 +110,9 @@ class Entity(HasPhysics):
                                 self.jump()
                             self.walkLeft()
                         else:
-                            self.walkRight()
                             if bestx + 1 < self.world.width and (not self.world[besty][bestx - 2].isEmpty or not self.world[besty][bestx - 1].isEmpty):
                                 self.jump()
+                            self.walkRight()
 
     def interact(self) -> None:
         '''Interact with the entity using the interact key'''
