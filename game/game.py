@@ -1,6 +1,7 @@
 from math import dist, floor
 import pygame as pg
 from game.model.blocks.utils.inventoryblock import InventoryBlock
+from game.model.items.inventory.slot import Slot
 from game.model.entity.entities.npc import Npc
 from game.model.items.inventory.inventorytype import InventoryType
 from game.model.utils.bresenham import bresenham
@@ -23,25 +24,43 @@ def game():
 	camera = FRAME.copy()
 	camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
 
-	inventories = {InventoryType.Player: (model.player.inventory, *InventoryType.Player.value)}
+	inventories = {
+    	InventoryType.Player: (model.player.inventory, *InventoryType.Player.value),
+     	InventoryType.HelmetSlot: (model.player.helmetSlot, *InventoryType.HelmetSlot.value)
+                }
 	
 	leftMousePressedTime = 0
 
 	def swapSlot(hoveredSlotData: tuple[InventoryType, int, int]) -> None:
 		if hoveredSlotData is None:
 			return
-  
+		
 		hoveredSlotName, r, c = hoveredSlotData
-		if inventories[hoveredSlotName][0][r][c].condition(model.player.cursorSlot):
-			if model.player.cursorSlot.item and inventories[hoveredSlotName][0][r][c].item == model.player.cursorSlot.item:
-				add = min(model.player.cursorSlot.item.stackSize - inventories[hoveredSlotName][0][r][c].count, model.player.cursorSlot.count)
+		inventory_or_slot = inventories[hoveredSlotName][0]
+		
+		if isinstance(inventory_or_slot, Slot):
+			target_slot = inventory_or_slot
+		else:
+			target_slot = inventory_or_slot[r][c]
+		
+		#Check conditions and perform swap
+		if target_slot.condition(model.player.cursorSlot):
+			if (model.player.cursorSlot.item and 
+				target_slot.item == model.player.cursorSlot.item):
+				#Stack similar items
+				add = min(model.player.cursorSlot.item.stackSize - target_slot.count, model.player.cursorSlot.count)
 				extra = model.player.cursorSlot.count - add
-				inventories[hoveredSlotName][0][r][c].count += add
+				target_slot.count += add
 				model.player.cursorSlot.count = extra
 				if model.player.cursorSlot.count == 0:
 					model.player.cursorSlot.clear()
 			else:
-				inventories[hoveredSlotName][0][r][c], model.player.cursorSlot = model.player.cursorSlot, inventories[hoveredSlotName][0][r][c]
+				#Swap different items
+				if isinstance(inventory_or_slot, Slot):
+					inventory_or_slot.item, model.player.cursorSlot.item = (model.player.cursorSlot.item, inventory_or_slot.item)
+					inventory_or_slot.count, model.player.cursorSlot.count = (model.player.cursorSlot.count, inventory_or_slot.count)
+				else:
+					inventory_or_slot[r][c], model.player.cursorSlot = (model.player.cursorSlot, inventory_or_slot[r][c])
    
 	def handleStackSplit(hoveredSlotData: tuple[InventoryType, int, int]) -> None:
 		if hoveredSlotData is None:

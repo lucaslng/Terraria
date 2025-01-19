@@ -1,6 +1,5 @@
 from enum import Enum, auto
 
-
 class Blocks(Enum):
 	'''Enum for everyblock'''
 

@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-
 from game.model.blocks.utils.blocktype import BlockType
 
 
