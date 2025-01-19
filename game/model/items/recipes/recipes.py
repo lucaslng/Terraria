@@ -11,10 +11,10 @@ from game.model.items.tools import WoodenPickaxe, StonePickaxe
 @dataclass
 class Recipe:
     outputMultiplier: int			#how many output items are produced per input item
-    crafting_func: Callable[[list[list[Slot]]], tuple[Item, int] | None]
+    craftingFunc: Callable[[list[list[Slot]]], tuple[Item, int] | None]
     
     def __call__(self, items: list[list[Slot]]) -> tuple[Item, int] | None:
-        return self.crafting_func(items)
+        return self.craftingFunc(items)
 
 
 def woodenPlanks(items: list[list[Slot]]) -> tuple[Item, int] | None:
@@ -57,8 +57,8 @@ def createPickaxeRecipe(items: list[list[Slot]], topMaterial: Items, toolClass: 
     Generic recipe function for pickaxes
     
     items: The crafting grid slots
-    top_material: The Items enum value for the required top row material
-    tool_class: The class of the tool to create (WoodenPickaxe, StonePickaxe, etc.)
+    topMaterial: The Items enum value for the required top row material
+    toolClass: The class of the tool to create (WoodenPickaxe, StonePickaxe, etc.)
     
     Returns: A tuple of (created item, count) or None if recipe doesn't match
     """
@@ -81,14 +81,14 @@ def createPickaxeRecipe(items: list[list[Slot]], topMaterial: Items, toolClass: 
 
 woodenPickaxe = partial(
     createPickaxeRecipe,
-    top_material=Items.Planks,
-    tool_class=WoodenPickaxe
+    topMaterial=Items.Planks,
+    toolClass=WoodenPickaxe
 )
 
 stonePickaxe = partial(
     createPickaxeRecipe,
-    top_material=Items.Cobblestone,
-    tool_class=StonePickaxe
+    topMaterial=Items.Cobblestone,
+    toolClass=StonePickaxe
 )
 
 
