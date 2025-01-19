@@ -165,10 +165,10 @@ class Model:
 				inventoryTypes = None
 				if isinstance(self.world[y][x], InventoryBlock):
 					inventoryTypes = [inventoryType for _, inventoryType in self.world[y][x].inventories]
-
-				self.space.remove(self.world[y][x].shape)
+				if hasattr(self.world[y][x], 'shape'):
+					self.space.remove(self.world[y][x].shape)
 				if isinstance(self.world[y][x], Light):
-					self.lights.remove(self.world[y][x])
+					self.lights.remove((self.world[y][x], x, y))
 				self.world[y][x] = AirBlock()
 				if isinstance(self.world.back[y][x], AirBlock):
 					self.generateLight(y, x)
