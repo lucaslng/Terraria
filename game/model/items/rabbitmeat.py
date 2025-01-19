@@ -8,4 +8,4 @@ class RabbitMeat(Item, Edible):
 
 	def __init__(self) -> None:
 		super().__init__(Items.RabbitMeat)
-		self.healing = 2
+		self.healing = 3
