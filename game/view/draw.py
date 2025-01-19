@@ -1,6 +1,6 @@
 from pygame import Rect
 from game.view.drawentities import drawEntities
-from utils.constants import FRAME, SURF, WIDTH, clock, font20
+from utils.constants import FRAME, SURF, WIDTH, clock, font16
 from game.model.items.inventory.inventory import Inventory
 from game.model.model import Model
 from game.view import surfaces
@@ -32,7 +32,7 @@ def draw(model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int
 	surfaces.minimapLight = transform.smoothscale(surfaces.minimapLight, surfaces.minimap.get_size())
  
 	fpsText = f"FPS: {round(clock.get_fps(), 1)}"
-	fpsSurf = font20.render(fpsText, True, (255, 0, 0))
+	fpsSurf = font16.render(fpsText, True, (255, 0, 0))
 
 	SURF.blits((
 		(surfaces.world, (0, 0)),

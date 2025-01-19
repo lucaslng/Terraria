@@ -17,8 +17,8 @@ pg.display.set_caption("Terraria")
 SEED = time.time()
 random.seed(SEED)
 
-font = pg.font.Font(None, 15)
-font20 = pg.font.Font(None, 20)
+font12 = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 12)
+font16 = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 16)
 
 BLOCK_SIZE = 32
 BLOCK_RECT = pg.rect.Rect(0, 0, BLOCK_SIZE, BLOCK_SIZE)

@@ -10,7 +10,7 @@ from pygame.math import Vector2
 from game.model.blocks.utils.blocksenum import Blocks
 from game.model.blocks.utils.executable import Executable
 from game.model.blocks.utils.inventoryblock import InventoryBlock
-from utils.constants import WIDTH, HEIGHT, BLOCK_SIZE, WORLD_HEIGHT, WORLD_WIDTH, SURF, SUNLIGHTSURF, FPS, font20, gravity, BIG, clock
+from utils.constants import WIDTH, HEIGHT, BLOCK_SIZE, WORLD_HEIGHT, WORLD_WIDTH, SURF, SUNLIGHTSURF, FPS, font12, gravity, BIG, clock
 from utils.customqueue import Queue
 from game.textures.sprites import sprites
 from game.utils.direction import NORTH, EAST, SOUTH, WEST
@@ -442,7 +442,7 @@ class Slot:
       OVERLAY.blit(texture, textureRect.topleft)
 
       if self.count > 1:
-        count_text = font20.render(str(self.count), True, (255, 255, 255))
+        count_text = font12.render(str(self.count), True, (255, 255, 255))
         
         #item counter in the bottom right of the slot
         text_rect = count_text.get_rect(topleft=textureRect.center)
@@ -479,7 +479,7 @@ class Slot:
       OVERLAY.blit(texture, textureRect.topleft)
 
       if self.count > 1:
-        countText = font20.render(str(self.count), True, (255, 255, 255))
+        countText = font12.render(str(self.count), True, (255, 255, 255))
         
         #item counter in the bottom right of the slot
         textRect = countText.get_rect(topleft=textureRect.center)
@@ -1985,7 +1985,7 @@ if __name__ == "__main__":
     # SUNLIGHTSURF.blit(LIGHTSURF, (0,0))
     SURF.blit(SUNLIGHTSURF, ((0,0)))
     SURF.blit(OVERLAY, (0,0))
-    SURF.blit(font20.render(str(player.pixelToCoord(*player.camera.center)), True, (0,0,0)), (20, 50))
+    SURF.blit(font12.render(str(player.pixelToCoord(*player.camera.center)), True, (0,0,0)), (20, 50))
     
     frameEndTime = time.time()
     clock.tick(FPS)
