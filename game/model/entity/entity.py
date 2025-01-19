@@ -72,11 +72,13 @@ class Entity(HasPhysics):
     def isAlive(self) -> bool:
         return self.health > 0
     
-    def takeDamage(self, amount: int) -> None:
-        '''Damage entity if not invulnerable'''       
+    def takeDamage(self, amount: int) -> bool:
+        '''Damage entity if not invulnerable. returns whether the entity actually took damage or did not due to invulnerability frames'''       
         if self.invulnerabilityFrames == 0:
             self.health = max(0, self.health - amount)
             self.invulnerabilityFrames = self.invulnerabilityDuration
+            return True
+        return False
         
     def updateFallDamage(self) -> None:
         '''Handle fall damage logic'''

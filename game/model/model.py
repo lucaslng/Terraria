@@ -1,3 +1,4 @@
+from math import dist
 import random
 import pymunk as pm
 import numpy as np
@@ -76,6 +77,9 @@ class Model:
 
 		for i, entity in enumerate(self.entities):
 			entity.update(self.player.position)
+			if isinstance(entity, Dog) and dist(entity.position, self.player.position) < 1.5:
+				if self.player.takeDamage(1):
+					self.player.apply_impulse_at_local_point((self.player.position - entity.position) * 40, (0, 0.5))
 			if not entity.isAlive or not 0 < entity.position.x < self.world.width or not 0 < entity.position.y < self.world.height:
 				self.deleteEntity(i, entity)
     

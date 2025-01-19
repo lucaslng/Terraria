@@ -4,7 +4,7 @@ from utils.screens import Screens
 from utils.updatescreen import updateScreen
 from widgets.button import Button
 
-def deathScreen():
+def deathScreen() -> Screens:
     '''Death screen for when the player dies'''
     
     titleFont = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 48)

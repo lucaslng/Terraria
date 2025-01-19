@@ -1,3 +1,4 @@
+import gc
 from math import dist, floor
 import pygame as pg
 from game.model.blocks.utils.inventoryblock import InventoryBlock
@@ -36,7 +37,7 @@ def initGame():
     
     return model, camera, inventories
 
-def game():
+def game() -> Screens:
 	'''Main game loop'''
 	model, camera, inventories = initGame()
 	
@@ -215,10 +216,7 @@ def game():
 
 		#player death
 		if not model.update():
-			if deathScreen() == Screens.MENU:
-				return Screens.MENU
-			else:
-				return Screens.QUIT
+			return Screens.DEATH
 
 		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE		
 		draw(model, camera, inventories)
