@@ -8,7 +8,7 @@ from utils.constants import BIG
 
 _messageGroups = (
 	(
-		"Cling onto walls to reduce fall damage!",
+		"Hold space near a wall to negate fall damage!",
 		"Don't die!",
 	),
 	(
@@ -53,4 +53,3 @@ class Npc(Entity):
 	
 	def update(self, goal: tuple[float, float]) -> None:
 		self.updateFallDamage()
-		super().update(goal)
