@@ -255,13 +255,13 @@ class Model:
 
 		def generateNoise(noiseType: Noises, scale: float, dimension: int, width: int = WORLD_WIDTH, 
 						height: int = WORLD_HEIGHT, seed: int = SEED) -> tuple[Noises, SimplexNoise, float]:
-			start_time = time.perf_counter()
+			startTime = time.perf_counter()
 			
 			noise = SimplexNoise(scale=scale, dimension=dimension, width=width, height=height, seed=seed)
 			
 			# Calculate the time taken for this noise generation
-			generation_time = time.perf_counter() - start_time
-			return noiseType, noise, generation_time
+			generationTime = time.perf_counter() - startTime
+			return noiseType, noise, generationTime
 
 		noiseParameters = (
 			(Noises.GRASSHEIGHT, 19, 1),
@@ -307,7 +307,7 @@ class Model:
 		# Direction vectors for neighbor calculation
 		DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 		
-		def is_dark(x: int, y: int) -> bool:
+		def isDark(x: int, y: int) -> bool:
 			"""Check if a block position is considered dark (both front and back are empty)."""
 			return self.world[y][x].isEmpty and self.world.back[y][x].isEmpty
 
@@ -349,7 +349,7 @@ class Model:
 					x, y = cur
 					
 					# Check if current block is dark
-					if is_dark(x, y):
+					if isDark(x, y):
 						self.lightmap[r][c] = max(0, (level - 1) * 51)
 						lightFound = True
 						break

@@ -7,4 +7,4 @@ sunlight = world.copy()
 hud = world.copy()
 
 minimap = Surface((200, 200), SRCALPHA)
-minimapLight = Surface((200, 200), SRCALPHA)
+minimapLight = minimap.copy()

@@ -14,8 +14,8 @@ class CraftingTableBlock(Block, InventoryBlock):
     def __init__(self):
         self.craftingInInventory = Inventory(3, 3)
         self.craftingOutInventory = Inventory(1, 1, lambda other: other.item is None)
-        self._last_recipe = None
-        self._last_consumption_map = None
+        self._lastRecipe = None
+        self._lastConsumptionMap = None
         super().__init__(0.94, 2.5, BlockType.AXE, Blocks.CraftingTable)
     
     @property
@@ -27,28 +27,28 @@ class CraftingTableBlock(Block, InventoryBlock):
         Calculate how many items should be consumed from each slot for a successful craft.
         Returns a dictionary mapping (row, col) coordinates to consumption amounts.
         '''
-        recipe, (_, output_count) = recipe_result
-        consumption_map = {}
+        recipe, (_, outputCount) = recipe_result
+        consumptionMap = {}
         
         # Calculate how many items we need to consume based on output quantity
-        crafts_performed = output_count // recipe.output_multiplier
+        craftsPerformed = outputCount // recipe.outputMultiplier
         
         for row_idx, row in enumerate(self.craftingInInventory.array):
             for col_idx, slot in enumerate(row):
                 if slot.item:
-                    consumption_map[(row_idx, col_idx)] = crafts_performed
+                    consumptionMap[(row_idx, col_idx)] = craftsPerformed
         
-        return consumption_map
+        return consumptionMap
 
     def _consumeMaterials(self) -> None:
         """
         Consume materials from the input inventory based on the last successful recipe.
         Only called when items are removed from the output slot.
         """
-        if not self._last_consumption_map:
+        if not self._lastConsumptionMap:
             return
             
-        for (row, col), amount in self._last_consumption_map.items():
+        for (row, col), amount in self._lastConsumptionMap.items():
             slot = self.craftingInInventory[row][col]
             if slot.count <= amount:
                 slot.clear()
@@ -56,26 +56,26 @@ class CraftingTableBlock(Block, InventoryBlock):
                 slot.count -= amount
         
         #reset the variables
-        self._last_recipe = None
-        self._last_consumption_map = None
+        self._lastRecipe = None
+        self._lastConsumptionMap = None
     
     def update(self) -> None:
-        output_slot = self.craftingOutInventory[0][0]
+        outputSlot = self.craftingOutInventory[0][0]
         
         # First, check if we had a previous recipe and the ingredients are still valid
-        if self._last_recipe and output_slot.item:
-            current_result = self._last_recipe(self.craftingInInventory.array)
+        if self._lastRecipe and outputSlot.item:
+            current_result = self._lastRecipe(self.craftingInInventory.array)
             
             # If the recipe is no longer valid, clear the output
             if not current_result:
-                output_slot.clear()
-                self._last_recipe = None
-                self._last_consumption_map = None
+                outputSlot.clear()
+                self._lastRecipe = None
+                self._lastConsumptionMap = None
                 
         # If output slot is empty, check for new recipe
-        if output_slot.item is None:
+        if outputSlot.item is None:
             # Consume materials if we had a previous recipe
-            if self._last_recipe:
+            if self._lastRecipe:
                 self._consumeMaterials()
             
             # Check for new recipe
@@ -83,8 +83,8 @@ class CraftingTableBlock(Block, InventoryBlock):
                 result = recipe(self.craftingInInventory.array)
                 if result:
                     item, count = result
-                    output_slot.item = item
-                    output_slot.count = count
-                    self._last_recipe = recipe
-                    self._last_consumption_map = self._calculateConsumtion((recipe, result))
+                    outputSlot.item = item
+                    outputSlot.count = count
+                    self._lastRecipe = recipe
+                    self._lastConsumptionMap = self._calculateConsumtion((recipe, result))
                     return

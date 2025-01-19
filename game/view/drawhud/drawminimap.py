@@ -28,53 +28,51 @@ class MinimapCache:
 
 minimap_cache = MinimapCache(4)
 
-def drawMinimap(world: World, lightmap: list[list[int]], lights: Light, camera: pg.Rect, minimap_size: tuple[int, int]) -> None:
+def drawMinimap(world: World, lightmap: list[list[int]], lights: Light, camera: pg.Rect, minimapSize: tuple[int, int]) -> None:
     """Draw a minimap of the surrounding world but at a smaller scale"""
     MINIMAP_SCALE = 4
-    border_width = 2
-    border_colour = (255, 0, 0)
+    borderWidth = 2
+    borderColour = (80, 80, 80)
     
     #Calculate visible area
     centerX = (camera.left + camera.right) // 2
     centerY = (camera.top + camera.bottom) // 2
-    blocks_wide = minimap_size[0] // MINIMAP_SCALE
-    blocks_high = minimap_size[1] // MINIMAP_SCALE
-    startX = max(0, (centerX // BLOCK_SIZE) - (blocks_wide // 2))
-    endX = min(world.width, startX + blocks_wide)
-    startY = max(0, (centerY // BLOCK_SIZE) - (blocks_high // 2))
-    endY = min(world.height, startY + blocks_high)
-    
-    light_surface = pg.Surface(minimap_size, pg.SRCALPHA)
+    blocksWide = minimapSize[0] // MINIMAP_SCALE
+    blocksHigh = minimapSize[1] // MINIMAP_SCALE
+    startX = max(0, (centerX // BLOCK_SIZE) - (blocksWide // 2))
+    endX = min(world.width, startX + blocksWide)
+    startY = max(0, (centerY // BLOCK_SIZE) - (blocksHigh // 2))
+    endY = min(world.height, startY + blocksHigh)
     
     for y in range(startY, endY):
         for x in range(startX, endX):
-            minimap_x = (x - startX) * MINIMAP_SCALE
-            minimap_y = (y - startY) * MINIMAP_SCALE
+            minimapx = (x - startX) * MINIMAP_SCALE
+            minimapy = (y - startY) * MINIMAP_SCALE
             
             #Draw back blocks first
-            back_block = world.back[y][x]
-            if not isinstance(back_block, AirBlock):
-                surfaces.minimap.blit(minimap_cache.getScaledSpritesBack(back_block.enum) ,(minimap_x, minimap_y))
+            backBlock = world.back[y][x]
+            if not isinstance(backBlock, AirBlock):
+                surfaces.minimap.blit(minimap_cache.getScaledSpritesBack(backBlock.enum) ,(minimapx, minimapy))
             
-            front_block = world[y][x]
-            if not isinstance(front_block, AirBlock):
+            frontBlock = world[y][x]
+            if not isinstance(frontBlock, AirBlock):
                 surfaces.minimap.blit(
-                    minimap_cache.getScaledSprite(front_block.enum),
-                    (minimap_x, minimap_y)
+                    minimap_cache.getScaledSprite(frontBlock.enum),
+                    (minimapx, minimapy)
                 )
             
-            pg.draw.rect(light_surface, (0, 0, 0, lightmap[y][x]), (minimap_x, minimap_y, MINIMAP_SCALE, MINIMAP_SCALE))
+            pg.draw.rect(surfaces.minimapLight, (0, 0, 0, lightmap[y][x]), (minimapx, minimapy, MINIMAP_SCALE, MINIMAP_SCALE))
     
     for light, lightx, lighty in lights:
-        mini_light_x = (lightx - startX) * MINIMAP_SCALE
-        mini_light_y = (lighty - startY) * MINIMAP_SCALE
-        scaled_radius = light.lightRadius * MINIMAP_SCALE
+        minimapLightx = (lightx - startX) * MINIMAP_SCALE
+        miniLighty = (lighty - startY) * MINIMAP_SCALE
+        scaledRadius = light.lightRadius * MINIMAP_SCALE
         
-        if (0 <= mini_light_x <= minimap_size[0] and 
-            0 <= mini_light_y <= minimap_size[1]):
-            pg.draw.circle(light_surface, (255, 255, 255, 0), (mini_light_x, mini_light_y), scaled_radius)
+        if (0 <= minimapLightx <= minimapSize[0] and 
+            0 <= miniLighty <= minimapSize[1]):
+            pg.draw.circle(surfaces.minimapLight, (255, 255, 255, 0), (minimapLightx, miniLighty), scaledRadius)
     
-    surfaces.minimapLight.blit(light_surface, (0, 0))
+    surfaces.minimapLight.blit(surfaces.minimapLight, (0, 0))
     
     #Draw border
-    pg.draw.rect(surfaces.minimap, border_colour, pg.Rect(0, 0, minimap_size[0], minimap_size[1]), border_width)
+    pg.draw.rect(surfaces.minimap, borderColour, pg.Rect(0, 0, minimapSize[0], minimapSize[1]), borderWidth)

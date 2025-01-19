@@ -10,7 +10,7 @@ from game.model.items.tools import WoodenPickaxe, StonePickaxe
 
 @dataclass
 class Recipe:
-    output_multiplier: int			#how many output items are produced per input item
+    outputMultiplier: int			#how many output items are produced per input item
     crafting_func: Callable[[list[list[Slot]]], tuple[Item, int] | None]
     
     def __call__(self, items: list[list[Slot]]) -> tuple[Item, int] | None:
