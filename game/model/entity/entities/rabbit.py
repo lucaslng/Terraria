@@ -17,5 +17,7 @@ class Rabbit(Entity):
 		self.health -= damage
 	
 	def update(self, goal: tuple[float, float]) -> None:
+		self.updateFallDamage()
+		
 		if self.isScared:
 			super().update(goal)

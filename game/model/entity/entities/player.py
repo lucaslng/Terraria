@@ -24,10 +24,10 @@ class Player(Entity, Light):
         self.pathFindToPlayer = False
         
         #Fall damage
-        self.last_vertical_velocity = 0
-        self.fall_damage_threshold = 15
-        self.fall_damage_multiplier = 0.8
-        self.invulnerability_frames = 0   
+        self.lastVerticalVelo = 0
+        self.fallDamageThreshold = 15
+        self.fallDamageMultiplier = 0.8
+        self.invulnerabilityFrames = 0   
     
     @property
     def hotbar(self) -> list[Slot]:
@@ -66,21 +66,8 @@ class Player(Entity, Light):
 
     def update(self) -> None:
         '''Update player state including fall damage and light radius.'''
-
-        current_velocity = self.velocity.y
-        if (
-            self.last_vertical_velocity > self.fall_damage_threshold
-            and abs(current_velocity) < self.fall_damage_threshold * 0.5
-            and self.invulnerability_frames == 0
-        ):
-            excess_velocity = self.last_vertical_velocity - self.fall_damage_threshold
-            damage = int(excess_velocity * self.fall_damage_multiplier)
-            self.takeDamage(damage)
-            self.invulnerability_frames = 10
-
-        self.last_vertical_velocity = current_velocity
-        if self.invulnerability_frames > 0:
-            self.invulnerability_frames -= 1
+        
+        self.updateFallDamage()
             
         #Update light radius based on held item
         if self.heldSlot.item and isinstance(self.heldSlot.item, Light):

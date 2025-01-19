@@ -2,7 +2,7 @@ from game.model.entity.entities.player import Player
 from game.model.items.craftingtableitem import CraftingTableItem
 from game.model.items.planksitem import PlanksItem
 from game.model.items.rabbitmeat import RabbitMeat
-from game.model.items.tools import DiamondAxe
+from game.model.items.tools import DiamondAxe, WoodenAxe
 from game.model.items.torchitem import TorchItem
 
 
@@ -14,5 +14,6 @@ def addDefaultItems(player: Player) -> None:
 		RabbitMeat(),
 		CraftingTableItem(),
 		DiamondAxe(),
+		WoodenAxe(),
 		*[PlanksItem() for _ in range(66)]
 		)

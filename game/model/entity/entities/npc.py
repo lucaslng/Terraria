@@ -55,4 +55,4 @@ class Npc(Entity):
 			print(self.currentMessage)
 	
 	def update(self, goal: tuple[float, float]) -> None:
-		pass
+		super().update(goal)
