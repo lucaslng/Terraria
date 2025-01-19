@@ -24,13 +24,7 @@ class CraftingTableBlock(Block, InventoryBlock):
     
     def _calculateConsumtion(self, recipe_result: tuple[Recipe, tuple[Item, int]]) -> dict[tuple[int, int], int]:
         '''Calculate how many items should be consumed from each slot for a successful craft.'''
-        
-        recipe, (_, output_count) = recipe_result
-        consumption_map = {}
-        '''
-        Calculate how many items should be consumed from each slot for a successful craft.
-        Returns a dictionary mapping (row, col) coordinates to consumption amounts.
-        '''
+
         recipe, (_, outputCount) = recipe_result
         consumptionMap = {}
         
@@ -44,11 +38,7 @@ class CraftingTableBlock(Block, InventoryBlock):
         
         return consumptionMap
 
-    def _consumeMaterials(self) -> None:
-        """
-        Consume materials from the input inventory based on the last successful recipe.
-        Only called when items are removed from the output slot.
-        """
+    def _consumeMaterials(self) -> None:    
         if not self._lastConsumptionMap:
             return
             

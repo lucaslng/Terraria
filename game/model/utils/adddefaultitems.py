@@ -11,7 +11,8 @@ def addDefaultItems(player: Player) -> None:
 	
 	player.inventory.addItems(
 		*[TorchItem() for _ in range(64)],
+		RabbitMeat(),
 		CraftingTableItem(),
-		WoodenAxe(),
+		DiamondAxe(),
 		*[PlanksItem() for _ in range(66)]
 		)

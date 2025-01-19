@@ -1,5 +1,5 @@
 from game.model.world import World
-from utils.constants import BLOCK_SIZE
+from utils.constants import BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT
 from game.model.blocks.airblock import AirBlock
 from game.view import surfaces
 from game.textures.sprites import sprites
@@ -43,42 +43,42 @@ def drawMinimap(world: World, lightmap: list[list[int]], lights: Light, camera: 
     #Calculate visible area
     centerX = (camera.left + camera.right) // 2
     centerY = (camera.top + camera.bottom) // 2
-    blocks_wide = minimap_size[0] // MINIMAP_SCALE
-    blocks_high = minimap_size[1] // MINIMAP_SCALE
+    blocks_wide = minimapSize[0] // MINIMAP_SCALE
+    blocks_high = minimapSize[1] // MINIMAP_SCALE
     startX = max(0, (centerX // BLOCK_SIZE) - (blocks_wide // 2))
     endX = min(WORLD_WIDTH, startX + blocks_wide)
     startY = max(0, (centerY // BLOCK_SIZE) - (blocks_high // 2))
     endY = min(WORLD_HEIGHT, startY + blocks_high)
     
-    light_surface = pg.Surface(minimap_size, pg.SRCALPHA)
+    light_surface = pg.Surface(minimapSize, pg.SRCALPHA)
     
     for y in range(startY, endY):
         for x in range(startX, endX):
-            minimap_x = (x - startX) * MINIMAP_SCALE
-            minimap_y = (y - startY) * MINIMAP_SCALE
+            minimapX = (x - startX) * MINIMAP_SCALE
+            minimapY = (y - startY) * MINIMAP_SCALE
             
             #Draw back blocks first
             back_block = world.back[y][x]
             if not isinstance(back_block, AirBlock):
-                surfaces.minimap.blit(minimap_cache.getScaledSpritesBack(back_block.enum) ,(minimap_x, minimap_y))
+                surfaces.minimap.blit(minimap_cache.getScaledSpritesBack(back_block.enum) ,(minimapX, minimapY))
             
             frontBlock = world[y][x]
             if not isinstance(frontBlock, AirBlock):
                 surfaces.minimap.blit(
-                    minimap_cache.getScaledSprite(front_block.enum),
-                    (minimap_x, minimap_y)
+                    minimap_cache.getScaledSprite(frontBlock.enum),
+                    (minimapX, minimapY)
                 )
             
-            pg.draw.rect(light_surface, (0, 0, 0, lightmap[y][x]), (minimap_x, minimap_y, MINIMAP_SCALE, MINIMAP_SCALE))
+            pg.draw.rect(light_surface, (0, 0, 0, lightmap[y][x]), (minimapX, minimapY, MINIMAP_SCALE, MINIMAP_SCALE))
     
     for light, lightx, lighty in lights:
-        minimapLightx = (lightx - startX) * MINIMAP_SCALE
-        miniLighty = (lighty - startY) * MINIMAP_SCALE
+        minimapLightX = (lightx - startX) * MINIMAP_SCALE
+        minimapLightY = (lighty - startY) * MINIMAP_SCALE
         scaledRadius = light.lightRadius * MINIMAP_SCALE
         
-        if (0 <= mini_light_x <= minimap_size[0] and 
-            0 <= mini_light_y <= minimap_size[1]):
-            pg.draw.circle(light_surface, (255, 255, 255, 0), (mini_light_x, mini_light_y), scaled_radius)
+        if (0 <= minimapX <= minimapSize[0] and 
+            0 <= minimapY <= minimapSize[1]):
+            pg.draw.circle(light_surface, (255, 255, 255, 0), (minimapLightX, minimapLightY), scaledRadius)
     
     surfaces.minimapLight.blit(light_surface, (0, 0))
     
