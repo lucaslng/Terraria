@@ -1709,7 +1709,6 @@ def mainMenu():
         pg.display.flip()
         clock.tick(FPS)
     
-#TODO work on these later hopefully        
 def instructionsScreen():
   pass
           
