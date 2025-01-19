@@ -6,6 +6,7 @@ from game.view.drawhud.drawhealth import drawHealth
 from game.view.drawhud.drawhotbar import drawHotbar
 from game.view.inventory.drawhoveredslot import drawHoveredSlotOutline
 from game.view.inventory.drawinventory import drawInventory
+from game.view.inventory.drawhelmetslot import drawHelmetSlot
 from game.view.inventory.drawslot import drawSlot
 from game.view.inventory.hoveredslot import getHoveredSlotRect
 
@@ -18,8 +19,12 @@ def drawHUD(model: Model, inventories: dict[InventoryType, tuple[Inventory, int,
 	drawHealth(model.player.health, model.player.maxHealth)
 	drawHotbar(model.player.hotbar, model.player.heldSlotIndex)
  
-	for inventoryKey in inventories:
-		drawInventory(*inventories[inventoryKey])
+	for inventoryKey, inventoryData in inventories.items():
+		if inventoryKey == InventoryType.HelmetSlot:
+			slot, slotSize, x, y = inventoryData
+			drawHelmetSlot(slot, slotSize, x, y)
+		else:
+			drawInventory(*inventoryData)
 	
 	hoveredSlotRect = getHoveredSlotRect(*(v for v in inventories.values()))
 	if hoveredSlotRect:
