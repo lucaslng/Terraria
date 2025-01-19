@@ -95,21 +95,21 @@ class Entity(HasPhysics):
     def update(self, goal: tuple[float, float]) -> None:
         '''Update entity state'''
         
-        #Only do pathfinding if updateDistance is not None
         if self.updateDistance is not None:
             if (dist(self.position, goal) > self.updateDistance) if self.pathFindToPlayer else (dist(self.position, goal) < self.updateDistance):
                 x, y = map(int, self.position)
-                reachables = {(x, y)}
-                if self.world[y][x - 1].isEmpty:
-                    reachables.add((x - 1, y))
-                if self.world[y][x + 1].isEmpty:
-                    reachables.add((x + 1, y))
-                best = min(reachables, key=lambda p: dist(p, goal)) if self.pathFindToPlayer else max(reachables, key=lambda p: dist(p, goal))
-                if best != (x, y):
-                    if best[0] < x:
-                        self.walkLeft()
-                    else:
-                        self.walkRight()
+                if 0 <= x < self.world.width - 1 and 0 <= y < self.world.height - 1:
+                    reachables = {(x, y)}
+                    if x > 0 and self.world[y][x - 1].isEmpty:
+                        reachables.add((x - 1, y))
+                    if x < self.world.width - 2 and self.world[y][x + 1].isEmpty:
+                        reachables.add((x + 1, y))
+                    best = min(reachables, key=lambda p: dist(p, goal)) if self.pathFindToPlayer else max(reachables, key=lambda p: dist(p, goal))
+                    if best != (x, y):
+                        if best[0] < x:
+                            self.walkLeft()
+                        else:
+                            self.walkRight()
 
     def interact(self) -> None:
         '''Interact with the entity using the interact key'''

@@ -17,20 +17,27 @@ from game.model.model import Model
 from utils.screens import Screens
 from utils.clearscreen import clearScreen
 from utils.updatescreen import updateScreen
+from menu.gameOver.deathScreen import deathScreen
 
+
+def initGame():
+    '''Initialize or reinitialize game components'''
+    model = Model(WORLD_WIDTH, WORLD_HEIGHT)
+    model.start()
+    
+    camera = FRAME.copy()
+    camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
+    
+    inventories = {
+        InventoryType.Player: (model.player.inventory, *InventoryType.Player.value),
+        InventoryType.HelmetSlot: (model.player.helmetSlot, *InventoryType.HelmetSlot.value)
+    }
+    
+    return model, camera, inventories
 
 def game():
 	'''Main game loop'''
-	model = Model(WORLD_WIDTH, WORLD_HEIGHT)
-	model.start()
-
-	camera = FRAME.copy()
-	camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
-
-	inventories = {
-    	InventoryType.Player: (model.player.inventory, *InventoryType.Player.value),
-     	InventoryType.HelmetSlot: (model.player.helmetSlot, *InventoryType.HelmetSlot.value)
-                }
+	model, camera, inventories = initGame()
 	
 	leftMousePressedTime = 0
 
@@ -205,8 +212,12 @@ def game():
 				if 0 <= y < model.world.height and 0 <= x < model.world.width:
 					model.world[y][x].update()
 
+		#player death
 		if not model.update():
-			return Screens.MENU
+			if deathScreen() == Screens.MENU:
+				return Screens.MENU
+			else:
+				return Screens.QUIT
 
 		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE		
 		draw(model, camera, inventories)
