@@ -49,10 +49,10 @@ class Npc(Entity):
 		return pg.time.get_ticks() - self.interactTime <= 3000
 	
 	def interact(self):
+		self.currentMessageIndex += 1
 		if not self.isTalking:
 			self.interactTime = pg.time.get_ticks()
 			print(self.currentMessage)
-			self.currentMessageIndex += 1
 	
 	def update(self, goal: tuple[float, float]) -> None:
 		pass
