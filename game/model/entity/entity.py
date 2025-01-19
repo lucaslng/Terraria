@@ -94,7 +94,6 @@ class Entity(HasPhysics):
 
     def update(self, goal: tuple[float, float]) -> None:
         '''Update entity state'''
-        self.updateFallDamage()
         
         #Only do pathfinding if updateDistance is not None
         if self.updateDistance is not None:

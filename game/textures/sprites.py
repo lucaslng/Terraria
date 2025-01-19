@@ -4,7 +4,7 @@ from utils.constants import BLOCK_SIZE
 from game.model.blocks.utils.blocksenum import Blocks
 from game.model.items.utils.itemsenum import Items
 from game.textures.animation import Animation
-from game.textures.spritesheets import catSheet, rabbitsSheet, everythingSheet, weirdBlocksSheet
+from game.textures.spritesheets import catSheet, rabbitsSheet, everythingSheet, weirdBlocksSheet, dogSheet
 
 sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
     "cat": {
@@ -44,6 +44,12 @@ sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
         catSheet.get(104, 16, 16, 16, BLOCK_SIZE),
 		duration=25
         ),
+    },
+	
+    "dog": {
+        "idk": Animation(
+            dogSheet.get(0, 0, 16, 16),
+        )
     },
 	
     "rabbit": rabbitsSheet.get(0, 18, 100, 100),
@@ -94,7 +100,7 @@ sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
   
     #---TOOLS---
     #Wooden
-    Items.WoodenAxe: pg.transform.flip(everythingSheet.get(0, 0, 16, 16), True, False),
+    Items.WoodenAxe: everythingSheet.get(0, 0, 16, 16),
     Items.WoodenPickaxe: everythingSheet.get(16, 0, 16, 16),
     Items.WoodenShovel: everythingSheet.get(32, 0, 16, 16),
     Items.WoodenSword: everythingSheet.get(48, 0, 16, 16),

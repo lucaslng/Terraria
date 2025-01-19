@@ -52,4 +52,4 @@ class Npc(Entity):
 		self.interactTime = pg.time.get_ticks() # extend window time
 	
 	def update(self, goal: tuple[float, float]) -> None:
-		super().update(goal)
+		pass
