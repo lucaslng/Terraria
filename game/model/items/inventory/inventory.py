@@ -42,3 +42,10 @@ class Inventory:
 
 		for item in items:
 			self.addItem(item)
+	
+	def __repr__(self) -> str:
+		out = ""
+		for r, row in enumerate(self.array):
+			for c, slot in enumerate(row):
+				out += f'[{r}][{c}] {slot.__repr__()}'
+		return out

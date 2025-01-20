@@ -48,31 +48,32 @@ def game() -> Screens:
 			return
 		
 		hoveredSlotName, r, c = hoveredSlotData
-		inventory_or_slot = inventories[hoveredSlotName][0]
+		inventoryOrSlot = inventories[hoveredSlotName][0]
 		
-		if isinstance(inventory_or_slot, Slot):
-			target_slot = inventory_or_slot
+		if isinstance(inventoryOrSlot, Slot):
+			targetSlot = inventoryOrSlot
 		else:
-			target_slot = inventory_or_slot[r][c]
+			targetSlot = inventoryOrSlot[r][c]
 		
 		#Check conditions and perform swap
-		if target_slot.condition(model.player.cursorSlot):
+		if targetSlot.condition(model.player.cursorSlot):
 			if (model.player.cursorSlot.item and 
-				target_slot.item == model.player.cursorSlot.item):
+				targetSlot.item == model.player.cursorSlot.item):
 				#Stack similar items
-				add = min(model.player.cursorSlot.item.stackSize - target_slot.count, model.player.cursorSlot.count)
+				add = min(model.player.cursorSlot.item.stackSize - targetSlot.count, model.player.cursorSlot.count)
 				extra = model.player.cursorSlot.count - add
-				target_slot.count += add
+				targetSlot.count += add
 				model.player.cursorSlot.count = extra
 				if model.player.cursorSlot.count == 0:
 					model.player.cursorSlot.clear()
 			else:
 				#Swap different items
-				if isinstance(inventory_or_slot, Slot):
-					inventory_or_slot.item, model.player.cursorSlot.item = (model.player.cursorSlot.item, inventory_or_slot.item)
-					inventory_or_slot.count, model.player.cursorSlot.count = (model.player.cursorSlot.count, inventory_or_slot.count)
+				if isinstance(inventoryOrSlot, Slot):
+					inventoryOrSlot.item, model.player.cursorSlot.item = model.player.cursorSlot.item, inventoryOrSlot.item
+					inventoryOrSlot.count, model.player.cursorSlot.count = model.player.cursorSlot.count, inventoryOrSlot.count
 				else:
-					inventory_or_slot[r][c], model.player.cursorSlot = (model.player.cursorSlot, inventory_or_slot[r][c])
+					inventoryOrSlot[r][c].item, model.player.cursorSlot.item = model.player.cursorSlot.item, inventoryOrSlot[r][c].item
+					inventoryOrSlot[r][c].count, model.player.cursorSlot.count = model.player.cursorSlot.count, inventoryOrSlot[r][c].count
    
 	def handleStackSplit(hoveredSlotData: tuple[InventoryType, int, int]) -> None:
 		if hoveredSlotData is None:
@@ -100,7 +101,6 @@ def game() -> Screens:
 
 	while True:
 		clearScreen()
-
 		pressedKeys = pg.key.get_pressed()
 		if pressedKeys[keys.walkLeft]:
 			model.player.walkLeft()

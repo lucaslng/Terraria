@@ -83,7 +83,6 @@ class Model:
 		#if player is dead
 		if not self.player.isAlive:
 			return False
-
 		for i, entity in enumerate(self.entities):
 			entity.update(self.player.position)
 			if isinstance(entity, Dog) and dist(entity.position, self.player.position) < 1.5:
