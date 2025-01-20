@@ -164,6 +164,7 @@ class Model:
 					self.world[y][x].shape = pm.Poly(self.worldBody, vertices)
 					self.world[y][x].shape.friction = self.world[y][x].friction
 					self.space.add(self.world[y][x].shape)
+					self.generateLight(y, x)
 
 	def mineBlock(self):
 		'''mine the block the player is facing'''
