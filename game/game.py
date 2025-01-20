@@ -28,7 +28,6 @@ def initGame():
 	if not model:
 		print("Generating new world...")
 		model = Model(WORLD_WIDTH, WORLD_HEIGHT)
-		saving.save(model)
 	camera = FRAME.copy()
 	camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
 
@@ -226,5 +225,6 @@ def game() -> Screens:
 		#player death
 		if not model.update():
 			saving.clear()
+			del inventories
 			return deathScreen(pg.image.tobytes(SURF, 'RGBA'))
 		updateScreen()
