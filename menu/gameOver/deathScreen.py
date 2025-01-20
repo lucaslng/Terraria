@@ -15,7 +15,7 @@ def deathScreen(backgroundBytes: bytes) -> Screens:
     titleColor = (255, 0, 0)
     
     background = pg.image.frombytes(backgroundBytes, FRAME.size, 'RGBA')
-    background = pg.transform.smoothscale(background, (FRAME.width // 20, FRAME.height // 20))
+    background = pg.transform.smoothscale(background, (FRAME.width // 15, FRAME.height // 15))
     background = pg.transform.smoothscale(background, FRAME.size)
 
     overlay = pg.Surface(FRAME.size, pg.SRCALPHA)
