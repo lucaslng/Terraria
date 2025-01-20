@@ -5,4 +5,5 @@ class Screens(Enum):
 	MENU = auto()
 	GAME = auto()
 	DEATH = auto()
+	ABOUT = auto()
 	QUIT = auto()

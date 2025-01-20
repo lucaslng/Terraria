@@ -5,8 +5,8 @@ from utils.updatescreen import updateScreen
 from widgets.button import Button
 
 
-def instructionsScreen():
-    '''Instructions screen'''
+def aboutScreen():
+    '''About screen'''
 
     titleFont = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 36)
     textFont = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 24)
@@ -19,21 +19,20 @@ def instructionsScreen():
     background = pg.Surface((WIDTH, HEIGHT))
     background.fill(backgroundColour)
 
-    titleText = "Instructions"
+    titleText = "About"
     titleSurface = titleFont.render(titleText, True, textColor)
     titleRect = titleSurface.get_rect(center=(WIDTH // 2, HEIGHT // 6))
 
     #Instruction text
-    instructions = [
-        "- Use WASD to move your character.",
-        "- Left-click to break blocks.",
-        "- Right-click to place blocks.",
-        "- Press 'E' to open your inventory.",
-        "- Explore the world!"
+    about = [
+        "- TerraCraft",
+        "- A game where you explore the world and defend yourself against monsters!",
+        "- By Lucas Leung and Ryan Cheung",
+        "- 20th January 2025",
     ]
 
-    instructionSurfaces = [
-        textFont.render(line, True, textColor) for line in instructions
+    aboutSurfaces = [
+        textFont.render(line, True, textColor) for line in about
     ]
 
     #Buttons
@@ -63,7 +62,7 @@ def instructionsScreen():
         SURF.blit(titleSurface, titleRect)
 
         #Draw instructions
-        for i, surface in enumerate(instructionSurfaces):
+        for i, surface in enumerate(aboutSurfaces):
             lineRect = surface.get_rect(center=(WIDTH // 2, HEIGHT // 3 + i * 40))
             SURF.blit(surface, lineRect)
 

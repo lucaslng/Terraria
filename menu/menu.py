@@ -41,6 +41,7 @@ def mainMenu():
 		'instructions': Button(buttonX, startY + buttonHeight + spacing, buttonWidth, buttonHeight, "Instructions"),
 		'options': Button(buttonX, startY + (buttonHeight + spacing) * 2, buttonWidth, buttonHeight, "Options"),
 		'quit': Button(buttonX, startY + (buttonHeight + spacing) * 3, buttonWidth, buttonHeight, "Quit"),
+		'about': Button(10, 10, 200, buttonHeight, "About")
 	}
 
 	bgScrollSpeed = 20
@@ -48,7 +49,7 @@ def mainMenu():
 
 	while True:
 		dt = clock.get_time() / 1000.0  #delta time in seconds
-		mouse_pos = pg.mouse.get_pos()
+		mousePos = pg.mouse.get_pos()
 
 		for event in pg.event.get():
 			if event.type == pg.QUIT:
@@ -56,21 +57,23 @@ def mainMenu():
 
 			if event.type in (pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP):
 				for button in buttons.values():
-					button.handleEvent(event, mouse_pos)
+					button.handleEvent(event, mousePos)
 
 			if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-				if buttons['play'].rect.collidepoint(mouse_pos):
+				if buttons['play'].rect.collidepoint(mousePos):
 					return Screens.GAME
-				elif buttons['instructions'].rect.collidepoint(mouse_pos):
+				elif buttons['instructions'].rect.collidepoint(mousePos):
 					return instructionsScreen()
-				elif buttons['options'].rect.collidepoint(mouse_pos):
+				elif buttons['options'].rect.collidepoint(mousePos):
 					# return optionsScreen()
 					pass
-				elif buttons['quit'].rect.collidepoint(mouse_pos):
+				elif buttons['quit'].rect.collidepoint(mousePos):
 					return Screens.QUIT
+				elif buttons['about'].rect.collidepoint(mousePos):
+					return Screens.ABOUT
 
 		for button in buttons.values():
-			button.update(mouse_pos)
+			button.update(mousePos)
 
 		bgOffset = (bgOffset + bgScrollSpeed * dt) % bgPanorama.get_width()
 

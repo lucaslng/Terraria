@@ -1,4 +1,5 @@
 import gc
+from menu.about.about import aboutScreen
 from menu.gameOver.deathScreen import deathScreen
 import utils.installpackages
 from game.game import game
@@ -21,6 +22,8 @@ def main():
 				state = mainMenu()
 			case Screens.GAME:
 				state = game()
+			case Screens.ABOUT:
+				state = aboutScreen()
 			case Screens.DEATH:
 				state = deathScreen()
 			case Screens.QUIT:
