@@ -53,3 +53,4 @@ class Npc(Entity):
 	
 	def update(self, goal: tuple[float, float]) -> None:
 		self.updateFallDamage()
+		self.updateVerticalVelocityTime()

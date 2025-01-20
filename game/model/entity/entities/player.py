@@ -64,7 +64,8 @@ class Player(Entity, Light):
     def update(self) -> None:
         '''Update player state including fall damage and light radius.'''       
         self.updateFallDamage()
-            
+        self.updateVerticalVelocityTime()
+        print(round(self.velocity.y, 4))
         #Update light radius based on held item
         if self.heldSlot.item and isinstance(self.heldSlot.item, Light):
             self.lightRadius = self.heldSlot.item.lightRadius
