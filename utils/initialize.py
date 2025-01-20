@@ -7,6 +7,7 @@ def initialize():
 	pg.font.init()
 	pg.mixer.init()
 	pg.mixer.set_reserved(1)
+	pg.mixer.set_num_channels(1000)
 	pg.time.set_timer(101, 5000)
 	
 	pg.mixer.music.set_volume(0.4)

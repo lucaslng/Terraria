@@ -2,7 +2,6 @@ from random import choice
 from game.model.entity.entity import Entity
 from game.model.items.rabbitmeat import RabbitMeat
 from game.model.world import World
-from sound import channels
 from sound.sounds import sounds
 
 class Rabbit(Entity):
@@ -21,7 +20,7 @@ class Rabbit(Entity):
 
 	def takeDamage(self, amount: int) -> bool:
 		if super().takeDamage(amount):
-			channels.rabbitHurt.play(choice(sounds["rabbit"]["hurt"]))
+			choice(sounds["rabbit"]["hurt"]).play()
 			return True
 		return False
 	

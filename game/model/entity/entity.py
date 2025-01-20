@@ -1,11 +1,11 @@
-from math import ceil, dist, floor
+from math import dist
 import time
 
-from pymunk import Vec2d
 from game.model.entity.hasphysics import HasPhysics
 from game.model.items.item import Item
 from game.model.world import World
 
+from sound import channels
 
 class Entity(HasPhysics):
     '''Base class for all entities'''

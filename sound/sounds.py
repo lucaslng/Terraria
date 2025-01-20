@@ -18,4 +18,18 @@ sounds = {
 			Sound(f'{directory}/rabbit/hurt4.ogg'),
 		)
 	},
+	"dog":
+	{
+		"hurt":
+		(
+			Sound(f'{directory}/dog/hurt/hurt1.ogg'),
+			Sound(f'{directory}/dog/hurt/hurt2.ogg'),
+		),
+		"growl":
+		(
+			Sound(f'{directory}/dog/growl/growl1.ogg'),
+			Sound(f'{directory}/dog/growl/growl2.ogg'),
+			Sound(f'{directory}/dog/growl/growl3.ogg'),
+		)
+	}
 }

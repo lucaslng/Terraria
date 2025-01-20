@@ -12,7 +12,6 @@ from game.view import conversions
 from game.view.inventory.hoveredslot import getHoveredSlotSlot
 from menu.gameOver.deathScreen import deathScreen
 from sound import channels
-from sound.sounds import sounds
 import utils.keys as keys
 from utils.constants import BLOCK_SIZE, FRAME, SURF, WORLD_HEIGHT, WORLD_WIDTH
 from game.view.draw import draw
@@ -131,7 +130,6 @@ def game() -> Screens:
 		
 		if pressedKeys[keys.consume]:
 			if model.player.heldSlot.item and isinstance(model.player.heldSlot.item, Edible) and not channels.consume.get_busy():
-				channels.consume.play(sounds["player"]["consume"])
 				model.player.consume()
 		
 		if pg.mouse.get_pressed()[0]:
@@ -156,6 +154,7 @@ def game() -> Screens:
 				return Screens.QUIT
 			elif event.type == 101:
 				model.spawnEntitiesRandom()
+				pg.mixer.set_num_channels(len(model.entities) * 2) # set extra channels just to be safe
 			elif event.type == pg.KEYDOWN:
 				if event.key == keys.interact:
 					if len(inventories) > 1:
