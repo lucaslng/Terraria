@@ -47,9 +47,11 @@ class Npc(Entity):
 	def isTalking(self) -> bool:
 		return pg.time.get_ticks() - self.interactTime <= 3500
 	
-	def interact(self):
+	def interact(self) -> bool:
 		self.currentMessageIndex += 1
 		self.interactTime = pg.time.get_ticks() # extend window time
+		return super().interact()
 	
 	def update(self, goal: tuple[float, float]) -> None:
 		self.updateFallDamage()
+		self.updateVerticalVelocityTime()

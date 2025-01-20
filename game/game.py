@@ -6,13 +6,15 @@ from game.model.entity.entities.rabbit import Rabbit
 from game.model.items.inventory.slot import Slot
 from game.model.items.inventory.inventorytype import InventoryType
 from game.model.items.specialitems.edible import Edible
+from game.model.items.specialitems.tool import Tool
 from game.model.utils.bresenham import bresenham
 import game.utils.saving as saving
 from game.view import conversions
 from game.view.inventory.hoveredslot import getHoveredSlotSlot
-from sound import channels, sounds
+from menu.gameOver.deathScreen import deathScreen
+from sound import channels
 import utils.keys as keys
-from utils.constants import BLOCK_SIZE, FRAME, WORLD_HEIGHT, WORLD_WIDTH
+from utils.constants import BLOCK_SIZE, FRAME, SURF, WORLD_HEIGHT, WORLD_WIDTH
 from game.view.draw import draw
 from game.model.model import Model
 from utils.screens import Screens
@@ -21,20 +23,20 @@ from utils.updatescreen import updateScreen
 
 
 def initGame():
-		'''Initialize or reinitialize game components'''
-		model = saving.load()
-		if not model:
-			model = Model(WORLD_WIDTH, WORLD_HEIGHT)
-    
-		camera = FRAME.copy()
-		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
+	'''Initialize or reinitialize game components'''
+	model = saving.load()
+	if not model:
+		print("Generating new world...")
+		model = Model(WORLD_WIDTH, WORLD_HEIGHT)
+	camera = FRAME.copy()
+	camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
 
-		inventories = {
-				InventoryType.Player: (model.player.inventory, *InventoryType.Player.value),
-				InventoryType.HelmetSlot: (model.player.helmetSlot, *InventoryType.HelmetSlot.value)
-		}
+	inventories = {
+			InventoryType.Player: (model.player.inventory, *InventoryType.Player.value),
+			InventoryType.HelmetSlot: (model.player.helmetSlot, *InventoryType.HelmetSlot.value)
+	}
 
-		return model, camera, inventories
+	return model, camera, inventories
 
 def game() -> Screens:
 	'''Main game loop'''
@@ -47,31 +49,32 @@ def game() -> Screens:
 			return
 		
 		hoveredSlotName, r, c = hoveredSlotData
-		inventory_or_slot = inventories[hoveredSlotName][0]
+		inventoryOrSlot = inventories[hoveredSlotName][0]
 		
-		if isinstance(inventory_or_slot, Slot):
-			target_slot = inventory_or_slot
+		if isinstance(inventoryOrSlot, Slot):
+			targetSlot = inventoryOrSlot
 		else:
-			target_slot = inventory_or_slot[r][c]
+			targetSlot = inventoryOrSlot[r][c]
 		
 		#Check conditions and perform swap
-		if target_slot.condition(model.player.cursorSlot):
+		if targetSlot.condition(model.player.cursorSlot):
 			if (model.player.cursorSlot.item and 
-				target_slot.item == model.player.cursorSlot.item):
+				targetSlot.item == model.player.cursorSlot.item):
 				#Stack similar items
-				add = min(model.player.cursorSlot.item.stackSize - target_slot.count, model.player.cursorSlot.count)
+				add = min(model.player.cursorSlot.item.stackSize - targetSlot.count, model.player.cursorSlot.count)
 				extra = model.player.cursorSlot.count - add
-				target_slot.count += add
+				targetSlot.count += add
 				model.player.cursorSlot.count = extra
 				if model.player.cursorSlot.count == 0:
 					model.player.cursorSlot.clear()
 			else:
 				#Swap different items
-				if isinstance(inventory_or_slot, Slot):
-					inventory_or_slot.item, model.player.cursorSlot.item = (model.player.cursorSlot.item, inventory_or_slot.item)
-					inventory_or_slot.count, model.player.cursorSlot.count = (model.player.cursorSlot.count, inventory_or_slot.count)
+				if isinstance(inventoryOrSlot, Slot):
+					inventoryOrSlot.item, model.player.cursorSlot.item = model.player.cursorSlot.item, inventoryOrSlot.item
+					inventoryOrSlot.count, model.player.cursorSlot.count = model.player.cursorSlot.count, inventoryOrSlot.count
 				else:
-					inventory_or_slot[r][c], model.player.cursorSlot = (model.player.cursorSlot, inventory_or_slot[r][c])
+					inventoryOrSlot[r][c].item, model.player.cursorSlot.item = model.player.cursorSlot.item, inventoryOrSlot[r][c].item
+					inventoryOrSlot[r][c].count, model.player.cursorSlot.count = model.player.cursorSlot.count, inventoryOrSlot[r][c].count
    
 	def handleStackSplit(hoveredSlotData: tuple[InventoryType, int, int]) -> None:
 		if hoveredSlotData is None:
@@ -99,7 +102,6 @@ def game() -> Screens:
 
 	while True:
 		clearScreen()
-
 		pressedKeys = pg.key.get_pressed()
 		if pressedKeys[keys.walkLeft]:
 			model.player.walkLeft()
@@ -129,7 +131,6 @@ def game() -> Screens:
 		
 		if pressedKeys[keys.consume]:
 			if model.player.heldSlot.item and isinstance(model.player.heldSlot.item, Edible) and not channels.consume.get_busy():
-				channels.consume.play(sounds.consume)
 				model.player.consume()
 		
 		if pg.mouse.get_pressed()[0]:
@@ -154,6 +155,7 @@ def game() -> Screens:
 				return Screens.QUIT
 			elif event.type == 101:
 				model.spawnEntitiesRandom()
+				pg.mixer.set_num_channels(len(model.entities) * 2) # set extra channels just to be safe
 			elif event.type == pg.KEYDOWN:
 				if event.key == keys.interact:
 					if len(inventories) > 1:
@@ -175,8 +177,12 @@ def game() -> Screens:
 						model.entities.sort(key=lambda e: dist(e.position, model.player.position)) # sort by position to the player
 						if dist(model.entities[0].position, model.player.position) < 1.5:
 							if isinstance(model.entities[0], Rabbit) or isinstance(model.entities[0], Dog):
-								model.entities[0].interact(model.player.damage)
-								model.entities[0].apply_impulse_at_local_point((model.entities[0].position - model.player.position) * 40, (0, 0.5))
+								if model.entities[0].interact(model.player.damage):
+									model.entities[0].apply_impulse_at_local_point((model.entities[0].position - model.player.position) * 40, (0, 0.5))
+									if model.player.heldSlot.item and isinstance(model.player.heldSlot.item, Tool):
+										model.player.heldSlot.item.durability -= 1
+										if model.player.heldSlot.item.durability == 0:
+											model.player.heldSlot.clear()
 								if not model.entities[0].isAlive:
 									if model.entities[0].droppedItem:
 										model.player.inventory.addItem(model.entities[0].droppedItem)
@@ -214,11 +220,11 @@ def game() -> Screens:
 				if 0 <= y < model.world.height and 0 <= x < model.world.width:
 					model.world[y][x].update()
 
+		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE		
+		draw(model, camera, inventories)
 		#player death
 		if not model.update():
 			saving.clear()
-			return Screens.DEATH
-
-		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE		
-		draw(model, camera, inventories)
+			del inventories
+			return deathScreen(pg.image.tobytes(SURF, 'RGBA'))
 		updateScreen()

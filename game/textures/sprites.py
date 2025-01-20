@@ -99,6 +99,11 @@ sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
     "furnaceOn": everythingSheet.get(638, 0, 16, 16, BLOCK_SIZE),
     Items.Furnace: everythingSheet.get(622, 0, 16, 16),
 	Items.RabbitMeat: everythingSheet.get(654, 0, 16, 16),
+	
+    # Helmets
+	Items.GoldHelmet: everythingSheet.get(670, 0, 16, 16),
+	Items.IronHelmet: everythingSheet.get(686, 0, 16, 16),
+	Items.DiamondHelmet: everythingSheet.get(702, 0, 16, 16),
   
     #---TOOLS---
     #Wooden

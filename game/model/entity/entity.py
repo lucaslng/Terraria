@@ -1,9 +1,9 @@
-from math import ceil, dist, floor
+from math import dist
 import time
+
 from game.model.entity.hasphysics import HasPhysics
 from game.model.items.item import Item
 from game.model.world import World
-
 
 class Entity(HasPhysics):
     '''Base class for all entities'''
@@ -42,7 +42,9 @@ class Entity(HasPhysics):
         self.fallDamageThreshold = 15  		    #Minimum velocity to start taking damage
         self.fallDamageMultiplier = 0.8  	    #Damage per unit of excess velocity
         self.invulnerabilityFrames = 0
-        self.invulnerabilityDuration = 10       #How long entity stays invulnerable after taking damage
+        self.invulnerabilityDuration = 10    #How long entity stays invulnerable after taking damage
+        
+        self.noVerticalVelocityTime = 0
 
     def walkLeft(self) -> None:
         '''Walk the entity to the left using walkForce'''
@@ -60,13 +62,16 @@ class Entity(HasPhysics):
             self.apply_impulse_at_local_point((0, -self.jumpImpulse))
             self.previousJumpTime = time.time()
 
+    def updateVerticalVelocityTime(self) -> None:
+        '''update the vertical velocity time'''
+        if -0.01 < self.velocity.y < 0.01:
+            self.noVerticalVelocityTime += 1
+        else:
+            self.noVerticalVelocityTime = 0
+
     @property
     def isOnGround(self) -> bool:
-        if ceil(self.position.y) == self.world.height:
-            return True
-        if (self.position.y - self.height / 2) % 1 < 0.05: # at the bottom of a possibly empty block
-            return (not self.world[ceil(self.position.y)][floor(self.position.x)].isEmpty) or (not self.world[ceil(self.position.y)][ceil(self.position.x)].isEmpty)
-        return False
+        return self.noVerticalVelocityTime > 1
 
     @property
     def isAlive(self) -> bool:
@@ -80,21 +85,24 @@ class Entity(HasPhysics):
             return True
         return False
         
-    def updateFallDamage(self) -> None:
-        '''Handle fall damage logic'''
+    def updateFallDamage(self) -> bool:
+        '''Handle fall damage logic. returns true or false depending on whether fall damage was taken'''
+        tookDamage = False
         currentVelo = self.velocity.y
         if (self.lastVerticalVelocity > self.fallDamageThreshold and abs(currentVelo) < self.fallDamageThreshold * 0.5):
             excessVelo = self.lastVerticalVelocity - self.fallDamageThreshold
             damage = int(excessVelo * self.fallDamageMultiplier)
-            self.takeDamage(damage)
+            tookDamage = self.takeDamage(damage)
 
         self.lastVerticalVelocity = currentVelo
         
         if self.invulnerabilityFrames > 0:
             self.invulnerabilityFrames -= 1
+        return tookDamage
 
     def update(self, goal: tuple[float, float]) -> None:
         '''Update entity state'''      
+        self.updateVerticalVelocityTime()
         if self.updateDistance is not None:
             if dist(self.position, goal) < self.updateDistance:
                 x, y = map(int, self.position)
@@ -116,6 +124,6 @@ class Entity(HasPhysics):
                                 self.jump()
                             self.walkRight()
 
-    def interact(self) -> None:
+    def interact(self) -> bool:
         '''Interact with the entity using the interact key'''
-        pass
+        return False

@@ -1,11 +1,12 @@
-from enum import Enum
+from enum import Enum, auto
 
 
 class Noises(Enum):
-	GRASSHEIGHT = 1
-	STONEHEIGHT = 2
-	CAVES = 3
-	COAL = 4
-	IRON = 5
-	GOLD = 6
-	DIAMOND = 7
+	BIOME = auto()
+	GRASSHEIGHT = auto()
+	STONEHEIGHT = auto()
+	CAVES = auto()
+	COAL = auto()
+	IRON = auto()
+	GOLD = auto()
+	DIAMOND = auto()

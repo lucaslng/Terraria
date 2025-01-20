@@ -13,4 +13,4 @@ def drawHelmetSlot(slot: Slot, slotSize: int, x: int, y: int) -> None:
     pg.draw.rect(surfaces.hud, (200, 200, 200, 160), (x, y, slotSize, slotSize))
     pg.draw.rect(surfaces.hud, (90, 90, 90), (x, y, slotSize, slotSize), 2)
     
-    drawSlot(slot, x, y, slotSize)
+    drawSlot(surfaces.hud, slot, x, y, slotSize)

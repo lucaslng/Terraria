@@ -1,6 +1,6 @@
 from pygame import Rect
 from game.view.drawentities import drawEntities
-from utils.constants import FRAME, SURF, WIDTH, clock, font16
+from utils.constants import BLOCK_SIZE, FRAME, SURF, WIDTH, clock, font16
 from game.model.items.inventory.inventory import Inventory
 from game.model.model import Model
 from game.view import surfaces
@@ -38,9 +38,10 @@ def draw(model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int
 		(surfaces.world, (0, 0)),
 		(surfaces.blockBreak, (0, 0)),
 		(surfaces.sunlight, (0, 0)),
-		(surfaces.dialogue, (0, 0)),
 		(surfaces.hud, (0, 0)),
-  		(fpsSurf, (WIDTH - 300, 20)),
+		(surfaces.hotbar, (FRAME.centerx - (13.5 * BLOCK_SIZE) // 2, FRAME.height - int(2.25 * BLOCK_SIZE))),
+		(surfaces.health, (10, 10)),
+  	(fpsSurf, (WIDTH - 300, 20)),
 		(surfaces.minimap, (WIDTH - 220, 20)),
 		(surfaces.minimapLight, (WIDTH - 220, 20)),
 	))

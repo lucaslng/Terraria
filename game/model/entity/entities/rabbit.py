@@ -1,6 +1,8 @@
+from random import choice
 from game.model.entity.entity import Entity
 from game.model.items.rabbitmeat import RabbitMeat
 from game.model.world import World
+from sound.sounds import sounds
 
 class Rabbit(Entity):
 	'''Rabbit entity'''
@@ -12,9 +14,15 @@ class Rabbit(Entity):
 		self.isScared = False
 		self.droppedItem = RabbitMeat()
 	
-	def interact(self, damage: int) -> None:
+	def interact(self, damage: int) -> bool:
 		self.isScared = True
-		self.health -= damage
+		return self.takeDamage(damage)
+
+	def takeDamage(self, amount: int) -> bool:
+		if super().takeDamage(amount):
+			choice(sounds["rabbit"]["hurt"]).play()
+			return True
+		return False
 	
 	def update(self, goal: tuple[float, float]) -> None:
 		self.updateFallDamage()

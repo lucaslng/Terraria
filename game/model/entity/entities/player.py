@@ -1,8 +1,11 @@
 from game.model.entity.entity import Entity
 from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.slot import Slot
+from game.model.items.specialitems.helmet import Helmet
 from game.model.light import Light
 from game.model.world import World
+from sound import channels
+from sound.sounds import sounds
 
 class Player(Entity, Light):
     '''
@@ -12,7 +15,7 @@ class Player(Entity, Light):
     _heldSlotIndex = 0
     reach = 4
     inventory = Inventory(4, 9)
-    helmetSlot = Slot()
+    helmetSlot = Slot(condition=lambda other: isinstance(other.item, Helmet) or other.item is None)
     cursorSlot = Slot()
     defaultLightRadius = 0.8
     lightRadius = defaultLightRadius
@@ -54,8 +57,22 @@ class Player(Entity, Light):
         else:
             return 1
     
+    @property
+    def protectionMultiplier(self) -> float:
+        '''returns the multplier for when the player takes damage'''
+        if isinstance(self.helmetSlot.item, Helmet):
+            return self.helmetSlot.item.multiplier
+        return 1 # default value
+    
+    def takeDamage(self, amount: int) -> bool:
+        if super().takeDamage(int(amount * self.protectionMultiplier)):
+            sounds["player"]["hurt"].play()
+            return True
+        return False
+    
     def consume(self) -> None:
         '''eat the item in the held slot'''
+        channels.consume.play(sounds["player"]["consume"])
         self.health = min(self.maxHealth, self.health + self.heldSlot.item.healing)
         self.heldSlot.count -= 1
         if not self.heldSlot.count:
@@ -64,7 +81,7 @@ class Player(Entity, Light):
     def update(self) -> None:
         '''Update player state including fall damage and light radius.'''       
         self.updateFallDamage()
-            
+        self.updateVerticalVelocityTime()
         #Update light radius based on held item
         if self.heldSlot.item and isinstance(self.heldSlot.item, Light):
             self.lightRadius = self.heldSlot.item.lightRadius

@@ -1,17 +1,12 @@
 import pygame as pg
-from utils.constants import HEIGHT, SURF, WIDTH
+from utils.clearscreen import clearScreen
+from utils.constants import FRAME, HEIGHT, SURF, WIDTH
 from utils.screens import Screens
 from utils.updatescreen import updateScreen
 from widgets.button import Button
-from game.view.surfaces import DeathSurf
+from game.view.surfaces import deathSurf
 
-def applyBlur():
-    scaled = pg.transform.smoothscale(SURF, (WIDTH // 15, HEIGHT // 15))
-    blurred = pg.transform.smoothscale(scaled, (WIDTH, HEIGHT))
-    
-    return blurred
-
-def deathScreen() -> Screens:  
+def deathScreen(backgroundBytes: bytes) -> Screens:  
     titleFont = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 48)
     buttonFont = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 36)
     
@@ -19,11 +14,13 @@ def deathScreen() -> Screens:
     textShadow = (20, 20, 20, 160)
     titleColor = (255, 0, 0)
     
-    blurredBackground = applyBlur()
+    background = pg.image.frombytes(backgroundBytes, FRAME.size, 'RGBA')
+    background = pg.transform.smoothscale(background, (FRAME.width // 15, FRAME.height // 15))
+    background = pg.transform.smoothscale(background, FRAME.size)
 
-    overlay = pg.Surface((WIDTH, HEIGHT))
-    overlay.fill((0, 0, 0))
-    overlay.set_alpha(100)
+    overlay = pg.Surface(FRAME.size, pg.SRCALPHA)
+    overlay.fill((0, 0, 0, 100))
+    background.blit(overlay, (0, 0))
     
     buttonWidth, buttonHeight = 400, 50
     buttonX = (WIDTH - buttonWidth) // 2
@@ -36,6 +33,7 @@ def deathScreen() -> Screens:
     }
     
     while True:
+        clearScreen()
         mouse_pos = pg.mouse.get_pos()
         
         for event in pg.event.get():
@@ -55,14 +53,12 @@ def deathScreen() -> Screens:
         for button in buttons.values():
             button.update(mouse_pos)
         
-        DeathSurf.blit(blurredBackground, (0, 0))
-        DeathSurf.blit(overlay, (0, 0))
+        deathSurf.blit(background, (0, 0))
         
         gameOverText = titleFont.render("Game Over!", True, titleColor)
         textRect = gameOverText.get_rect(center=(WIDTH // 2, HEIGHT // 4))
-        DeathSurf.blit(gameOverText, textRect)
-        
+        deathSurf.blit(gameOverText, textRect)
+        SURF.blit(deathSurf, (0, 0))
         for button in buttons.values():
             button.draw(buttonFont, buttonTextColour, textShadow)
-        
         updateScreen()
