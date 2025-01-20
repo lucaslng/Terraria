@@ -1,4 +1,3 @@
-import gc
 from menu.about.about import aboutScreen
 from menu.gameOver.deathScreen import deathScreen
 import utils.installpackages

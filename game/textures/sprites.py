@@ -1,5 +1,4 @@
 from pygame import SRCALPHA, Surface
-import pygame as pg
 from utils.constants import BLOCK_SIZE
 from game.model.blocks.utils.blocksenum import Blocks
 from game.model.items.utils.itemsenum import Items
