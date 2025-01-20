@@ -6,6 +6,7 @@ from game.model.entity.entities.rabbit import Rabbit
 from game.model.items.inventory.slot import Slot
 from game.model.items.inventory.inventorytype import InventoryType
 from game.model.items.specialitems.edible import Edible
+from game.model.items.specialitems.tool import Tool
 from game.model.utils.bresenham import bresenham
 import game.utils.saving as saving
 from game.view import conversions
@@ -176,8 +177,12 @@ def game() -> Screens:
 						model.entities.sort(key=lambda e: dist(e.position, model.player.position)) # sort by position to the player
 						if dist(model.entities[0].position, model.player.position) < 1.5:
 							if isinstance(model.entities[0], Rabbit) or isinstance(model.entities[0], Dog):
-								model.entities[0].interact(model.player.damage)
-								model.entities[0].apply_impulse_at_local_point((model.entities[0].position - model.player.position) * 40, (0, 0.5))
+								if model.entities[0].interact(model.player.damage):
+									model.entities[0].apply_impulse_at_local_point((model.entities[0].position - model.player.position) * 40, (0, 0.5))
+									if model.player.heldSlot.item and isinstance(model.player.heldSlot.item, Tool):
+										model.player.heldSlot.item.durability -= 1
+										if model.player.heldSlot.item.durability == 0:
+											model.player.heldSlot.clear()
 								if not model.entities[0].isAlive:
 									if model.entities[0].droppedItem:
 										model.player.inventory.addItem(model.entities[0].droppedItem)

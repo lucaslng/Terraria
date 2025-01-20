@@ -14,9 +14,9 @@ class Rabbit(Entity):
 		self.isScared = False
 		self.droppedItem = RabbitMeat()
 	
-	def interact(self, damage: int) -> None:
+	def interact(self, damage: int) -> bool:
 		self.isScared = True
-		self.takeDamage(damage)
+		return self.takeDamage(damage)
 
 	def takeDamage(self, amount: int) -> bool:
 		if super().takeDamage(amount):

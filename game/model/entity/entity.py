@@ -126,6 +126,6 @@ class Entity(HasPhysics):
                                 self.jump()
                             self.walkRight()
 
-    def interact(self) -> None:
+    def interact(self) -> bool:
         '''Interact with the entity using the interact key'''
-        pass
+        return False
