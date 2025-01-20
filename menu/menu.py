@@ -65,8 +65,7 @@ def mainMenu():
 				elif buttons['instructions'].rect.collidepoint(mousePos):
 					return instructionsScreen()
 				elif buttons['options'].rect.collidepoint(mousePos):
-					# return optionsScreen()
-					pass
+					return optionsScreen()
 				elif buttons['quit'].rect.collidepoint(mousePos):
 					return Screens.QUIT
 				elif buttons['about'].rect.collidepoint(mousePos):
