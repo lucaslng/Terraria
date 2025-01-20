@@ -87,18 +87,20 @@ class Entity(HasPhysics):
             return True
         return False
         
-    def updateFallDamage(self) -> None:
-        '''Handle fall damage logic'''
+    def updateFallDamage(self) -> bool:
+        '''Handle fall damage logic. returns true or false depending on whether fall damage was taken'''
+        tookDamage = False
         currentVelo = self.velocity.y
         if (self.lastVerticalVelocity > self.fallDamageThreshold and abs(currentVelo) < self.fallDamageThreshold * 0.5):
             excessVelo = self.lastVerticalVelocity - self.fallDamageThreshold
             damage = int(excessVelo * self.fallDamageMultiplier)
-            self.takeDamage(damage)
+            tookDamage = self.takeDamage(damage)
 
         self.lastVerticalVelocity = currentVelo
         
         if self.invulnerabilityFrames > 0:
             self.invulnerabilityFrames -= 1
+        return tookDamage
 
     def update(self, goal: tuple[float, float]) -> None:
         '''Update entity state'''      

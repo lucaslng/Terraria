@@ -3,6 +3,7 @@ from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.slot import Slot
 from game.model.light import Light
 from game.model.world import World
+from sound import channels, sounds
 
 class Player(Entity, Light):
     '''
@@ -54,6 +55,10 @@ class Player(Entity, Light):
         else:
             return 1
     
+    def takeDamage(self, amount: int):
+        if super().takeDamage(amount):
+            channels.hit.play(sounds.hit)
+    
     def consume(self) -> None:
         '''eat the item in the held slot'''
         self.health = min(self.maxHealth, self.health + self.heldSlot.item.healing)
@@ -65,7 +70,6 @@ class Player(Entity, Light):
         '''Update player state including fall damage and light radius.'''       
         self.updateFallDamage()
         self.updateVerticalVelocityTime()
-        print(round(self.velocity.y, 4))
         #Update light radius based on held item
         if self.heldSlot.item and isinstance(self.heldSlot.item, Light):
             self.lightRadius = self.heldSlot.item.lightRadius

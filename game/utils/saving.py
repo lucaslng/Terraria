@@ -12,7 +12,7 @@ def clear() -> None:
 
 def save(model: Model) -> None:
 	'''Save the model to saveFile'''
-	file = open(fileName, 'ab')
+	file = open(fileName, 'wb')
 	dill.dump(model, file)
 	file.close()
 

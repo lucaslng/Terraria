@@ -1,3 +1,4 @@
-import pygame.mixer as mixer
+from pygame.mixer import Channel
 
-consume = mixer.Channel(0)
+hit = Channel(0)
+consume = Channel(1)
