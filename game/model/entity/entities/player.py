@@ -3,6 +3,7 @@ from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.slot import Slot
 from game.model.light import Light
 from game.model.world import World
+from sound import channels
 from sound.sounds import sounds
 
 class Player(Entity, Light):
@@ -63,7 +64,7 @@ class Player(Entity, Light):
     
     def consume(self) -> None:
         '''eat the item in the held slot'''
-        sounds["player"]["consume"].play()
+        channels.consume.play(sounds["player"]["consume"])
         self.health = min(self.maxHealth, self.health + self.heldSlot.item.healing)
         self.heldSlot.count -= 1
         if not self.heldSlot.count:
