@@ -2,25 +2,31 @@ import os
 import dill
 from game.model.model import Model
 
-fileName = 'game/saves/saveFile'
+saveDirectory = 'game/saves'
+saveFile = 'saveFile'
+savePath = os.path.join(saveDirectory, saveFile)
+
+def ensureSaveDirectory() -> None:
+    '''Creates the saves directory if it doesn't exist'''
+    os.makedirs(saveDirectory, exist_ok=True)
 
 def clear() -> None:
-	try:
-		os.remove(fileName)
-	except FileNotFoundError:
-		pass
+    '''Removes the save file if it exists'''
+    try:
+        os.remove(savePath)
+    except FileNotFoundError:
+        pass
 
 def save(model: Model) -> None:
-	'''Save the model to saveFile'''
-	file = open(fileName, 'wb')
-	dill.dump(model, file)
-	file.close()
+	'''Saves game data to the file'''
+	ensureSaveDirectory()
+	with open(savePath, 'wb') as file:
+		dill.dump(model, file)
 
 def load() -> Model | None:
+	'''Loads from the save file'''
 	try:
-		file = open(fileName, 'rb')
-		model = dill.load(file)
-		file.close()
-		return model
+		with open(savePath, 'rb') as file:
+			return dill.load(file)
 	except FileNotFoundError:
 		return None
