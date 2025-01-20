@@ -11,11 +11,12 @@ def ensureSaveDirectory() -> None:
     os.makedirs(saveDirectory, exist_ok=True)
 
 def clear() -> None:
-    '''Removes the save file if it exists'''
-    try:
-        os.remove(savePath)
-    except FileNotFoundError:
-        pass
+	'''Removes the save file if it existsa'''
+	try:
+		os.remove(savePath)
+		print("Clearing save...")
+	except FileNotFoundError:
+		pass
 
 def save(model: Model) -> None:
 	'''Saves game data to the file'''

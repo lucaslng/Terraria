@@ -1,3 +1,5 @@
+from collections import Counter
+import enum
 from math import dist
 import random
 import pymunk as pm
@@ -15,6 +17,7 @@ from game.model.entity.entities.npc import Npc
 from game.model.entity.entities.rabbit import Rabbit
 from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.slot import Slot
+from game.model.utils.biomesenum import Biome
 from utils.constants import DOG_RARITY, FIRST_MESSAGE, FPS, NPC_RARITY, RABBIT_RARITY, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
 from game.model.blocks.coaloreblock import CoalOreBlock
@@ -200,7 +203,7 @@ class Model:
 		noises = self._generateAllNoise()
   
 		start = time.perf_counter()
-		self._placeTerrain(noises[Noises.GRASSHEIGHT], noises[Noises.STONEHEIGHT], noises[Noises.CAVES])
+		self._placeTerrain(noises[Noises.BIOME], noises[Noises.GRASSHEIGHT], noises[Noises.STONEHEIGHT], noises[Noises.CAVES])
 		print(f"Terrain time: {round(time.perf_counter() - start, 4)} seconds")
 		
 		self._placeOres(noises[Noises.COAL], noises[Noises.IRON], noises[Noises.GOLD], noises[Noises.DIAMOND])
@@ -209,14 +212,17 @@ class Model:
 		self.generateLight()
 		print(f"Light time: {round(time.perf_counter() - start, 4)} seconds")
     
-	def _placeTerrain(self, grassNoise: SimplexNoise, stoneNoise: SimplexNoise, caveNoise: SimplexNoise) -> None:
+	def _placeTerrain(self, biomeNoise: SimplexNoise, grassNoise: SimplexNoise, stoneNoise: SimplexNoise, caveNoise: SimplexNoise) -> None:
 		'''Place the dirt, stone, and cut out caves'''
-		grass_noise_array = np.array([grassNoise[x] for x in range(self.world.width)])
-		stone_noise_array = np.array([stoneNoise[x] for x in range(self.world.width)])
+		grassNoiseArray = np.array([grassNoise[x] for x in range(self.world.width)])
+		stoneNoiseArray = np.array([stoneNoise[x] for x in range(self.world.width)])
 		
+		# biome
+		self.biomeArray = [Biome.FOREST if noise > 0 else Biome.PLAINS for noise in biomeNoise.noise]
+
 		# Calculate height maps using vectorized operations
-		grassHeight = np.round(self.world.height * 0.58 + 9 * grass_noise_array).astype(int)
-		stoneHeight = np.round(grassHeight + 5 + 5 * stone_noise_array).astype(int)
+		grassHeight = np.round(self.world.height * 0.58 + 9 * grassNoiseArray).astype(int)
+		stoneHeight = np.round(grassHeight + 5 + 5 * stoneNoiseArray).astype(int)
 		
 		for x in range(self.world.width):
 			# Place stone and dirt
@@ -241,10 +247,11 @@ class Model:
 					self.world[y][x] = AirBlock()
 		
 		#Generate trees
-		for x in range(self.world.width):
-			if isinstance(self.world[grassHeight[x]][x], GrassBlock):
-				if random.random() > 0.8:
-					self._generateTree(x, grassHeight[x] - 1)
+		if self.biomeArray[x] == Biome.FOREST:
+			for x in range(self.world.width):
+				if isinstance(self.world[grassHeight[x]][x], GrassBlock):
+					if random.random() > 0.65:
+						self._generateTree(x, grassHeight[x] - 1)
 
 	def _generateTree(self, x: int, y: int) -> None:
 		'''Place a tree with base at coordinates (x, y) and a random height'''
@@ -296,6 +303,7 @@ class Model:
 			return noiseType, noise, generationTime
 
 		noiseParameters = (
+			(Noises.BIOME, 300, 1),
 			(Noises.GRASSHEIGHT, 19, 1),
 			(Noises.STONEHEIGHT, 30, 1),
 			(Noises.CAVES, 9, 2),
@@ -463,11 +471,11 @@ class Model:
 
 	def __getstate__(self) -> tuple[World, list[list[int]], tuple[float, float], Inventory, int, Slot, Slot]:
 		print("Saving world...")
-		return self.world, self.lightmap, self.player.position, self.player.inventory, self.player.health, self.player.cursorSlot, self.player.helmetSlot
+		return self.world, self.lightmap, self.biomeArray, self.player.position, self.player.inventory, self.player.health, self.player.cursorSlot, self.player.helmetSlot
 	
 	def __setstate__(self, state: tuple[World, list[list[int]], tuple[float, float], Inventory, int, Slot, Slot]):
 		print("Loading existing save...")
-		self.world, self.lightmap, playerPosition, playerInventory, playerHealth, playerCursorSlot, playerHelmetSlot = state
+		self.world, self.lightmap, self.biomeArray, playerPosition, playerInventory, playerHealth, playerCursorSlot, playerHelmetSlot = state
 		self.player = Player(*playerPosition, self.world)
 		self.player.inventory = playerInventory
 		self.player.health = playerHealth

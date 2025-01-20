@@ -23,20 +23,21 @@ from utils.updatescreen import updateScreen
 
 
 def initGame():
-		'''Initialize or reinitialize game components'''
-		model = saving.load()
-		if not model:
-			model = Model(WORLD_WIDTH, WORLD_HEIGHT)
-    
-		camera = FRAME.copy()
-		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
+	'''Initialize or reinitialize game components'''
+	model = saving.load()
+	if not model:
+		print("Generating new world...")
+		model = Model(WORLD_WIDTH, WORLD_HEIGHT)
+		saving.save(model)
+	camera = FRAME.copy()
+	camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
 
-		inventories = {
-				InventoryType.Player: (model.player.inventory, *InventoryType.Player.value),
-				InventoryType.HelmetSlot: (model.player.helmetSlot, *InventoryType.HelmetSlot.value)
-		}
+	inventories = {
+			InventoryType.Player: (model.player.inventory, *InventoryType.Player.value),
+			InventoryType.HelmetSlot: (model.player.helmetSlot, *InventoryType.HelmetSlot.value)
+	}
 
-		return model, camera, inventories
+	return model, camera, inventories
 
 def game() -> Screens:
 	'''Main game loop'''
