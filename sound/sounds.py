@@ -2,34 +2,39 @@ from pygame.mixer import Sound
 
 directory = 'assets/sounds'
 
+def soundFactory(fileName: str) -> Sound:
+	sound = Sound(f'{directory}/{fileName}')
+	sound.set_volume(0.6)
+	return sound
+
 sounds = {
 	"player":
 	{
-		"hurt": Sound(f'{directory}/player/hurt.mp3'),
-		"consume": Sound(f'{directory}/player/consume.mp3'),
+		"hurt": soundFactory('player/hurt.mp3'),
+		"consume": soundFactory('player/consume.mp3'),
 	},
 	"rabbit":
 	{
 		"hurt":
 		(
-			Sound(f'{directory}/rabbit/hurt1.ogg'),
-			Sound(f'{directory}/rabbit/hurt2.ogg'),
-			Sound(f'{directory}/rabbit/hurt3.ogg'),
-			Sound(f'{directory}/rabbit/hurt4.ogg'),
+			soundFactory('rabbit/hurt1.ogg'),
+			soundFactory('rabbit/hurt2.ogg'),
+			soundFactory('rabbit/hurt3.ogg'),
+			soundFactory('rabbit/hurt4.ogg'),
 		)
 	},
 	"dog":
 	{
 		"hurt":
 		(
-			Sound(f'{directory}/dog/hurt/hurt1.ogg'),
-			Sound(f'{directory}/dog/hurt/hurt2.ogg'),
+			soundFactory('dog/hurt/hurt1.ogg'),
+			soundFactory('dog/hurt/hurt2.ogg'),
 		),
 		"growl":
 		(
-			Sound(f'{directory}/dog/growl/growl1.ogg'),
-			Sound(f'{directory}/dog/growl/growl2.ogg'),
-			Sound(f'{directory}/dog/growl/growl3.ogg'),
+			soundFactory('dog/growl/growl1.ogg'),
+			soundFactory('dog/growl/growl2.ogg'),
+			soundFactory('dog/growl/growl3.ogg'),
 		)
 	}
 }
