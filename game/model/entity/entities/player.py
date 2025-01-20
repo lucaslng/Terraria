@@ -1,6 +1,7 @@
 from game.model.entity.entity import Entity
 from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.slot import Slot
+from game.model.items.specialitems.helmet import Helmet
 from game.model.light import Light
 from game.model.world import World
 from sound import channels
@@ -14,7 +15,7 @@ class Player(Entity, Light):
     _heldSlotIndex = 0
     reach = 4
     inventory = Inventory(4, 9)
-    helmetSlot = Slot()
+    helmetSlot = Slot(condition=lambda other: isinstance(other.item, Helmet) or other.item is None)
     cursorSlot = Slot()
     defaultLightRadius = 0.8
     lightRadius = defaultLightRadius
@@ -56,8 +57,15 @@ class Player(Entity, Light):
         else:
             return 1
     
+    @property
+    def protectionMultiplier(self) -> float:
+        '''returns the multplier for when the player takes damage'''
+        if isinstance(self.helmetSlot.item, Helmet):
+            return self.helmetSlot.item.multiplier
+        return 1 # default value
+    
     def takeDamage(self, amount: int) -> bool:
-        if super().takeDamage(amount):
+        if super().takeDamage(int(amount * self.protectionMultiplier)):
             sounds["player"]["hurt"].play()
             return True
         return False

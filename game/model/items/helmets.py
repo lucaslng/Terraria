@@ -6,26 +6,20 @@ from game.model.items.utils.itemsenum import Items
 class GoldHelmet(Item, Helmet):
 	'''Gold helmet item'''
 
-	multiplier = 0.9
-	startingDurability = 77
-
 	def __init__(self) -> None:
 		super().__init__(Items.GoldHelmet, stackSize=1)	
+		Helmet.__init__(self, 0.9, 77)
 
 class IronHelmet(Item, Helmet):
 	'''Iron helmet item'''
 
-	multiplier = 0.7
-	startingDurability = 165
-
 	def __init__(self) -> None:
 		super().__init__(Items.IronHelmet, stackSize=1)
+		Helmet.__init__(self, 0.75, 165)
 
 class DiamondHelmet(Item, Helmet):
 	'''Diamond helmet item'''
 
-	multiplier = 0.5
-	startingDurability = 363
-
 	def __init__(self) -> None:
 		super().__init__(Items.DiamondHelmet, stackSize=1)	
+		Helmet.__init__(self, 0.55, 363)
