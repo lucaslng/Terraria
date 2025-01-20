@@ -9,6 +9,6 @@ def initialize():
 	pg.mixer.set_reserved(1)
 	pg.time.set_timer(101, 5000)
 	
-	pg.mixer.music.set_volume(0.5)
+	pg.mixer.music.set_volume(0.4)
 	pg.mixer.music.load('assets/music.mp3')
 	pg.mixer.music.play(loops=-1, fade_ms=1000)

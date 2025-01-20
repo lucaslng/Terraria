@@ -3,7 +3,8 @@ from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.slot import Slot
 from game.model.light import Light
 from game.model.world import World
-from sound import channels, sounds
+from sound import channels
+from sound.sounds import sounds
 
 class Player(Entity, Light):
     '''
@@ -55,9 +56,11 @@ class Player(Entity, Light):
         else:
             return 1
     
-    def takeDamage(self, amount: int):
+    def takeDamage(self, amount: int) -> bool:
         if super().takeDamage(amount):
-            channels.hit.play(sounds.hit)
+            channels.playerHurt.play(sounds["player"]["hurt"])
+            return True
+        return False
     
     def consume(self) -> None:
         '''eat the item in the held slot'''

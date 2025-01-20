@@ -11,7 +11,8 @@ import game.utils.saving as saving
 from game.view import conversions
 from game.view.inventory.hoveredslot import getHoveredSlotSlot
 from menu.gameOver.deathScreen import deathScreen
-from sound import channels, sounds
+from sound import channels
+from sound.sounds import sounds
 import utils.keys as keys
 from utils.constants import BLOCK_SIZE, FRAME, SURF, WORLD_HEIGHT, WORLD_WIDTH
 from game.view.draw import draw
@@ -130,7 +131,7 @@ def game() -> Screens:
 		
 		if pressedKeys[keys.consume]:
 			if model.player.heldSlot.item and isinstance(model.player.heldSlot.item, Edible) and not channels.consume.get_busy():
-				channels.consume.play(sounds.consume)
+				channels.consume.play(sounds["player"]["consume"])
 				model.player.consume()
 		
 		if pg.mouse.get_pressed()[0]:
