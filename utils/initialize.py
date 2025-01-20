@@ -1,6 +1,5 @@
 import pygame as pg
 
-from sound import channels, sounds
 
 def initialize():
 	'''initialize program'''

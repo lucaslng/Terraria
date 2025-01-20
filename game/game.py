@@ -8,7 +8,7 @@ from game.model.items.inventory.inventorytype import InventoryType
 from game.model.items.specialitems.edible import Edible
 from game.model.utils.bresenham import bresenham
 import game.utils.saving as saving
-from game.view import conversions, surfaces
+from game.view import conversions
 from game.view.inventory.hoveredslot import getHoveredSlotSlot
 from menu.gameOver.deathScreen import deathScreen
 from sound import channels, sounds
