@@ -225,6 +225,5 @@ def game() -> Screens:
 		#player death
 		if not model.update():
 			saving.clear()
-			del inventories
 			return deathScreen(pg.image.tobytes(SURF, 'RGBA'))
 		updateScreen()

@@ -12,11 +12,8 @@ class Player(Entity, Light):
     Player entity class with fall damage mechanics and inventory management.
     Overrides pathfinding behavior from Entity while maintaining other functionality.
     '''
-    _heldSlotIndex = 0
+    
     reach = 4
-    inventory = Inventory(4, 9)
-    helmetSlot = Slot(condition=lambda other: isinstance(other.item, Helmet) or other.item is None)
-    cursorSlot = Slot()
     defaultLightRadius = 0.8
     lightRadius = defaultLightRadius
     
@@ -28,6 +25,10 @@ class Player(Entity, Light):
         self.fallDamageThreshold = 15
         self.fallDamageMultiplier = 0.8
         self.invulnerabilityFrames = 0   
+        self.inventory = Inventory(4, 9)
+        self.helmetSlot = Slot(condition=lambda other: isinstance(other.item, Helmet) or other.item is None)
+        self.cursorSlot = Slot()
+        self._heldSlotIndex = 0
     
     @property
     def hotbar(self) -> list[Slot]:
