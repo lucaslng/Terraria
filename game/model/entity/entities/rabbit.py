@@ -14,11 +14,11 @@ class Rabbit(Entity):
 		self.isScared = False
 		self.droppedItem = RabbitMeat()
 	
-	def interact(self, damage: int) -> bool:
+	def interact(self, damage: float) -> bool:
 		self.isScared = True
 		return self.takeDamage(damage)
 
-	def takeDamage(self, amount: int) -> bool:
+	def takeDamage(self, amount: float) -> bool:
 		if super().takeDamage(amount):
 			choice(sounds["rabbit"]["hurt"]).play()
 			return True

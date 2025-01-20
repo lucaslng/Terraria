@@ -77,7 +77,7 @@ class Entity(HasPhysics):
     def isAlive(self) -> bool:
         return self.health > 0
     
-    def takeDamage(self, amount: int) -> bool:
+    def takeDamage(self, amount: float) -> bool:
         '''Damage entity if not invulnerable. returns whether the entity actually took damage or did not due to invulnerability frames'''       
         if self.invulnerabilityFrames == 0:
             self.health = max(0, self.health - amount)
