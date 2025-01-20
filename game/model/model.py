@@ -91,12 +91,13 @@ class Model:
 					self.player.apply_impulse_at_local_point((self.player.position - entity.position) * 40, (0, 0.5))
 			if not entity.isAlive or not 0 < entity.position.x < self.world.width or not 0 < entity.position.y < self.world.height:
 				self.deleteEntity(i, entity)
-    
+		# start = time.perf_counter()
 		for i in range(steps):
 			self.space.step(1/FPS/steps) # step the simulation in 1/60 seconds
 			keepUpright(self.player)
 			for entity in self.entities:
 				keepUpright(entity)
+		# print(f'Physics time: {round(time.perf_counter() - start, 4)}')
     
 		return True
 
@@ -381,7 +382,7 @@ class Model:
 					
 					# Check if current block is dark
 					if isDark(x, y):
-						self.lightmap[r][c] = max(0, (level - 1) * 51)
+						self.lightmap[r][c] = max(0, (level - 1) * 50)
 						lightFound = True
 						break
 					

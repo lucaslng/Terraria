@@ -1487,7 +1487,7 @@ class World:
           x, y = cur
           
           if blockMap[y][x]:
-            self.lightmap[r][c] = max(0, (level - 1) * 51)
+            self.lightmap[r][c] = max(0, (level - 1) * 50)
             break
           
           # left block

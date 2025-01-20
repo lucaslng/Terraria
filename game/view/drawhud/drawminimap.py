@@ -1,3 +1,4 @@
+from time import perf_counter
 from game.model.world import World
 from utils.constants import BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT
 from game.model.blocks.airblock import AirBlock
@@ -51,26 +52,47 @@ def drawMinimap(world: World, lightmap: list[list[int]], lights: Light, camera: 
     endY = min(WORLD_HEIGHT, startY + blocks_high)
     
     lightSurf = pg.Surface(minimapSize, pg.SRCALPHA)
-    
+    # time = 0
+    # time2 = perf_counter()
+    # time3 = 0
     for y in range(startY, endY):
         for x in range(startX, endX):
             minimapX = (x - startX) * MINIMAP_SCALE
             minimapY = (y - startY) * MINIMAP_SCALE
-            
-            #Draw back blocks first
-            back_block = world.back[y][x]
-            if not isinstance(back_block, AirBlock):
-                surfaces.minimap.blit(minimap_cache.getScaledSpritesBack(back_block.enum) ,(minimapX, minimapY))
-            
-            frontBlock = world[y][x]
-            if not isinstance(frontBlock, AirBlock):
-                surfaces.minimap.blit(
-                    minimap_cache.getScaledSprite(frontBlock.enum),
-                    (minimapX, minimapY)
+            isDark = False
+            try:
+                alpha = min(
+                    surfaces.sunlight.get_at((minimapX, minimapY))[3],
+                    surfaces.sunlight.get_at((minimapX + MINIMAP_SCALE, minimapY))[3],
+                    surfaces.sunlight.get_at((minimapX, minimapY + MINIMAP_SCALE))[3],
+                    surfaces.sunlight.get_at((minimapX + MINIMAP_SCALE, minimapY + MINIMAP_SCALE))[3]
                 )
-            
+                isDark = alpha == 253
+            except IndexError:
+                pass
+            if not isDark:
+                #Draw back blocks first
+                back_block = world.back[y][x]
+                if not isinstance(back_block, AirBlock) and world[y][x].isEmpty:
+                    # start = perf_counter()
+                    surfaces.minimap.blit(minimap_cache.getScaledSpritesBack(back_block.enum) ,(minimapX, minimapY))
+                    # time += perf_counter() - start
+                
+                frontBlock = world[y][x]
+                if not isinstance(frontBlock, AirBlock):
+                    # start = perf_counter()
+                    surfaces.minimap.blit(
+                        minimap_cache.getScaledSprite(frontBlock.enum),
+                        (minimapX, minimapY)
+                    )
+                    # time += perf_counter() - start
+                    
+            # if y < world.height * 0.58 + 15:
+            # start = perf_counter()
             pg.draw.rect(lightSurf, (0, 0, 0, lightmap[y][x]), (minimapX, minimapY, MINIMAP_SCALE, MINIMAP_SCALE))
-    
+            # time3 += perf_counter() - start
+    # print(round(time, 4), round(time3, 4), round(perf_counter() - time2, 4))
+    # time = 0
     for light, lightx, lighty in lights:
         minimapLightX = (lightx - startX) * MINIMAP_SCALE
         minimapLightY = (lighty - startY) * MINIMAP_SCALE

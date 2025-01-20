@@ -1,4 +1,5 @@
 from math import dist, floor
+from time import perf_counter
 import pygame as pg
 from game.model.blocks.utils.inventoryblock import InventoryBlock
 from game.model.entity.entities.dog import Dog
@@ -216,7 +217,9 @@ def game() -> Screens:
 					model.world[y][x].update()
 
 		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE		
+		start = perf_counter()
 		draw(model, camera, inventories)
+		# print(f'Draw time: {round(perf_counter() - start, 4)}')
 		#player death
 		if not model.update():
 			saving.clear()
