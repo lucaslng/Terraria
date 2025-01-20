@@ -1,6 +1,5 @@
 import utils.installpackages
 from menu.about.about import aboutScreen
-from menu.gameOver.deathScreen import deathScreen
 from game.game import game
 from game.utils.utils import sysexit
 from menu.menu import mainMenu
@@ -23,8 +22,6 @@ def main():
 				state = game()
 			case Screens.ABOUT:
 				state = aboutScreen()
-			case Screens.DEATH:
-				state = deathScreen()
 			case Screens.QUIT:
 				sysexit()
 

@@ -10,4 +10,4 @@ hud = world.copy()
 minimap = Surface((200, 200), SRCALPHA)
 minimapLight = minimap.copy()
 
-DeathSurf = world.copy()
+deathSurf = world.copy()

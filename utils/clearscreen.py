@@ -11,3 +11,4 @@ def clearScreen():
 	surfaces.hud.fill(colours.CLEAR)
 	surfaces.minimap.fill(colours.CLEAR)
 	surfaces.minimapLight.fill(colours.CLEAR)
+	surfaces.deathSurf.fill(colours.CLEAR)

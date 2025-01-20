@@ -8,11 +8,12 @@ from game.model.items.inventory.inventorytype import InventoryType
 from game.model.items.specialitems.edible import Edible
 from game.model.utils.bresenham import bresenham
 import game.utils.saving as saving
-from game.view import conversions
+from game.view import conversions, surfaces
 from game.view.inventory.hoveredslot import getHoveredSlotSlot
+from menu.gameOver.deathScreen import deathScreen
 from sound import channels, sounds
 import utils.keys as keys
-from utils.constants import BLOCK_SIZE, FRAME, WORLD_HEIGHT, WORLD_WIDTH
+from utils.constants import BLOCK_SIZE, FRAME, SURF, WORLD_HEIGHT, WORLD_WIDTH
 from game.view.draw import draw
 from game.model.model import Model
 from utils.screens import Screens
@@ -214,11 +215,10 @@ def game() -> Screens:
 				if 0 <= y < model.world.height and 0 <= x < model.world.width:
 					model.world[y][x].update()
 
+		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE		
+		draw(model, camera, inventories)
 		#player death
 		if not model.update():
 			saving.clear()
-			return Screens.DEATH
-
-		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE		
-		draw(model, camera, inventories)
+			return deathScreen(pg.image.tobytes(SURF, 'RGBA'))
 		updateScreen()
