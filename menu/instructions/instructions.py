@@ -25,11 +25,15 @@ def instructionsScreen():
 
     #Instruction text
     instructions = [
-        "- Use WASD to move your character.",
+        "- Use A and D to move your character.",
+        "- Press space to jump.",
+        "- Change your slots with the number keys."
         "- Left-click to break blocks.",
         "- Right-click to place blocks.",
         "- Press 'E' to open your inventory.",
-        "- Explore the world!"
+        "- Press 'F' to interact with an entity (attack/talk)",
+        "- Press 'C' to consume food.",
+        "- Explore the world!",
     ]
 
     instructionSurfaces = [
