@@ -175,6 +175,10 @@ class Model:
 					miningSpeed = self.player.heldSlot.item.speed
 				self.world[y][x].amountBroken += miningSpeed / FPS
 			else:
+				if self.player.heldSlot.item and isinstance(self.player.heldSlot.item, Tool):
+					self.player.heldSlot.item.durability -= 1
+					if self.player.heldSlot.item.durability == 0:
+						self.player.heldSlot.clear()
 				itemType = block2Item[self.world[y][x].enum]
 				if itemType:
 					self.player.inventory.addItem(itemType())
