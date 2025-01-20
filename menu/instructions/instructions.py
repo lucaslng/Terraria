@@ -8,9 +8,9 @@ from widgets.button import Button
 def instructionsScreen():
     '''Instructions screen'''
 
-    titleFont = pg.font.Font("MinecraftRegular-Bmg3.otf", 36)
-    textFont = pg.font.Font("MinecraftRegular-Bmg3.otf", 24)
-    buttonFont = pg.font.Font("MinecraftRegular-Bmg3.otf", 28)
+    titleFont = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 36)
+    textFont = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 24)
+    buttonFont = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 28)
     textColor = (240, 240, 240)
     backgroundColour = (40, 40, 40)
     buttonTextColour = (240, 240, 240)
