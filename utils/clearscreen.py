@@ -7,7 +7,6 @@ def clearScreen():
 	surfaces.world.fill(colours.CLEAR)
 	surfaces.blockBreak.fill(colours.CLEAR)
 	surfaces.sunlight.fill(colours.CLEAR)
-	surfaces.dialogue.fill(colours.CLEAR)
 	surfaces.hud.fill(colours.CLEAR)
 	surfaces.health.fill(colours.BLACK)
 	surfaces.minimap.fill(colours.CLEAR)
