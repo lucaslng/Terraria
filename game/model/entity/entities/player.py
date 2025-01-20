@@ -1,8 +1,10 @@
 from game.model.entity.entity import Entity
 from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.slot import Slot
+from game.model.items.specialitems.helmet import Helmet
 from game.model.light import Light
 from game.model.world import World
+from sound import channels
 from sound.sounds import sounds
 
 class Player(Entity, Light):
@@ -10,11 +12,8 @@ class Player(Entity, Light):
     Player entity class with fall damage mechanics and inventory management.
     Overrides pathfinding behavior from Entity while maintaining other functionality.
     '''
-    _heldSlotIndex = 0
+    
     reach = 4
-    inventory = Inventory(4, 9)
-    helmetSlot = Slot()
-    cursorSlot = Slot()
     defaultLightRadius = 0.8
     lightRadius = defaultLightRadius
     
@@ -26,6 +25,10 @@ class Player(Entity, Light):
         self.fallDamageThreshold = 15
         self.fallDamageMultiplier = 0.8
         self.invulnerabilityFrames = 0   
+        self.inventory = Inventory(4, 9)
+        self.helmetSlot = Slot(condition=lambda other: isinstance(other.item, Helmet) or other.item is None)
+        self.cursorSlot = Slot()
+        self._heldSlotIndex = 0
     
     @property
     def hotbar(self) -> list[Slot]:
@@ -55,15 +58,22 @@ class Player(Entity, Light):
         else:
             return 1
     
+    @property
+    def protectionMultiplier(self) -> float:
+        '''returns the multplier for when the player takes damage'''
+        if isinstance(self.helmetSlot.item, Helmet):
+            return self.helmetSlot.item.multiplier
+        return 1 # default value
+    
     def takeDamage(self, amount: int) -> bool:
-        if super().takeDamage(amount):
+        if super().takeDamage(int(amount * self.protectionMultiplier)):
             sounds["player"]["hurt"].play()
             return True
         return False
     
     def consume(self) -> None:
         '''eat the item in the held slot'''
-        sounds["player"]["consume"].play()
+        channels.consume.play(sounds["player"]["consume"])
         self.health = min(self.maxHealth, self.health + self.heldSlot.item.healing)
         self.heldSlot.count -= 1
         if not self.heldSlot.count:

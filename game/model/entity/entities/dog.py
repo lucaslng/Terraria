@@ -12,7 +12,7 @@ class Dog(Entity):
 		self.updateDistance = 30
 
 	def interact(self, damage: int):
-		self.takeDamage(damage)
+		return self.takeDamage(damage)
 	
 	def takeDamage(self, amount: int) -> bool:
 		if super().takeDamage(amount):

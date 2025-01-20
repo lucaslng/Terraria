@@ -47,4 +47,8 @@ class Items(Enum):
 	DiamondShovel = "Diamond Shovel"
 	DiamondSword = "Diamond Sword"
 
+	IronHelmet = "Iron Helmet"
+	GoldHelmet = "Gold Helmet"
+	DiamondHelmet = "Diamond Helmet"
+
 	RabbitMeat = "Rabbit Meat"

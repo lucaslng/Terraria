@@ -5,8 +5,6 @@ from game.model.entity.hasphysics import HasPhysics
 from game.model.items.item import Item
 from game.model.world import World
 
-from sound import channels
-
 class Entity(HasPhysics):
     '''Base class for all entities'''
     def __init__(
@@ -126,6 +124,6 @@ class Entity(HasPhysics):
                                 self.jump()
                             self.walkRight()
 
-    def interact(self) -> None:
+    def interact(self) -> bool:
         '''Interact with the entity using the interact key'''
-        pass
+        return False

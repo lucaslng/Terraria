@@ -5,7 +5,7 @@ from functools import partial
 from game.model.items.inventory.slot import Slot
 from game.model.items.item import Item
 from game.model.items.utils.itemsenum import Items
-from game.model.items.tools import WoodenPickaxe, StonePickaxe
+from game.model.items.tools import DiamondPickaxe, GoldPickaxe, IronPickaxe, WoodenPickaxe, StonePickaxe
 
 
 @dataclass
@@ -91,6 +91,24 @@ stonePickaxe = partial(
     toolClass=StonePickaxe
 )
 
+ironPickaxe = partial(
+    createPickaxeRecipe,
+    topMaterial=Items.IronIngot,
+    toolClass=IronPickaxe
+)
+
+goldPickaxe = partial(
+    createPickaxeRecipe,
+    topMaterial=Items.GoldIngot,
+    toolClass=GoldPickaxe
+)
+
+diamondPickaxe = partial(
+    createPickaxeRecipe,
+    topMaterial=Items.Diamond,
+    toolClass=DiamondPickaxe
+)
+
 
 
 recipes: list[Recipe] = [
@@ -98,4 +116,7 @@ recipes: list[Recipe] = [
     Recipe(4, sticks),        # 2 planks -> 4 sticks
     Recipe(1, woodenPickaxe),
     Recipe(1, stonePickaxe),
+    Recipe(1, ironPickaxe),
+    Recipe(1, goldPickaxe),
+    Recipe(1, diamondPickaxe),
 ]

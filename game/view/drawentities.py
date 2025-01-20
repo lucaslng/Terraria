@@ -30,10 +30,10 @@ def drawNpc(npc: Npc, pos: tuple[int, int]) -> None:
 
 	if npc.isTalking:
 		dialogueRect = Rect(x - 0.5 * BLOCK_SIZE, y - 1.8 * BLOCK_SIZE, BLOCK_SIZE * 2.8, BLOCK_SIZE * 1.5)
-		pg.draw.rect(surfaces.dialogue, (240, 240, 240, 210), dialogueRect, border_radius=4)
-		pg.draw.rect(surfaces.dialogue, colours.BLACK, dialogueRect, width=1, border_radius=4)
+		pg.draw.rect(surfaces.world, (240, 240, 240), dialogueRect, border_radius=4)
+		pg.draw.rect(surfaces.world, colours.BLACK, dialogueRect, width=1, border_radius=4)
 		textRect = dialogueRect.scale_by(0.9, 0.9)
-		drawText(surfaces.dialogue, npc.currentMessage, textRect, font12)
+		drawText(surfaces.world, npc.currentMessage, textRect, font12)
 
 def drawRabbit(rabbit: Rabbit, pos: tuple[int, int]) -> None:
 	texture: Surface = sprites["rabbit"]
