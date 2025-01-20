@@ -12,20 +12,17 @@ def drawHotbar(hotbar: list[Slot], heldSlotIndex: int) -> None:
 	assert 0 <= heldSlotIndex < len(hotbar)
 
 	slotSize = int(BLOCK_SIZE * 1.5)
-	
-	startx = FRAME.centerx - (len(hotbar) * slotSize) // 2
-	y = FRAME.height - int(slotSize * 1.5)
 
 	for i, slot in enumerate(hotbar):
-		x = startx + i * slotSize
+		x = i * slotSize
 
 		if i == heldSlotIndex:
-			pg.draw.rect(surfaces.hud, (150, 150, 150), (x, y, slotSize, slotSize))
-			pg.draw.rect(surfaces.hud, (0, 0, 0), (x, y, slotSize, slotSize), 3)
+			pg.draw.rect(surfaces.hotbar, (150, 150, 150), (x, 0, slotSize, slotSize))
+			pg.draw.rect(surfaces.hotbar, (0, 0, 0), (x, 0, slotSize, slotSize), 3)
 		else:
-			pg.draw.rect(surfaces.hud, (200, 200, 200), (x, y, slotSize, slotSize))
-			pg.draw.rect(surfaces.hud, (90, 90, 90), (x, y, slotSize, slotSize), 2)
+			pg.draw.rect(surfaces.hotbar, (200, 200, 200), (x, 0, slotSize, slotSize))
+			pg.draw.rect(surfaces.hotbar, (90, 90, 90), (x, 0, slotSize, slotSize), 2)
 
-		drawSlot(slot, x, y, slotSize)
+		drawSlot(surfaces.hotbar, slot, x, 0, slotSize)
 
 		
