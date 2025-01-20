@@ -469,11 +469,11 @@ class Model:
 		shape.friction = self.world[y][x].friction
 		self.space.add(shape)
 
-	def __getstate__(self) -> tuple[World, list[list[int]], tuple[float, float], Inventory, int, Slot, Slot]:
+	def __getstate__(self) -> tuple[World, list[list[int]], list[Biome], tuple[float, float], Inventory, int, Slot, Slot]:
 		print("Saving world...")
 		return self.world, self.lightmap, self.biomeArray, self.player.position, self.player.inventory, self.player.health, self.player.cursorSlot, self.player.helmetSlot
 	
-	def __setstate__(self, state: tuple[World, list[list[int]], tuple[float, float], Inventory, int, Slot, Slot]):
+	def __setstate__(self, state: tuple[World, list[list[int]], list[Biome], tuple[float, float], Inventory, int, Slot, Slot]):
 		print("Loading existing save...")
 		self.world, self.lightmap, self.biomeArray, playerPosition, playerInventory, playerHealth, playerCursorSlot, playerHelmetSlot = state
 		self.player = Player(*playerPosition, self.world)
