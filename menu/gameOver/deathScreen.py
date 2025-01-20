@@ -3,10 +3,15 @@ from utils.constants import HEIGHT, SURF, WIDTH
 from utils.screens import Screens
 from utils.updatescreen import updateScreen
 from widgets.button import Button
+from game.view.surfaces import DeathSurf
 
-def deathScreen() -> Screens:
-    '''Death screen for when the player dies'''
+def applyBlur():
+    scaled = pg.transform.smoothscale(SURF, (WIDTH // 15, HEIGHT // 15))
+    blurred = pg.transform.smoothscale(scaled, (WIDTH, HEIGHT))
     
+    return blurred
+
+def deathScreen() -> Screens:  
     titleFont = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 48)
     buttonFont = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 36)
     
@@ -14,9 +19,11 @@ def deathScreen() -> Screens:
     textShadow = (20, 20, 20, 160)
     titleColor = (255, 0, 0)
     
+    blurredBackground = applyBlur()
+
     overlay = pg.Surface((WIDTH, HEIGHT))
     overlay.fill((0, 0, 0))
-    overlay.set_alpha(180)
+    overlay.set_alpha(100)
     
     buttonWidth, buttonHeight = 400, 50
     buttonX = (WIDTH - buttonWidth) // 2
@@ -48,11 +55,12 @@ def deathScreen() -> Screens:
         for button in buttons.values():
             button.update(mouse_pos)
         
-        SURF.blit(overlay, (0, 0))
+        DeathSurf.blit(blurredBackground, (0, 0))
+        DeathSurf.blit(overlay, (0, 0))
         
         gameOverText = titleFont.render("Game Over!", True, titleColor)
         textRect = gameOverText.get_rect(center=(WIDTH // 2, HEIGHT // 4))
-        SURF.blit(gameOverText, textRect)
+        DeathSurf.blit(gameOverText, textRect)
         
         for button in buttons.values():
             button.draw(buttonFont, buttonTextColour, textShadow)
