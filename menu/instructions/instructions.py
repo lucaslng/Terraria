@@ -11,16 +11,15 @@ def instructionsScreen():
     titleFont = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 36)
     textFont = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 24)
     buttonFont = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 28)
-    textColor = (240, 240, 240)
+    textColour = (240, 240, 240)
     backgroundColour = (40, 40, 40)
     buttonTextColour = (240, 240, 240)
     textShadow = (20, 20, 20, 160)
 
     background = pg.Surface((WIDTH, HEIGHT))
     background.fill(backgroundColour)
-
-    titleText = "Instructions"
-    titleSurface = titleFont.render(titleText, True, textColor)
+    
+    titleSurface = titleFont.render("Instructions", True, textColour)
     titleRect = titleSurface.get_rect(center=(WIDTH // 2, HEIGHT // 6))
 
     #Instruction text
@@ -37,7 +36,7 @@ def instructionsScreen():
     ]
 
     instructionSurfaces = [
-        textFont.render(line, True, textColor) for line in instructions
+        textFont.render(line, True, textColour) for line in instructions
     ]
 
     #Buttons
