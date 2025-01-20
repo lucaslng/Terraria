@@ -46,7 +46,7 @@ def deathScreen(backgroundBytes: bytes) -> Screens:
                     
             if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
                 if buttons['menu'].rect.collidepoint(mouse_pos):
-                    return Screens.MENU
+                    return
                 elif buttons['quit'].rect.collidepoint(mouse_pos):
                     return Screens.QUIT
         
@@ -58,7 +58,10 @@ def deathScreen(backgroundBytes: bytes) -> Screens:
         gameOverText = titleFont.render("Game Over!", True, titleColor)
         textRect = gameOverText.get_rect(center=(WIDTH // 2, HEIGHT // 4))
         deathSurf.blit(gameOverText, textRect)
+        
         SURF.blit(deathSurf, (0, 0))
+        
         for button in buttons.values():
             button.draw(buttonFont, buttonTextColour, textShadow)
+            
         updateScreen()

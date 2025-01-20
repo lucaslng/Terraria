@@ -10,7 +10,8 @@ from game.model.utils.bresenham import bresenham
 import game.utils.saving as saving
 from game.view import conversions
 from game.view.inventory.hoveredslot import getHoveredSlotSlot
-from menu.gameOver.deathScreen import deathScreen
+from menu.death.deathScreen import deathScreen
+from menu.pause.pause import pauseMenu
 from sound import channels
 import utils.keys as keys
 from utils.constants import BLOCK_SIZE, FRAME, SURF, WORLD_HEIGHT, WORLD_WIDTH
@@ -156,7 +157,11 @@ def game() -> Screens:
 				model.spawnEntitiesRandom()
 				pg.mixer.set_num_channels(len(model.entities) * 2) # set extra channels just to be safe
 			elif event.type == pg.KEYDOWN:
-				if event.key == keys.interact:
+				if event.key == pg.K_ESCAPE:
+					retunedState = pauseMenu()
+					if retunedState:
+						return retunedState  
+				elif event.key == keys.interact:
 					if len(inventories) > 1:
 						inventories = {InventoryType.Player: inventories[InventoryType.Player]}
 					else:
@@ -217,8 +222,10 @@ def game() -> Screens:
 
 		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE		
 		draw(model, camera, inventories)
+  
 		#player death
 		if not model.update():
 			saving.clear()
 			return deathScreen(pg.image.tobytes(SURF, 'RGBA'))
+
 		updateScreen()
