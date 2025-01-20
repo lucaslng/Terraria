@@ -1,6 +1,6 @@
+import utils.installpackages
 from menu.about.about import aboutScreen
 from menu.gameOver.deathScreen import deathScreen
-import utils.installpackages
 from game.game import game
 from game.utils.utils import sysexit
 from menu.menu import mainMenu
