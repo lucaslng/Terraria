@@ -2,9 +2,9 @@ from pygame.mixer import Sound
 
 directory = 'assets/sounds'
 
-def soundFactory(fileName: str) -> Sound:
+def soundFactory(fileName: str, volume: float=0.6) -> Sound:
 	sound = Sound(f'{directory}/{fileName}')
-	sound.set_volume(0.6)
+	sound.set_volume(volume)
 	return sound
 
 sounds = {
