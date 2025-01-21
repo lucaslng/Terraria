@@ -44,6 +44,6 @@ class Water(Liquid):
 
 	mass = 1
 	moment = 200
-	particleCount = 361
+	particleCount = 100
 	density = 0.9
 	elasticity = 0.95

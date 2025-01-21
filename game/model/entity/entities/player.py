@@ -1,5 +1,6 @@
 from pymunk import Space
 from game.model.entity.entity import Entity
+from game.model.items.bucket import Bucket
 from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.slot import Slot
 from game.model.items.specialitems.helmet import Helmet
@@ -90,3 +91,6 @@ class Player(Entity, Light):
             self.lightRadius = self.heldSlot.item.lightRadius
         else:
             self.lightRadius = self.defaultLightRadius
+
+        if isinstance(self.heldSlot.item, Bucket):
+            print(self.heldSlot.item.filledAmount)

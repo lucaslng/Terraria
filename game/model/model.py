@@ -1,4 +1,5 @@
 from math import dist
+import math
 import random
 import pymunk as pm
 import numpy as np
@@ -69,7 +70,7 @@ class Model:
 		self._generate()
 		addDefaultItems(self.player)
 
-	def update(self, steps=2) -> bool:
+	def update(self, steps=4) -> bool:
 		'''Update the model, should be called every frame. steps increases the accuracy of the physics simulation but sacrifices performance. returns whether the player is alive'''
 		self.player.update()
   
@@ -85,14 +86,14 @@ class Model:
 				self.deleteEntity(i, entity)
 		
 		if isinstance(self.player.heldSlot.item, Bucket) and self.player.heldSlot.item.filledAmount < 1:
-			for l, liquid in enumerate(self.liquids):
+			for i, liquid in enumerate(self.liquids):
 				for p, liquidParticle in enumerate(liquid.particles):
 					if dist(liquidParticle.body.position, self.player.body.position) < 1.5:
 						if self.player.heldSlot.item.liquid is None:
 							self.player.heldSlot.item.liquid = liquidParticle.liquid
-						if self.player.heldSlot.item.liquid == liquidParticle.liquid:
-							self.player.heldSlot.item.filledAmount += 1 / self.player.heldSlot.item.liquid.particleCount
-							del self.liquids[l].particles[p]
+						if self.player.heldSlot.item.liquid == liquidParticle.liquid and self.player.heldSlot.item.filledAmount < 1:
+							self.player.heldSlot.item.fill(1 / self.player.heldSlot.item.liquid.particleCount)
+							del self.liquids[i].particles[p]
 					
     
 		for i in range(steps):
@@ -175,7 +176,7 @@ class Model:
 						self.space.add(self.world[y][x].shape)
 						self.generateLight(y, x)
 				elif isinstance(self.player.heldSlot.item, Bucket):
-					if self.player.heldSlot.item.liquid:
+					if self.player.heldSlot.item.liquid and math.isclose(self.player.heldSlot.item.filledAmount, self.player.heldSlot.item.capacity):
 						self.liquids.append(self.player.heldSlot.item.liquid(x, y, self.space))
 						self.player.heldSlot.item.clear()
 

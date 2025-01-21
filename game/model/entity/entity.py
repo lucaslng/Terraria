@@ -16,7 +16,7 @@ class Entity(HasPhysics):
     mass: float	    #Minimum velocity to start taking damage
     width: float = 1
     height: float = 1
-    walkForce: float = 400
+    walkForce: float = 800
     walkSpeed: float
     jumpImpulse: float
     jumpSpeed: float

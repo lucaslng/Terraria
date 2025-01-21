@@ -34,5 +34,5 @@ class Bucket(Item):
 				return Items.BucketWater
 	
 	@enum.setter
-	def enum(self, _): # needed for inheritance from items
+	def enum(self, _): # needed for inheritance from Item
 		pass
