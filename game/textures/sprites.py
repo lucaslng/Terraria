@@ -59,26 +59,30 @@ sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
     Blocks.GoldOre: everythingSheet.get(384, 0, 16, 16, BLOCK_SIZE),
 	Items.GoldOre: everythingSheet.get(384, 0, 16, 16),
     Blocks.DiamondOre: everythingSheet.get(400, 0, 16, 16, BLOCK_SIZE),
-	#Ingots
+	
+    #Ingots
     Items.Coal: everythingSheet.get(416, 0, 16, 16),
     Items.IronIngot: everythingSheet.get(432, 0, 16, 16),
 	Items.GoldIngot: everythingSheet.get(448, 0, 16, 16),
 	Items.Diamond: everythingSheet.get(464, 0, 16, 16),
     
-    #---BLOCKS---
-	
+    
+    #---BLOCKS---	
     Blocks.Air: Surface((0,0), SRCALPHA),
 
     # Dirt
     Blocks.Dirt: everythingSheet.get(480, 0, 16, 16, BLOCK_SIZE),
 	Items.Dirt: everythingSheet.get(480, 0, 16, 16),
-	# Grass
+ 
+	#Grass
     Blocks.Grass: everythingSheet.get(496, 0, 16, 16, BLOCK_SIZE),
 	Items.Grass: everythingSheet.get(496, 0, 16, 16),
-    # Stone
+ 
+    #Stone 
 	Blocks.Stone: everythingSheet.get(512, 0, 16, 16, BLOCK_SIZE),
 	Items.Stone: everythingSheet.get(512, 0, 16, 16),
-    # Cobblestone
+ 
+    #Cobblestone
     Blocks.Cobblestone: everythingSheet.get(528, 0, 16, 16, BLOCK_SIZE),
 	Items.Cobblestone: everythingSheet.get(528, 0, 16, 16),
     
@@ -91,21 +95,20 @@ sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
     Blocks.CraftingTable: everythingSheet.get(592, 0, 14, 16, BLOCK_SIZE),
 	Items.CraftingTable: everythingSheet.get(592, 0, 14, 16),
 	Items.Sticks: everythingSheet.get(606, 0, 16, 16),
+ 
+    #Furnace
+    Blocks.Furnace: everythingSheet.get(622, 0, 16, 16, BLOCK_SIZE),
+    "furnaceOn": everythingSheet.get(638, 0, 16, 16, BLOCK_SIZE),
+    Items.Furnace: everythingSheet.get(622, 0, 16, 16),
 
     #Misc
     Blocks.Torch: everythingSheet.get(576, 0, 16, 16, BLOCK_SIZE),
 	Items.Torch: everythingSheet.get(576, 0, 16, 16),
-    Blocks.Furnace: everythingSheet.get(622, 0, 16, 16, BLOCK_SIZE),
-    "furnaceOn": everythingSheet.get(638, 0, 16, 16, BLOCK_SIZE),
-    Items.Furnace: everythingSheet.get(622, 0, 16, 16),
 	Items.RabbitMeat: everythingSheet.get(654, 0, 16, 16),
 	Items.BucketEmpty: everythingSheet.get(718, 0, 16, 16),
 	Items.BucketWater: everythingSheet.get(734, 0, 16, 16),
 	Items.BucketMilk: everythingSheet.get(750, 0, 16, 16),
-    # Helmets
-	Items.GoldHelmet: everythingSheet.get(670, 0, 16, 16),
-	Items.IronHelmet: everythingSheet.get(686, 0, 16, 16),
-	Items.DiamondHelmet: everythingSheet.get(702, 0, 16, 16),
+  
   
     #---TOOLS---
     #Wooden
@@ -141,6 +144,13 @@ sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
     #Misc
     "shears": everythingSheet.get(320, 0, 16, 16),
     "flintAndSteel": everythingSheet.get(336, 0, 16, 16),
+    
+    
+    #---ARMOUR---
+	Items.GoldHelmet: everythingSheet.get(670, 0, 16, 16),
+	Items.IronHelmet: everythingSheet.get(686, 0, 16, 16),
+	Items.DiamondHelmet: everythingSheet.get(702, 0, 16, 16),
+    
     
     #---HEARTS---
     "empty heart": weirdBlocksSheet.get(0, 0, 9, 9, BLOCK_SIZE),
