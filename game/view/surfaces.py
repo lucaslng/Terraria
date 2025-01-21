@@ -2,6 +2,7 @@ from pygame import SRCALPHA, Surface
 from utils import colours
 from utils.constants import BLOCK_SIZE, HEIGHT, WIDTH
 
+all = Surface((WIDTH, HEIGHT))
 world = Surface((WIDTH, HEIGHT), SRCALPHA)
 blockBreak = world.copy()
 sunlight = world.copy()
