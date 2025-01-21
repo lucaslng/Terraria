@@ -16,6 +16,7 @@ from game.model.entity.entities.rabbit import Rabbit
 from game.model.items.bucket import Bucket
 from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.slot import Slot
+from game.model.liquids.liquid import Liquid
 from game.model.utils.biomesenum import Biome
 from utils.constants import DOG_RARITY, FIRST_MESSAGE, FPS, NPC_RARITY, RABBIT_RARITY, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
@@ -75,6 +76,8 @@ class Model:
 		self.space.add(self.worldBody)
 		self._generateBoundaryShapes()
 		self.blockFacingCoord: tuple[int, int] | None = None
+
+		self.liquids: list[Liquid] = []
 
 	def update(self, steps=20) -> bool:
 		'''Update the model, should be called every frame. steps increases the accuracy of the physics simulation but sacrifices performance. returns whether the player is alive'''
@@ -165,7 +168,9 @@ class Model:
 						self.space.add(self.world[y][x].shape)
 						self.generateLight(y, x)
 				elif isinstance(self.player.heldSlot.item, Bucket):
-					self.player.heldSlot.item.clear()
+					if self.player.heldSlot.item.liquid:
+						self.liquids.append(self.player.heldSlot.item.liquid(x, y, self.space))
+						self.player.heldSlot.item.clear()
 
 	def mineBlock(self):
 		'''mine the block the player is facing'''
