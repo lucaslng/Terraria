@@ -7,6 +7,7 @@ FPS = 60
 pg.init()
 
 SURF = pg.display.set_mode((WIDTH, HEIGHT))
+SURF.set_alpha(None)
 FRAME = SURF.get_rect()
 
 clock = pg.time.Clock()
