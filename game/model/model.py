@@ -221,7 +221,7 @@ class Model:
 		self.biomeArray = [Biome.FOREST if noise > 0 else Biome.PLAINS for noise in biomeNoise.noise]
 
 		# Calculate height maps using vectorized operations
-		grassHeight = np.round(self.world.height * 0.58 + 9 * grassNoiseArray).astype(int)
+		grassHeight = np.round(self.world.height * 0.35 + 9 * grassNoiseArray).astype(int)
 		stoneHeight = np.round(grassHeight + 5 + 5 * stoneNoiseArray).astype(int)
 		
 		for x in range(self.world.width):
