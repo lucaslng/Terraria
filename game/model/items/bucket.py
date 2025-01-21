@@ -33,5 +33,5 @@ class Bucket(Item):
 				return Items.BucketWater
 	
 	@enum.setter
-	def enum(self, x):
+	def enum(self, _): # needed for pickling
 		pass
