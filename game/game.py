@@ -163,7 +163,7 @@ def game() -> Screens:
 						del inventories[inventoryType]
 			elif event.type == pg.KEYDOWN:
 				if event.key == pg.K_ESCAPE:
-					draw(model, camera, inventories)
+					draw(events, model, camera, inventories)
 					pause = pauseMenu(model, pg.image.tobytes(surfaces.everything, 'RGB'))   
 					if pause:
 						return pause
