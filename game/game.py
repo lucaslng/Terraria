@@ -165,7 +165,7 @@ def game() -> Screens:
 					if pause:
 						return pause
 					else:
-						continue
+						continue 
 				elif event.key == userKeys.interact:
 					if len(inventories) > 1:
 						inventories = {InventoryType.Player: inventories[InventoryType.Player]}
