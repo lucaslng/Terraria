@@ -4,6 +4,8 @@ from game.model.items.craftingtableitem import CraftingTableItem
 from game.model.items.flowers import PoppyItem
 from game.model.items.furnaceitem import FurnaceItem
 from game.model.items.helmets import DiamondHelmet, GoldHelmet, IronHelmet
+from game.model.items.ingots import CoalItem
+from game.model.items.ores import IronOreItem
 from game.model.items.planksitem import PlanksItem
 from game.model.items.rabbitmeat import RabbitMeat
 from game.model.items.rpg import Rpg
@@ -24,5 +26,7 @@ def addDefaultItems(player: Player) -> None:
 		Bucket(liquid=Water, filledAmount=1),
 		Rpg(),
 		DiamondHelmet(),
-		FurnaceItem()
+		FurnaceItem(),
+		CoalItem(),
+		*[IronOreItem() for _ in range(8)]
 		)
