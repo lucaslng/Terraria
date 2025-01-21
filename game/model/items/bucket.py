@@ -1,3 +1,4 @@
+from typing import Type
 from game.model.items.item import Item
 from game.model.items.utils.itemsenum import Items
 from game.model.liquids.liquid import Liquid, Water
@@ -6,7 +7,7 @@ from game.model.liquids.liquid import Liquid, Water
 class Bucket(Item):
 	'''Item for a bucket that can hold liquids'''
 
-	def __init__(self, liquid: Liquid | None=None, capacity: float=1, filledAmount: float=0):
+	def __init__(self, liquid: Type[Liquid] | None=None, capacity: float=1, filledAmount: float=0):
 		super().__init__(Items.BucketEmpty, 1)
 		self.liquid = liquid
 		self.capacity = capacity

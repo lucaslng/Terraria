@@ -48,7 +48,6 @@ class Model:
 		self.world = World(worldWidth, worldHeight)
 		self.player = Player(worldWidth * 0.5, worldHeight * 0.55, self.world)
 		
-
 		self.lightmap = [
 			[0 for x in range(worldWidth)] for y in range(worldHeight)
 		]
@@ -59,7 +58,6 @@ class Model:
 
 	def initialise(self):
 		'''things that need to be done when both generating and from loading the save'''
-		
 		self.entities: list[Entity] = [] # list of the entities in the world except the player
 		self.entityCounter: dict[Type[Entity], int] = {
 			Rabbit: 0,
