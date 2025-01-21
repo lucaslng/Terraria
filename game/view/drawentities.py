@@ -2,7 +2,8 @@ from pygame import BLEND_MULT, Rect, Surface
 from game.model.entity.entities.dog import Dog
 from game.model.entity.entities.npc import Npc
 from game.model.entity.entities.rabbit import Rabbit
-from game.model.entity.entity import Entity
+from game.model.entity.hasphysics import HasPhysics
+from game.model.items.rpg import Rocket
 from game.textures.animation import Animation
 from game.textures.sprites import sprites
 from game.view import conversions, surfaces
@@ -53,8 +54,11 @@ def drawDog(dog: Dog, pos: tuple[int, int]) -> None:
 	else:
 		texture.drawAnimated(surfaces.world, pos, pos[0] > FRAME.centerx, hurt)
 
+def drawRocket(rocket: Rocket, pos: tuple[int, int]):
+	pg.draw.circle(surfaces.world, colours.GREEN, pos, 4)
 
-def drawEntities(entities: list[Entity], camera: Rect):
+
+def drawEntities(entities: list[HasPhysics], camera: Rect):
 	'''Draw entities'''
 	
 	for entity in entities:
@@ -65,3 +69,5 @@ def drawEntities(entities: list[Entity], camera: Rect):
 			drawRabbit(entity, pos)
 		elif isinstance(entity, Dog):
 			drawDog(entity, pos)
+		elif isinstance(entity, Rocket):
+			drawRocket(entity, pos)

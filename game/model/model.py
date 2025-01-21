@@ -16,7 +16,9 @@ from game.model.entity.entities.dog import Dog
 from game.model.entity.entities.npc import Npc
 from game.model.entity.entities.rabbit import Rabbit
 from game.model.entity.entitylike import EntityLike
+from game.model.entity.hasphysics import HasPhysics
 from game.model.items.bucket import Bucket
+from game.model.items.rpg import Rocket, Rpg
 from game.model.liquids.liquid import Liquid
 from game.model.utils.biomesenum import Biome
 from utils.constants import DOG_RARITY, FIRST_MESSAGE, FPS, NPC_RARITY, RABBIT_RARITY
@@ -56,7 +58,7 @@ class Model:
 			[0 for x in range(worldWidth)] for y in range(worldHeight)
 		]
 		self.liquids: list[Liquid] = []
-		self.entities: list[Entity] = [] # list of the entities in the world except the player
+		self.entities: list[HasPhysics] = [] # list of the entities in the world except the player
 		self.entityCounter: dict[Type[Entity], int] = {
 			Rabbit: 0,
 			Dog: 0,
@@ -78,11 +80,19 @@ class Model:
 		if not self.player.isAlive:
 			return False
 		for i, entity in enumerate(self.entities):
-			entity.update(self.player.body.position)
-			if isinstance(entity, Dog) and dist(entity.body.position, self.player.body.position) < 1.5:
-				if self.player.takeDamage(1):
-					self.player.body.apply_impulse_at_local_point((self.player.body.position - entity.body.position) * 30, (0, 0.5))
-			if not entity.isAlive or not 0 < entity.body.position.x < self.world.width or not 0 < entity.body.position.y < self.world.height:
+			if isinstance(entity, Entity):
+				entity.update(self.player.body.position)
+				if isinstance(entity, Dog) and dist(entity.body.position, self.player.body.position) < 1.5:
+					if self.player.takeDamage(1):
+						self.player.body.apply_impulse_at_local_point((self.player.body.position - entity.body.position) * 30, (0, 0.5))
+				if not entity.isAlive:
+					self.deleteEntity(i, entity)
+					continue
+			elif isinstance(entity, Rocket):
+				if entity.stationary:
+					self.deleteEntity(i, entity)
+					continue
+			if not 0 < entity.body.position.x < self.world.width or not 0 < entity.body.position.y < self.world.height:
 				self.deleteEntity(i, entity)
 		
 		if isinstance(self.player.heldSlot.item, Bucket) and self.player.heldSlot.item.filledAmount < 1:
@@ -141,7 +151,7 @@ class Model:
 		if type(entity) in self.entityCounter:
 			self.entityCounter[type(entity)] += 1
 	
-	def deleteEntity(self, i: int, entity: Entity) -> None:
+	def deleteEntity(self, i: int, entity: HasPhysics) -> None:
 		if type(entity) in self.entityCounter:
 			self.entityCounter[type(entity)] -= 1
 		self.space.remove(entity.body, entity.shape)
@@ -179,6 +189,8 @@ class Model:
 					if self.player.heldSlot.item.liquid and math.isclose(self.player.heldSlot.item.filledAmount, self.player.heldSlot.item.capacity):
 						self.liquids.append(self.player.heldSlot.item.liquid(x, y, self.space))
 						self.player.heldSlot.item.clear()
+				elif isinstance(self.player.heldSlot.item, Rpg):
+					self.entities.append(Rocket(*self.player.body.position, self.space))
 
 	def mineBlock(self):
 		'''mine the block the player is facing'''

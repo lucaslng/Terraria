@@ -142,6 +142,7 @@ sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
     Items.DiamondSword: everythingSheet.get(304, 0, 16, 16),
     
     #Misc
+	Items.Rpg: everythingSheet.get(830, 0, 16, 16),
     # "shears": everythingSheet.get(320, 0, 16, 16),
     # "flintAndSteel": everythingSheet.get(336, 0, 16, 16),
     

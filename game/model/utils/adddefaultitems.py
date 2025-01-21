@@ -6,6 +6,7 @@ from game.model.items.furnaceitem import FurnaceItem
 from game.model.items.helmets import DiamondHelmet, GoldHelmet, IronHelmet
 from game.model.items.planksitem import PlanksItem
 from game.model.items.rabbitmeat import RabbitMeat
+from game.model.items.rpg import Rpg
 from game.model.items.tools import DiamondAxe, DiamondPickaxe
 from game.model.items.torchitem import TorchItem
 from game.model.liquids.liquid import Water
@@ -21,8 +22,7 @@ def addDefaultItems(player: Player) -> None:
 		DiamondPickaxe(),
 		*[PlanksItem() for _ in range(64)],
 		Bucket(liquid=Water, filledAmount=1),
-		Bucket(liquid=Water, filledAmount=1),
-		Bucket(liquid=Water, filledAmount=1),
+		Rpg(),
 		DiamondHelmet(),
 		FurnaceItem()
 		)
