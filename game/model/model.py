@@ -16,6 +16,7 @@ from game.model.entity.entities.rabbit import Rabbit
 from game.model.items.bucket import Bucket
 from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.slot import Slot
+from game.model.liquids.liquid import Liquid
 from game.model.utils.biomesenum import Biome
 from utils.constants import DOG_RARITY, FIRST_MESSAGE, FPS, NPC_RARITY, RABBIT_RARITY, WORLD_HEIGHT, WORLD_WIDTH
 from game.model.blocks.airblock import AirBlock
@@ -51,6 +52,7 @@ class Model:
 		self.lightmap = [
 			[0 for x in range(worldWidth)] for y in range(worldHeight)
 		]
+		self.liquids: list[Liquid] = []
 		self.initialise()
 		self._generate()
 		addDefaultItems(self.player)
@@ -106,11 +108,10 @@ class Model:
 		self._generateWorldShapes()
 		self._generateEntities()
 		print(f'World generation time: {round(time.perf_counter() - startTime, 2)} seconds')
-		px, py = self.player.position
-		self.player.position = px, self.world.topy(px) - 1
+		self.player.position = self.player.position.x, self.world.topy(self.player.position.x) - 1
 	
 	def _generateEntities(self) -> None:
-		px, py = self.player.position
+		px = self.player.position.x
 		self.spawnEntity(Npc(px + 1, self.world.topy(px + 1) - 1, self.world, FIRST_MESSAGE))
 		for _ in range(self.world.width // RABBIT_RARITY):
 			x = random.randint(0, self.world.width - 1)
@@ -166,7 +167,9 @@ class Model:
 						self.space.add(self.world[y][x].shape)
 						self.generateLight(y, x)
 				elif isinstance(self.player.heldSlot.item, Bucket):
-					self.player.heldSlot.item.clear()
+					if self.player.heldSlot.item.liquid:
+						self.liquids.append(self.player.heldSlot.item.liquid(x, y, self.space))
+						self.player.heldSlot.item.clear()
 
 	def mineBlock(self):
 		'''mine the block the player is facing'''
@@ -469,13 +472,13 @@ class Model:
 		shape.friction = self.world[y][x].friction
 		self.space.add(shape)
 
-	def __getstate__(self) -> tuple[World, list[list[int]], list[Biome], tuple[float, float], Inventory, int, Slot, Slot]:
+	def __getstate__(self) -> tuple[World, list[list[int]], list[Liquid], list[Biome], tuple[float, float], Inventory, int, Slot, Slot]:
 		print("Saving world...")
-		return self.world, self.lightmap, self.biomeArray, self.player.position, self.player.inventory, self.player.health, self.player.cursorSlot, self.player.helmetSlot
+		return self.world, self.lightmap, self.liquids, self.biomeArray, self.player.position, self.player.inventory, self.player.health, self.player.cursorSlot, self.player.helmetSlot
 	
-	def __setstate__(self, state: tuple[World, list[list[int]], list[Biome], tuple[float, float], Inventory, int, Slot, Slot]):
+	def __setstate__(self, state: tuple[World, list[list[int]], list[Liquid], list[Biome], tuple[float, float], Inventory, int, Slot, Slot]):
 		print("Loading existing save...")
-		self.world, self.lightmap, self.biomeArray, playerPosition, playerInventory, playerHealth, playerCursorSlot, playerHelmetSlot = state
+		self.world, self.lightmap, self.liquids, self.biomeArray, playerPosition, playerInventory, playerHealth, playerCursorSlot, playerHelmetSlot = state
 		self.player = Player(*playerPosition, self.world)
 		self.player.inventory = playerInventory
 		self.player.health = playerHealth

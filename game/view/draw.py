@@ -1,5 +1,6 @@
 from pygame import Rect
 from game.view.drawentities import drawEntities
+from game.view.drawliquids import drawLiquids
 from utils.constants import BLOCK_SIZE, FRAME, SURF, WIDTH, clock, font16
 from game.model.items.inventory.inventory import Inventory
 from game.model.model import Model
@@ -16,6 +17,7 @@ def draw(model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int
 	'''Draw everything'''
 
 	drawBlocks(model.world, model.blockFacingCoord, camera)
+	drawLiquids(model.liquids, camera)
 	drawSunlight(model.lightmap, camera)
 	drawLights(model.lights, camera)
 	drawPlayerLight(model.player.lightRadius)
