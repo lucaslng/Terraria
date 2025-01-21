@@ -7,6 +7,7 @@ jump = pg.K_SPACE
 interact = pg.K_e
 interactEntity = pg.K_f
 consume = pg.K_c
+reload = pg.K_r
 
 slot1 = pg.K_1
 slot2 = pg.K_2

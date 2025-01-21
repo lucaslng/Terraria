@@ -15,3 +15,6 @@ class HasPhysics:
 		self.shape.friction = friction
 
 		space.add(self.body, self.shape)
+	
+	def update(self):
+		pass

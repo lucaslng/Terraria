@@ -1,4 +1,4 @@
-from pygame import SRCALPHA, Surface
+from pygame import SRCALPHA, Surface, transform
 from utils.constants import BLOCK_SIZE
 from game.model.blocks.utils.blocksenum import Blocks
 from game.model.items.utils.itemsenum import Items
@@ -142,6 +142,8 @@ sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
     Items.DiamondSword: everythingSheet.get(304, 0, 16, 16),
     
     #Misc
+	Items.Rpg: everythingSheet.get(830, 0, 16, 16),
+	"rocket": transform.rotate(everythingSheet.get(846, 0, 16, 16), 315),
     # "shears": everythingSheet.get(320, 0, 16, 16),
     # "flintAndSteel": everythingSheet.get(336, 0, 16, 16),
     

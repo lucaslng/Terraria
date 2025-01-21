@@ -63,3 +63,5 @@ class Items(Enum):
 	Dandelion = "Dandelion"
 	Cornflower = "Cornflower"
 	Allium = "Allium"
+
+	Rpg = "RPG"

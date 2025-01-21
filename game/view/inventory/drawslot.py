@@ -1,6 +1,7 @@
 from pygame import Surface
 from game.model.items.bucket import Bucket
 from game.model.items.inventory.slot import Slot
+from game.model.items.rpg import Rpg
 from game.model.items.specialitems.helmet import Helmet
 from game.model.items.specialitems.tool import Tool
 from game.view.inventory.drawdurability import drawDurability
@@ -21,6 +22,8 @@ def drawSlot(surface: Surface, slot: Slot, x: int, y: int, slotSize: int, center
 			drawDurability(surface, slot.item.durability, slot.item.startingDurability, slotSize, slotCenter)
 		elif isinstance(slot.item, Bucket):
 			drawDurability(surface, slot.item.filledAmount, slot.item.capacity, slotSize, slotCenter)
+		elif isinstance(slot.item, Rpg):
+			drawDurability(surface, slot.item.ammo, slot.item.magSize, slotSize, slotCenter)
 
 		if slot.count > 1:
 			drawSlotCount(surface, slot.count, slotCenter)

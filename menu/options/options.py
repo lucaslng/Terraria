@@ -115,7 +115,8 @@ class OptionsMenu:
             ("Actions", [
                 ("interact", "Interact", self.currentKeys.interact),
                 ("interactEntity", "Interact Entity", self.currentKeys.interactEntity),
-                ("consume", "Consume", self.currentKeys.consume)
+                ("consume", "Consume", self.currentKeys.consume),
+                ("reload", "Reload", self.currentKeys.reload),
             ]),
             ("Inventory", [
                 ("slot1", "Slot 1", self.currentKeys.slot1),
