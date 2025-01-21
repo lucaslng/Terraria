@@ -24,9 +24,9 @@ class Rocket(HasPhysics):
 
 	def __init__(self, x: float, y: float, space: Space):
 		direction = (Vec2d(*mouse.get_pos()) - Vec2d(*FRAME.center)).normalized()
-		super().__init__(*(Vec2d(x, y) + direction), 3, 1, 1, 0.3, space)
-		self.body.apply_impulse_at_local_point(direction * 100)
+		super().__init__(*(Vec2d(x, y) + direction * 1.4), 3, 1, 1, 0.3, space)
+		self.body.apply_impulse_at_local_point(direction * 150)
 	
 	@property
 	def stationary(self) -> bool:
-		return -30 < self.body.velocity.x < 30 and -30 < self.body.velocity.y < 30
+		return -20 < self.body.velocity.x < 20 and -30 < self.body.velocity.y < 20

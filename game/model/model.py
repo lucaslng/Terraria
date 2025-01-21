@@ -172,7 +172,12 @@ class Model:
 		del self.entities[i]
 	
 	def placeBlock(self, x: int, y: int) -> None:
-		'''place a block at coordinates (x, y)'''
+		'''place a block or use an item at coordinates (x, y)'''
+		if isinstance(self.player.heldSlot.item, Rpg):
+			if self.player.heldSlot.item.ammo > 0:
+				self.player.heldSlot.item.ammo -= 1
+				self.entities.append(Rocket(*self.player.body.position, self.space))
+				return
 		if not (0 <= x < self.world.width and 0 <= y < self.world.height):
 			return
 		if isinstance(self.world[y][x], AirBlock):
@@ -203,10 +208,6 @@ class Model:
 					if self.player.heldSlot.item.liquid and math.isclose(self.player.heldSlot.item.filledAmount, self.player.heldSlot.item.capacity):
 						self.liquids.append(self.player.heldSlot.item.liquid(x, y, self.space))
 						self.player.heldSlot.item.clear()
-				elif isinstance(self.player.heldSlot.item, Rpg):
-					if self.player.heldSlot.item.ammo > 0:
-						self.player.heldSlot.item.ammo -= 1
-						self.entities.append(Rocket(*self.player.body.position, self.space))
 
 	def removeBlock(self, x: int, y: int) -> None:
 		if isinstance(self.world[y][x], InventoryBlock):
