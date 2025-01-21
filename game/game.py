@@ -172,8 +172,8 @@ def game() -> Screens:
 					else:
 						for r in range(3):
 							for c in range(3):
-								x = floor(model.player.position.x) - 1 + c
-								y = floor(model.player.position.y) - 1 + r
+								x = floor(model.player.body.position.x) - 1 + c
+								y = floor(model.player.body.position.y) - 1 + r
 								if isinstance(model.world[y][x], InventoryBlock):
 									for inventory, inventoryType in model.world[y][x].inventories:
 										if inventoryType in inventories:
