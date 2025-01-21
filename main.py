@@ -1,3 +1,10 @@
+'''
+TerraCraft
+A game where you explore the world and defend yourself against monsters!
+By Lucas Leung and Ryan Cheung
+20th January 2025
+'''
+
 import utils.installpackages
 from menu.about.about import aboutScreen
 from game.game import game
