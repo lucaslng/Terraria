@@ -1,12 +1,12 @@
 import pygame as pg
 
 walkLeft = pg.K_a
-walkRight = pg.K_d
+walkRight = pg.K_e
 jump = pg.K_SPACE
 
-interact = pg.K_e
-interactEntity = pg.K_f
-consume = pg.K_c
+interact = pg.K_PERIOD
+interactEntity = pg.K_u
+consume = pg.K_j
 
 slot1 = pg.K_1
 slot2 = pg.K_2
