@@ -7,8 +7,9 @@ from game.model.liquids.liquid import Liquid, Water
 class Bucket(Item):
 	'''Item for a bucket that can hold liquids'''
 
+	stackSize = 1
+
 	def __init__(self, liquid: Type[Liquid] | None=None, capacity: float=1, filledAmount: float=0):
-		super().__init__(Items.BucketEmpty, 1)
 		self.liquid = liquid
 		self.capacity = capacity
 		self.filledAmount = filledAmount
@@ -32,7 +33,3 @@ class Bucket(Item):
 				return Items.BucketEmpty
 			case Water:
 				return Items.BucketWater
-	
-	@enum.setter
-	def enum(self, _): # needed for inheritance from Item
-		pass

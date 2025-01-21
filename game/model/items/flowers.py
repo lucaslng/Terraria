@@ -6,23 +6,19 @@ from game.model.items.utils.itemsenum import Items
 class PoppyItem(Item, Placeable):
 	'''Poppy item class'''
 
-	def __init__(self):
-		super().__init__(Items.Poppy)
+	enum = Items.Poppy
 
 class CornflowerItem(Item, Placeable):
 	'''Cornflower item class'''
 
-	def __init__(self):
-		super().__init__(Items.Cornflower)
+	enum = Items.Cornflower
 
 class DandelionItem(Item, Placeable):
 	'''Dandelion item class'''
 
-	def __init__(self):
-		super().__init__(Items.Dandelion)
+	enum = Items.Dandelion
 
 class AlliumItem(Item, Placeable):
 	'''Allium item class'''
 
-	def __init__(self):
-		super().__init__(Items.Allium)
+	enum = Items.Allium

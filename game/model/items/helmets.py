@@ -6,20 +6,23 @@ from game.model.items.utils.itemsenum import Items
 class GoldHelmet(Item, Helmet):
 	'''Gold helmet item'''
 
-	def __init__(self) -> None:
-		super().__init__(Items.GoldHelmet, stackSize=1)	
-		Helmet.__init__(self, 0.9, 77)
+	enum = Items.GoldHelmet
+	stackSize = 1
+	multiplier = 0.9
+	durability = 77
 
 class IronHelmet(Item, Helmet):
 	'''Iron helmet item'''
 
-	def __init__(self) -> None:
-		super().__init__(Items.IronHelmet, stackSize=1)
-		Helmet.__init__(self, 0.75, 165)
+	enum = Items.IronHelmet
+	stackSize = 1
+	multiplier = 0.75
+	startingDurability = 165
 
 class DiamondHelmet(Item, Helmet):
 	'''Diamond helmet item'''
 
-	def __init__(self) -> None:
-		super().__init__(Items.DiamondHelmet, stackSize=1)	
-		Helmet.__init__(self, 0.55, 363)
+	enum = Items.DiamondHelmet
+	stackSize = 1
+	multiplier = 0.55
+	startingDurability = 363

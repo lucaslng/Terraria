@@ -7,7 +7,5 @@ from game.model.light import Light
 class TorchItem(Item, Placeable, Light):
 	'''Torch item class'''
 
+	enum = Items.Torch
 	lightRadius = 4
-
-	def __init__(self):
-		super().__init__(Items.Torch)

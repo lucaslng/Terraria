@@ -6,5 +6,5 @@ from game.model.items.utils.itemsenum import Items
 class CraftingTableItem(Item, Placeable):
 	'''Crafting table item class'''
 
-	def __init__(self):
-		super().__init__(Items.CraftingTable, 1)
+	enum = Items.CraftingTable
+	stackSize = 1
