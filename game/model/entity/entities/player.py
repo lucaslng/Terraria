@@ -97,6 +97,3 @@ class Player(Entity, Light):
             self.lightRadius = self.heldSlot.item.lightRadius
         else:
             self.lightRadius = self.defaultLightRadius
-
-        if isinstance(self.heldSlot.item, Bucket):
-            print(self.heldSlot.item.filledAmount)
