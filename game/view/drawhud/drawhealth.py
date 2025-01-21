@@ -11,7 +11,7 @@ def drawHealth(health: float, maxHealth: int) -> None:
 
 	fullHearts = int(health // 2)
 	halfHeart = int(health % 2)
-	emptyHearts = int((maxHealth - health) // 2)
+	emptyHearts = maxHealth // 2 - fullHearts - halfHeart
 
 	#Full hearts
 	for i in range(fullHearts):
