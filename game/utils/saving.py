@@ -6,7 +6,7 @@ saveDirectory = 'game/saves'
 saveFile = 'saveFile'
 savePath = os.path.join(saveDirectory, saveFile)
 
-def ensureSaveDirectory() -> None:
+def _ensureSaveDirectory() -> None:
     '''Creates the saves directory if it doesn't exist'''
     os.makedirs(saveDirectory, exist_ok=True)
 
@@ -20,7 +20,7 @@ def clear() -> None:
 
 def save(model: Model) -> None:
 	'''Saves game data to the file'''
-	ensureSaveDirectory()
+	_ensureSaveDirectory()
 	with open(savePath, 'wb') as file:
 		dill.dump(model, file)
 

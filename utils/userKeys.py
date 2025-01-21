@@ -9,7 +9,7 @@ interactEntity = pg.K_f
 consume = pg.K_c
 
 slot1 = pg.K_1
-slot2 = pg.K_1
+slot2 = pg.K_2
 slot3 = pg.K_3
 slot4 = pg.K_4
 slot5 = pg.K_5

@@ -14,7 +14,7 @@ from game.view.inventory.hoveredslot import getHoveredSlotSlot
 from menu.death.deathScreen import deathScreen
 from menu.pause.pause import pauseMenu
 from sound import channels
-import utils.keys as keys
+import utils.userKeys as userKeys
 from utils.constants import BLOCK_SIZE, FRAME, SURF, WORLD_HEIGHT, WORLD_WIDTH
 from game.view.draw import draw
 from game.model.model import Model
@@ -104,33 +104,33 @@ def game() -> Screens:
 	while True:
 		clearScreen()
 		pressedKeys = pg.key.get_pressed()
-		if pressedKeys[keys.walkLeft]:
+		if pressedKeys[userKeys.walkLeft]:
 			model.player.walkLeft()
-		if pressedKeys[keys.walkRight]:
+		if pressedKeys[userKeys.walkRight]:
 			model.player.walkRight()
-		if pressedKeys[keys.jump]:
+		if pressedKeys[userKeys.jump]:
 			model.player.jump()
    
-		if pressedKeys[keys.slot1]:
+		if pressedKeys[userKeys.slot1]:
 			model.player.heldSlotIndex = 0
-		if pressedKeys[keys.slot2]:
+		if pressedKeys[userKeys.slot2]:
 			model.player.heldSlotIndex = 1
-		if pressedKeys[keys.slot3]:
+		if pressedKeys[userKeys.slot3]:
 			model.player.heldSlotIndex = 2
-		if pressedKeys[keys.slot4]:
+		if pressedKeys[userKeys.slot4]:
 			model.player.heldSlotIndex = 3
-		if pressedKeys[keys.slot5]:
+		if pressedKeys[userKeys.slot5]:
 			model.player.heldSlotIndex = 4
-		if pressedKeys[keys.slot6]:
+		if pressedKeys[userKeys.slot6]:
 			model.player.heldSlotIndex = 5
-		if pressedKeys[keys.slot7]:
+		if pressedKeys[userKeys.slot7]:
 			model.player.heldSlotIndex = 6
-		if pressedKeys[keys.slot8]:
+		if pressedKeys[userKeys.slot8]:
 			model.player.heldSlotIndex = 7
-		if pressedKeys[keys.slot9]:
+		if pressedKeys[userKeys.slot9]:
 			model.player.heldSlotIndex = 8
 		
-		if pressedKeys[keys.consume]:
+		if pressedKeys[userKeys.consume]:
 			if model.player.heldSlot.item and isinstance(model.player.heldSlot.item, Edible) and not channels.consume.get_busy():
 				model.player.consume()
 		
@@ -159,10 +159,8 @@ def game() -> Screens:
 				pg.mixer.set_num_channels(len(model.entities) * 2) # set extra channels just to be safe
 			elif event.type == pg.KEYDOWN:
 				if event.key == pg.K_ESCAPE:
-					retunedState = pauseMenu()
-					if retunedState:
-						return retunedState  
-				elif event.key == keys.interact:
+					return pauseMenu(model)
+				elif event.key == userKeys.interact:
 					if len(inventories) > 1:
 						inventories = {InventoryType.Player: inventories[InventoryType.Player]}
 					else:
@@ -177,7 +175,7 @@ def game() -> Screens:
 										else:
 											slotSize, inventoryx, inventoryy = inventoryType.value
 											inventories[inventoryType] = inventory, slotSize, inventoryx, inventoryy
-				elif event.key == keys.interactEntity:
+				elif event.key == userKeys.interactEntity:
 					if model.entities:
 						model.entities.sort(key=lambda e: dist(e.position, model.player.position)) # sort by position to the player
 						if dist(model.entities[0].position, model.player.position) < 1.5:
