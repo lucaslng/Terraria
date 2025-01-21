@@ -180,7 +180,7 @@ def game() -> Screens:
 				elif event.key == keys.interactEntity:
 					if model.entities:
 						model.entities.sort(key=lambda e: dist(e.position, model.player.position)) # sort by position to the player
-						for entity in model.entities:
+						for i, entity in enumerate(model.entities):
 							if dist(entity.position, model.player.position) > 2:
 								break
 							if isinstance(entity, Rabbit) or isinstance(entity, Dog):
@@ -193,7 +193,7 @@ def game() -> Screens:
 								if not entity.isAlive:
 									if entity.droppedItem:
 										model.player.inventory.addItem(entity.droppedItem)
-									model.deleteEntity(0, entity)
+									model.deleteEntity(i, entity)
 							else:
 								entity.interact()
 			elif event.type == pg.MOUSEBUTTONDOWN:
