@@ -2,7 +2,7 @@ import math
 import pygame as pg
 import random
 
-from utils.constants import HEIGHT, SURF, WIDTH, clock
+from utils.constants import FRAME, SURF, clock
 from utils.screens import Screens
 from menu.instructions.instructions import instructionsScreen
 from menu.options.options import optionsScreen
@@ -19,12 +19,12 @@ def mainMenu():
 	textShadow = (20, 20, 20, 160)
 
 	bgPanorama = pg.image.load("assets/title screen background animation.jpg").convert()
-	overlay = pg.Surface((WIDTH, HEIGHT))
+	overlay = pg.Surface((FRAME.width, FRAME.height))
 	overlay.fill((0, 0, 0))
 	overlay.set_alpha(40)
 
 	titleImage = pg.image.load("assets/title screen title.png").convert_alpha()
-	titleImageRect = titleImage.get_rect(center=(WIDTH // 2, HEIGHT // 4))
+	titleImageRect = titleImage.get_rect(center=(FRAME.width // 2, FRAME.height // 4))
 
 	currentSplash = random.choice(splashTexts)
 	splashAngle = -15
@@ -32,9 +32,9 @@ def mainMenu():
 	splashScale = 1.0
 
 	buttonWidth, buttonHeight = 400, 50
-	buttonX = (WIDTH - buttonWidth) // 2
+	buttonX = (FRAME.width - buttonWidth) // 2
 	spacing = 24
-	startY = HEIGHT // 2
+	startY = FRAME.height // 2
 
 	buttons = {
 		'play': Button(buttonX, startY, buttonWidth, buttonHeight, "Play"),
@@ -92,7 +92,7 @@ def mainMenu():
 		splashSurf = pg.transform.scale(splashSurf, (int(splashSurf.get_width() * splashScale), int(splashSurf.get_height() * splashScale)))
 
 		splashYOffset = math.sin(splashWaveOffset) * 6
-		splashPos = (WIDTH // 2 + 180, HEIGHT // 4 + splashYOffset)
+		splashPos = (FRAME.width // 2 + 180, FRAME.height // 4 + splashYOffset)
 		SURF.blit(splashSurf, splashPos)
 
 		#Draw buttons

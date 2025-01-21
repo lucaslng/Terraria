@@ -1,7 +1,7 @@
 from pygame import Rect
 from game.view.drawentities import drawEntities
 from game.view.drawliquids import drawLiquids
-from utils.constants import BLOCK_SIZE, FRAME, SURF, WIDTH, clock, font16
+from utils.constants import BLOCK_SIZE, FRAME, SURF, clock, font16
 from game.model.items.inventory.inventory import Inventory
 from game.model.model import Model
 from game.view import surfaces
@@ -42,8 +42,8 @@ def draw(model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int
 		(surfaces.sunlight, (0, 0)),
 		(surfaces.hud, (0, 0)),
 		(surfaces.hotbar, (FRAME.centerx - (13.5 * BLOCK_SIZE) // 2, FRAME.height - int(2.25 * BLOCK_SIZE))),
-  	(fpsSurf, (WIDTH - 300, 20)),
-		(surfaces.minimap, (WIDTH - 220, 20)),
-		(surfaces.minimapLight, (WIDTH - 220, 20)),
+  	(fpsSurf, (FRAME.width - 300, 20)),
+		(surfaces.minimap, (FRAME.width - 220, 20)),
+		(surfaces.minimapLight, (FRAME.width - 220, 20)),
 	))
 	SURF.blit(surfaces.everything, (0, 0))

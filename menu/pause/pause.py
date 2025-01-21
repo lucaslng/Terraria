@@ -1,5 +1,5 @@
 import pygame as pg
-from utils.constants import WIDTH, HEIGHT, SURF, FRAME
+from utils.constants import SURF, FRAME
 from utils.screens import Screens
 from utils.clearscreen import clearScreen
 from utils.updatescreen import updateScreen
@@ -14,9 +14,9 @@ def pauseMenu(model: Model, backgroundBytes: bytes) -> None | Screens:
     textShadow = (20, 20, 20, 160)
     
     buttonWidth, buttonHeight = 400, 50
-    buttonX = (WIDTH - buttonWidth) // 2
+    buttonX = (FRAME.width - buttonWidth) // 2
     spacing = 75
-    startY = HEIGHT // 2
+    startY = FRAME.height // 2
 
     resumeButton = Button(buttonX, startY, buttonWidth, buttonHeight, "Back to Game")
     resetButton = Button(buttonX, startY + spacing, buttonWidth, buttonHeight, "Reset Game")

@@ -1,6 +1,6 @@
 import pygame as pg
 from widgets.button import Button
-from utils.constants import SURF, HEIGHT, WIDTH, FRAME
+from utils.constants import SURF, FRAME
 from utils.screens import Screens
 import utils.defaultKeys as defaultKeys
 import utils.userKeys as userKeys
@@ -100,7 +100,7 @@ class OptionsMenu:
         
         self.scrollY = 0
         self.scrollSpeed = 30
-        self.viewportHeight = HEIGHT - self.layout['titleHeight'] - self.layout['footerHeight']
+        self.viewportHeight = FRAME.height - self.layout['titleHeight'] - self.layout['footerHeight']
         
         centerX = FRAME.centerx
         
@@ -181,7 +181,7 @@ class OptionsMenu:
         self.maxScroll = max(0, totalHeight - self.viewportHeight)
         
         #Create back and reset buttons
-        buttonY = HEIGHT - self.layout['footerHeight'] + 20
+        buttonY = FRAME.height - self.layout['footerHeight'] + 20
         self.backButton = Button(
             centerX - self.layout['buttonWidth'] - 10,
             buttonY,
@@ -266,14 +266,14 @@ class OptionsMenu:
             
             #Handle buttons
             elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-                if self.backButton.rect.collidepoint(mousePos) and self.hasConflicts == False:
+                if self.backButton.rect.collidepoint(mousePos) and not self.hasConflicts:
                     self.saveKeybinds()
                     return Screens.MENU
                 
                 elif self.resetButton.rect.collidepoint(mousePos):
                     self.resetToDefault()
                 
-                elif self.layout['titleHeight'] <= mousePos[1] <= HEIGHT - self.layout['footerHeight']:
+                elif self.layout['titleHeight'] <= mousePos[1] <= FRAME.height - self.layout['footerHeight']:
                     if not any(button['button'].waitingForKey for button in self.buttons):
                         for button in self.buttons:
                             if button['button'].rect.collidepoint(mousePos):
@@ -322,7 +322,7 @@ class OptionsMenu:
         titleRect = title.get_rect(centerx=FRAME.centerx, top=(self.layout['titleHeight'] - title.get_height()) // 2)
         SURF.blit(title, titleRect)
         
-        scrollRect = pg.Rect(0, self.layout['titleHeight'], WIDTH, self.viewportHeight)
+        scrollRect = pg.Rect(0, self.layout['titleHeight'], FRAME.width, self.viewportHeight)
         SURF.set_clip(scrollRect)
         
         #Draw categories and buttons
@@ -334,7 +334,7 @@ class OptionsMenu:
             categoryRect = categoryText.get_rect(centerx=FRAME.centerx - self.layout['labelOffset'], centery=currentY)
             
             if (self.layout['titleHeight'] <= categoryRect.centery <= 
-                HEIGHT - self.layout['footerHeight']):
+                FRAME.height - self.layout['footerHeight']):
                 SURF.blit(categoryText, categoryRect)
             
             currentY += self.layout['verticalSpacing']
@@ -343,7 +343,7 @@ class OptionsMenu:
                 actualY = button['yOffset'] - self.scrollY
                 
                 if (self.layout['titleHeight'] - self.layout['buttonHeight'] <= actualY <= 
-                    HEIGHT - self.layout['footerHeight']):
+                    FRAME.height - self.layout['footerHeight']):
                     button['button'].rect.y = actualY
                     
                     #Draw label
@@ -380,9 +380,9 @@ class OptionsMenu:
         
         if self.scrollY < self.maxScroll:
             pg.draw.polygon(SURF, (200, 200, 200), [
-                (FRAME.right - 20, HEIGHT - self.layout['footerHeight'] - 10),
-                (FRAME.right - 10, HEIGHT - self.layout['footerHeight'] - 20),
-                (FRAME.right - 30, HEIGHT - self.layout['footerHeight'] - 20)
+                (FRAME.right - 20, FRAME.height - self.layout['footerHeight'] - 10),
+                (FRAME.right - 10, FRAME.height - self.layout['footerHeight'] - 20),
+                (FRAME.right - 30, FRAME.height - self.layout['footerHeight'] - 20)
             ])
 
     def run(self) -> Screens:
@@ -399,7 +399,7 @@ class OptionsMenu:
             
             scrollAdjustedPos = (mousePos[0], mousePos[1] + self.scrollY)
             for btn in self.buttons:
-                if self.layout['titleHeight'] <= btn['button'].rect.y <= HEIGHT - self.layout['footerHeight']:
+                if self.layout['titleHeight'] <= btn['button'].rect.y <= FRAME.height - self.layout['footerHeight']:
                     btn['button'].update(scrollAdjustedPos)
             
             self.draw()

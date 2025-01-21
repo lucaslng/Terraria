@@ -1,5 +1,5 @@
 import pygame as pg
-from utils.constants import HEIGHT, SURF, WIDTH
+from utils.constants import FRAME, SURF
 from utils.screens import Screens
 from utils.updatescreen import updateScreen
 from widgets.button import Button
@@ -16,11 +16,11 @@ def instructionsScreen():
     buttonTextColour = (240, 240, 240)
     textShadow = (20, 20, 20, 160)
 
-    background = pg.Surface((WIDTH, HEIGHT))
+    background = pg.Surface((FRAME.width, FRAME.height))
     background.fill(backgroundColour)
     
     titleSurface = titleFont.render("Instructions", True, textColour)
-    titleRect = titleSurface.get_rect(center=(WIDTH // 2, HEIGHT // 6))
+    titleRect = titleSurface.get_rect(center=(FRAME.width // 2, FRAME.height // 6))
 
     #Instruction text
     instructions = [
@@ -41,8 +41,8 @@ def instructionsScreen():
 
     #Buttons
     buttonWidth, buttonHeight = 300, 50
-    buttonx = (WIDTH - buttonWidth) // 2
-    buttony = HEIGHT - buttonHeight - 50
+    buttonx = (FRAME.width - buttonWidth) // 2
+    buttony = FRAME.height - buttonHeight - 50
 
     back_button = Button(buttonx, buttony, buttonWidth, buttonHeight, "Back")
 
@@ -67,7 +67,7 @@ def instructionsScreen():
 
         #Draw instructions
         for i, surface in enumerate(instructionSurfaces):
-            lineRect = surface.get_rect(center=(WIDTH // 2, HEIGHT // 3 + i * 40))
+            lineRect = surface.get_rect(center=(FRAME.width // 2, FRAME.height // 3 + i * 40))
             SURF.blit(surface, lineRect)
 
         back_button.draw(buttonFont, buttonTextColour, textShadow)

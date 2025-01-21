@@ -1,12 +1,10 @@
 import pygame as pg
 
-WIDTH = 1280
-HEIGHT = 720
 FPS = 60
 
 pg.init()
 
-SURF = pg.display.set_mode((WIDTH, HEIGHT))
+SURF = pg.display.set_mode((1280, 720))
 SURF.set_alpha(None)
 FRAME = SURF.get_rect()
 

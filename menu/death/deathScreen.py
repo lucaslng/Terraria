@@ -1,6 +1,6 @@
 import pygame as pg
 from utils.clearscreen import clearScreen
-from utils.constants import FRAME, HEIGHT, SURF, WIDTH
+from utils.constants import FRAME, SURF
 from utils.screens import Screens
 from utils.updatescreen import updateScreen
 from widgets.button import Button
@@ -23,9 +23,9 @@ def deathScreen(backgroundBytes: bytes) -> Screens:
     background.blit(overlay, (0, 0))
     
     buttonWidth, buttonHeight = 400, 50
-    buttonX = (WIDTH - buttonWidth) // 2
+    buttonX = (FRAME.width - buttonWidth) // 2
     spacing = 24
-    startY = HEIGHT // 2
+    startY = FRAME.height // 2
     
     buttons = {
         'menu': Button(buttonX, startY + spacing, buttonWidth, buttonHeight, "Return to Menu"),
@@ -56,7 +56,7 @@ def deathScreen(backgroundBytes: bytes) -> Screens:
         deathSurf.blit(background, (0, 0))
         
         gameOverText = titleFont.render("Game Over!", True, titleColour)
-        textRect = gameOverText.get_rect(center=(WIDTH // 2, HEIGHT // 4))
+        textRect = gameOverText.get_rect(center=(FRAME.width // 2, FRAME.height // 4))
         deathSurf.blit(gameOverText, textRect)
         
         SURF.blit(deathSurf, (0, 0))
