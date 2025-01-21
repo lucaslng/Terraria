@@ -9,6 +9,7 @@ from functools import partial
 from typing import Optional, Type
 
 from game.model.blocks.diamondoreblock import DiamondOreBlock
+from game.model.blocks.flowerblocks import AlliumBlock, CornflowerBlock, DandelionBlock, PoppyBlock
 from game.model.blocks.goldoreblock import GoldOreBlock
 from game.model.entity.entities.dog import Dog
 from game.model.entity.entities.npc import Npc
@@ -241,12 +242,14 @@ class Model:
 					y < self.world.height):
 					self.world[y][x] = AirBlock()
 		
-		#Generate trees
-		if self.biomeArray[x] == Biome.FOREST:
-			for x in range(self.world.width):
-				if isinstance(self.world[grassHeight[x]][x], GrassBlock):
-					if random.random() > 0.65:
+		#Generate trees / flowers depending on biome
+		for x in range(self.world.width):
+			if isinstance(self.world[grassHeight[x]][x], GrassBlock):
+				if random.random() > 0.65:
+					if self.biomeArray[x] == Biome.FOREST:
 						self._generateTree(x, grassHeight[x] - 1)
+					elif self.biomeArray[x] == Biome.PLAINS:
+						self.world[grassHeight[x] - 1][x] = random.choice((PoppyBlock, DandelionBlock, CornflowerBlock, AlliumBlock))()
 
 	def _generateTree(self, x: int, y: int) -> None:
 		'''Place a tree with base at coordinates (x, y) and a random height'''
