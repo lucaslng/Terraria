@@ -31,3 +31,5 @@ def load() -> Model | None:
 			return dill.load(file)
 	except FileNotFoundError:
 		return None
+	except EOFError:
+		return None

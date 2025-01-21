@@ -47,6 +47,7 @@ class Model:
 	def __init__(self, worldWidth: int, worldHeight: int):
 		'''initialize the game'''
 		self.space = Space()
+		self.space.sleep_time_threshold = 2
 		self.world = World(worldWidth, worldHeight)
 		self.player = Player(0, 0, self.world, self.space)
 		
