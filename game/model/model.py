@@ -14,6 +14,7 @@ from game.model.blocks.goldoreblock import GoldOreBlock
 from game.model.entity.entities.dog import Dog
 from game.model.entity.entities.npc import Npc
 from game.model.entity.entities.rabbit import Rabbit
+from game.model.entity.entitylike import EntityLike
 from game.model.items.bucket import Bucket
 from game.model.liquids.liquid import Liquid
 from game.model.utils.biomesenum import Biome
@@ -47,7 +48,7 @@ class Model:
 		'''initialize the game'''
 		self.space = Space()
 		self.world = World(worldWidth, worldHeight)
-		self.player = Player(worldWidth * 0.5, worldHeight * 0.55, self.world, self.space)
+		self.player = Player(0, 0, self.world, self.space)
 		
 		self.lightmap = [
 			[0 for x in range(worldWidth)] for y in range(worldHeight)
@@ -97,28 +98,32 @@ class Model:
 		self._generateWorldShapes()
 		self._generateEntities()
 		print(f'World generation time: {round(time.perf_counter() - startTime, 2)} seconds')
-		self.player.body.position = self.player.body.position.x, self.world.topy(self.player.body.position.x) - 1
+		self.player.body.position = self.world.width * 0.5, self.world.topy(self.world.width * 0.5) - 1
 	
 	def _generateEntities(self) -> None:
 		px = self.player.body.position.x
-		self.spawnEntity(Npc(px + 1, self.world.topy(px + 1) - 1, self.world, self.space, FIRST_MESSAGE))
+		self.spawnEntity(Npc, px + 1, self.world.topy(px + 1) - 1, customMessage=FIRST_MESSAGE)
 		for _ in range(self.world.width // RABBIT_RARITY):
 			x = random.randint(0, self.world.width - 1)
-			self.spawnEntity(Rabbit(x, self.world.topy(x) - 1, self.world, self.space))
+			self.spawnEntity(Rabbit, x, self.world.topy(x) - 1)
 		for _ in range(self.world.width // NPC_RARITY):
 			x = random.randint(0, self.world.width - 1)
-			self.spawnEntity(Npc(x, self.world.topy(x) - 1, self.world, self.space))
+			self.spawnEntity(Npc, x, self.world.topy(x) - 1)
 		for _ in range(self.world.width // DOG_RARITY):
 			x = random.randint(0, self.world.width - 1)
-			self.spawnEntity(Dog(x, self.world.topy(x) - 1, self.world, self.space))
+			self.spawnEntity(Dog, x, self.world.topy(x) - 1)
 
 	def spawnEntitiesRandom(self) -> None:
-		for _ in range(self.world.width // 10 - self.entityCounter[Rabbit]):
+		for _ in range(self.world.width // RABBIT_RARITY - self.entityCounter[Rabbit]):
 			x = random.randint(0, self.world.width - 1)
-			self.spawnEntity(Rabbit(x, self.world.topy(x) - 1, self.world, self.space))
+			self.spawnEntity(Rabbit, x, self.world.topy(x) - 1)
+		for _ in range(self.world.width // DOG_RARITY - self.entityCounter[Dog]):
+			x = random.randint(0, self.world.width - 1)
+			self.spawnEntity(Dog, x, self.world.topy(x) - 1)
 
-	def spawnEntity(self, entity: Entity) -> None:
+	def spawnEntity(self, entityType: Type[EntityLike], x: float, y: float, **kwargs) -> None:
 		'''Spawn a new entity into the game'''
+		entity = entityType(x, y, self.world, self.space, **kwargs)
 		self.entities.append(entity)
 		if type(entity) in self.entityCounter:
 			self.entityCounter[type(entity)] += 1

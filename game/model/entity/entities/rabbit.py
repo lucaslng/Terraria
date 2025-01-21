@@ -9,10 +9,18 @@ from sound.sounds import sounds
 class Rabbit(Entity):
 	'''Rabbit entity'''
 
+	mass = 3
+	width = 0.8
+	height = 0.8
+	walkForce = 4
+	jumpImpulse = 40
+	jumpSpeed = 10
+	maxHealth = 3
+	updateDistance = 10
+	pathFindToPlayer = False
+
 	def __init__(self, x: float, y: float, world: World, space: Space):
-		super().__init__(x, y, 3, 0.8, 0.8, 20000, 4, 40, 10, 0.99, 3, world, space)
-		self.pathFindToPlayer = False
-		self.updateDistance = 10
+		super().__init__(x, y, world, space)
 		self.isScared = False
 		self.droppedItem = RabbitMeat()
 	

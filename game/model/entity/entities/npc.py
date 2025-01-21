@@ -30,8 +30,14 @@ _messageGroups = (
 class Npc(Entity):
 	'''non player character entity'''
 
+	mass = 5
+	walkSpeed = 4
+	jumpImpulse = 20
+	jumpSpeed = 10
+	maxHealth = 18
+
 	def __init__(self, x: float, y: float, world: World, space: Space, customMessage: tuple[str] | None=None):
-		super().__init__(x, y, 5, 1, 1, 20000, 4, 20, 10, 0.99, 18, world, space)
+		super().__init__(x, y, world, space)
 		self.npcColor: tuple[int, int, int] = tuple(np.random.choice(range(256), size=3))
 		if customMessage:
 			self.messages = customMessage
