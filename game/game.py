@@ -178,20 +178,22 @@ def game() -> Screens:
 				elif event.key == userKeys.interactEntity:
 					if model.entities:
 						model.entities.sort(key=lambda e: dist(e.position, model.player.position)) # sort by position to the player
-						if dist(model.entities[0].position, model.player.position) < 1.5:
-							if isinstance(model.entities[0], Rabbit) or isinstance(model.entities[0], Dog):
-								if model.entities[0].interact(model.player.damage):
-									model.entities[0].apply_impulse_at_local_point((model.entities[0].position - model.player.position) * 40, (0, 0.5))
+						for i, entity in enumerate(model.entities):
+							if dist(entity.position, model.player.position) > 2:
+								break
+							if isinstance(entity, Rabbit) or isinstance(entity, Dog):
+								if entity.interact(model.player.damage):
+									entity.apply_impulse_at_local_point((entity.position - model.player.position) * 40, (0, 0.5))
 									if model.player.heldSlot.item and isinstance(model.player.heldSlot.item, Tool):
 										model.player.heldSlot.item.durability -= 1
 										if model.player.heldSlot.item.durability == 0:
 											model.player.heldSlot.clear()
-								if not model.entities[0].isAlive:
-									if model.entities[0].droppedItem:
-										model.player.inventory.addItem(model.entities[0].droppedItem)
-									model.deleteEntity(0, model.entities[0])
+								if not entity.isAlive:
+									if entity.droppedItem:
+										model.player.inventory.addItem(entity.droppedItem)
+									model.deleteEntity(i, entity)
 							else:
-								model.entities[0].interact()
+								entity.interact()
 			elif event.type == pg.MOUSEBUTTONDOWN:
 				if event.button == 1:
 					hoveredSlotData = getHoveredSlotSlot(inventories)

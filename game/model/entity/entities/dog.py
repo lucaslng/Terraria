@@ -11,10 +11,10 @@ class Dog(Entity):
 		super().__init__(x, y, 8, 1, 1, 20000, 4, 60, 20, 0.99, 10, world)
 		self.updateDistance = 30
 
-	def interact(self, damage: int):
+	def interact(self, damage: float):
 		return self.takeDamage(damage)
 	
-	def takeDamage(self, amount: int) -> bool:
+	def takeDamage(self, amount: float) -> bool:
 		if super().takeDamage(amount):
 			choice(sounds["dog"]["hurt"]).play()
 			return True

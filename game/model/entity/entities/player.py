@@ -51,7 +51,7 @@ class Player(Entity, Light):
         return self.hotbar[self._heldSlotIndex]
     
     @property
-    def damage(self) -> int:
+    def damage(self) -> float:
         '''returns the damage that the player does currently'''
         if self.heldSlot.item:
             return self.heldSlot.item.damage
@@ -65,8 +65,8 @@ class Player(Entity, Light):
             return self.helmetSlot.item.multiplier
         return 1 # default value
     
-    def takeDamage(self, amount: int) -> bool:
-        if super().takeDamage(int(amount * self.protectionMultiplier)):
+    def takeDamage(self, amount: float) -> bool:
+        if super().takeDamage(amount * self.protectionMultiplier):
             sounds["player"]["hurt"].play()
             return True
         return False

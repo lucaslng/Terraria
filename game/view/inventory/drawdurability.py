@@ -8,7 +8,7 @@ def drawDurability(surface: Surface, durability: int, startingDurability: int, s
 	if durability == startingDurability:
 		return
 	
-	print(durability, startingDurability)
+	# print(durability, startingDurability)
 	
 	height = slotSize // 11
 	width = int(slotSize * 0.88)

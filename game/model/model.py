@@ -1,5 +1,3 @@
-from collections import Counter
-import enum
 from math import dist
 import random
 import pymunk as pm
