@@ -17,7 +17,7 @@ font16 = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 16)
 BLOCK_SIZE = 32
 BLOCK_RECT = pg.rect.Rect(0, 0, BLOCK_SIZE, BLOCK_SIZE)
 WORLD_HEIGHT = 100
-WORLD_WIDTH = 200    #default is 1000
+WORLD_WIDTH = 400    #default is 1000
 
 BIG = 2147483647
 
