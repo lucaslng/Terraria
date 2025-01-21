@@ -14,7 +14,7 @@ def deathScreen(backgroundBytes: bytes) -> Screens:
     textShadow = (20, 20, 20, 160)
     titleColour = (255, 0, 0)
     
-    background = pg.image.frombytes(backgroundBytes, FRAME.size, 'RGBA')
+    background = pg.image.frombytes(backgroundBytes, FRAME.size, 'RGB')
     background = pg.transform.smoothscale(background, (FRAME.width // 15, FRAME.height // 15))
     background = pg.transform.smoothscale(background, FRAME.size)
 

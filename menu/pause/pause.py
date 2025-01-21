@@ -22,7 +22,7 @@ def pauseMenu(model: Model, backgroundBytes: bytes) -> None | Screens:
     resetButton = Button(buttonX, startY + spacing, buttonWidth, buttonHeight, "Reset Game")
     quitButton = Button(buttonX, startY + spacing * 2, buttonWidth, buttonHeight, "Save and Quit")
 
-    background = pg.image.frombytes(backgroundBytes, FRAME.size, 'RGBA')
+    background = pg.image.frombytes(backgroundBytes, FRAME.size, 'RGB')
     background = pg.transform.smoothscale(background, (FRAME.width // 15, FRAME.height // 15))
     background = pg.transform.smoothscale(background, FRAME.size)
 

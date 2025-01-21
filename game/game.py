@@ -9,13 +9,13 @@ from game.model.items.specialitems.edible import Edible
 from game.model.items.specialitems.tool import Tool
 from game.model.utils.bresenham import bresenham
 import game.utils.saving as saving
-from game.view import conversions
+from game.view import conversions, surfaces
 from game.view.inventory.hoveredslot import getHoveredSlotSlot
 from menu.death.deathScreen import deathScreen
 from menu.pause.pause import pauseMenu
 from sound import channels
 import utils.userKeys as userKeys
-from utils.constants import BLOCK_SIZE, FRAME, SURF, WORLD_HEIGHT, WORLD_WIDTH
+from utils.constants import BLOCK_SIZE, FRAME, WORLD_HEIGHT, WORLD_WIDTH
 from game.view.draw import draw
 from game.model.model import Model
 from utils.screens import Screens
@@ -161,7 +161,7 @@ def game() -> Screens:
 			elif event.type == pg.KEYDOWN:
 				if event.key == pg.K_ESCAPE:
 					draw(model, camera, inventories)
-					pause = pauseMenu(model, pg.image.tobytes(SURF, 'RGBA'))   
+					pause = pauseMenu(model, pg.image.tobytes(surfaces.everything, 'RGB'))   
 					if pause:
 						return pause
 					else:
@@ -237,5 +237,5 @@ def game() -> Screens:
 		#player death
 		if not model.update():
 			saving.clear()
-			return deathScreen(pg.image.tobytes(SURF, 'RGBA'))
+			return deathScreen(pg.image.tobytes(surfaces.everything, 'RGB'))
 		updateScreen()
