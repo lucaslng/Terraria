@@ -1,3 +1,4 @@
+from pymunk import Space
 from game.model.entity.entity import Entity
 from game.model.world import World
 import numpy as np
@@ -29,8 +30,8 @@ _messageGroups = (
 class Npc(Entity):
 	'''non player character entity'''
 
-	def __init__(self, x: float, y: float, world: World, customMessage: tuple[str] | None=None):
-		super().__init__(x, y, 5, 1, 1, 20000, 4, 20, 10, 0.99, 18, world)
+	def __init__(self, x: float, y: float, world: World, space: Space, customMessage: tuple[str] | None=None):
+		super().__init__(x, y, 5, 1, 1, 20000, 4, 20, 10, 0.99, 18, world, space)
 		self.npcColor: tuple[int, int, int] = tuple(np.random.choice(range(256), size=3))
 		if customMessage:
 			self.messages = customMessage

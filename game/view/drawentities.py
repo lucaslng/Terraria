@@ -15,13 +15,13 @@ from utils.constants import BLOCK_SIZE, FRAME, font12
 def drawNpc(npc: Npc, pos: tuple[int, int]) -> None:
 	textures: dict[str, Animation] = sprites["cat"]
 	
-	if -0.05 < npc.velocity.x < 0.05:
+	if -0.05 < npc.body.velocity.x < 0.05:
 		textures["sit"].drawAnimated(surfaces.world, pos)
 	else:
-		flipped: bool = npc.velocity.x < 0
-		if npc.velocity.y < -0.5:
+		flipped: bool = npc.body.velocity.x < 0
+		if npc.body.velocity.y < -0.5:
 			textures["jump"].drawFrame(surfaces.world, pos, 2, flipped)
-		elif npc.velocity.y > 0.5:
+		elif npc.body.velocity.y > 0.5:
 			textures["jump"].drawFrame(surfaces.world, pos, 4, flipped)
 		else:
 			textures["walk"].drawAnimated(surfaces.world, pos, flipped)
@@ -38,14 +38,14 @@ def drawNpc(npc: Npc, pos: tuple[int, int]) -> None:
 def drawRabbit(rabbit: Rabbit, pos: tuple[int, int]) -> None:
 	texture: Surface = sprites["rabbit"]
 	texture = pg.transform.scale(texture, (rabbit.width * BLOCK_SIZE, rabbit.height * BLOCK_SIZE))
-	if rabbit.velocity.x < 0.05:
+	if rabbit.body.velocity.x < 0.05:
 		texture = pg.transform.flip(texture, True, False)
 	surfaces.world.blit(texture, texture.get_rect(center=pos))
 
 def drawDog(dog: Dog, pos: tuple[int, int]) -> None:
 	texture: Animation = sprites["dog"]
 	
-	if -0.05 < dog.velocity.x < 0.05:
+	if -0.05 < dog.body.velocity.x < 0.05:
 		texture.drawFrame(surfaces.world, pos, 1, pos[0] > FRAME.centerx)
 	else:
 		texture.drawAnimated(surfaces.world, pos, pos[0] > FRAME.centerx)
@@ -55,7 +55,7 @@ def drawEntities(entities: list[Entity], camera: Rect):
 	'''Draw entities'''
 	
 	for entity in entities:
-		pos = conversions.coordinate2Pixel(*entity.position, camera)
+		pos = conversions.coordinate2Pixel(*entity.body.position, camera)
 		if isinstance(entity, Npc):
 			drawNpc(entity, pos)
 		elif isinstance(entity, Rabbit):

@@ -46,37 +46,27 @@ class Model:
 	'''All game logic happens in this class'''
 	def __init__(self, worldWidth: int, worldHeight: int):
 		'''initialize the game'''
+		self.space = Space()
 		self.world = World(worldWidth, worldHeight)
-		self.player = Player(worldWidth * 0.5, worldHeight * 0.55, self.world)
+		self.player = Player(worldWidth * 0.5, worldHeight * 0.55, self.world, self.space)
 		
 		self.lightmap = [
 			[0 for x in range(worldWidth)] for y in range(worldHeight)
 		]
 		self.liquids: list[Liquid] = []
-		self.initialise()
-		self._generate()
-		addDefaultItems(self.player)
-
-
-	def initialise(self):
-		'''things that need to be done when both generating and from loading the save'''
 		self.entities: list[Entity] = [] # list of the entities in the world except the player
 		self.entityCounter: dict[Type[Entity], int] = {
 			Rabbit: 0,
 			Dog: 0,
 		}
 		self.lights: list[tuple[Light, int, int]] = []
-		self.space = Space()
 		self.space.gravity = 0, 20 # earth's gravity is 9.81 m/s
-
-		self.playerShape = pm.Poly.create_box(self.player, (self.player.width, self.player.height))
-		self.playerShape.mass = self.player.mass
-		self.playerShape.friction = self.player.friction
-		self.space.add(self.player, self.playerShape)
 		self.worldBody = pm.Body(body_type=pm.Body.STATIC)
 		self.space.add(self.worldBody)
 		self._generateBoundaryShapes()
 		self.blockFacingCoord: tuple[int, int] | None = None
+		self._generate()
+		addDefaultItems(self.player)
 
 	def update(self, steps=20) -> bool:
 		'''Update the model, should be called every frame. steps increases the accuracy of the physics simulation but sacrifices performance. returns whether the player is alive'''
@@ -86,18 +76,18 @@ class Model:
 		if not self.player.isAlive:
 			return False
 		for i, entity in enumerate(self.entities):
-			entity.update(self.player.position)
-			if isinstance(entity, Dog) and dist(entity.position, self.player.position) < 1.5:
+			entity.update(self.player.body.position)
+			if isinstance(entity, Dog) and dist(entity.body.position, self.player.body.position) < 1.5:
 				if self.player.takeDamage(1):
-					self.player.apply_impulse_at_local_point((self.player.position - entity.position) * 40, (0, 0.5))
-			if not entity.isAlive or not 0 < entity.position.x < self.world.width or not 0 < entity.position.y < self.world.height:
+					self.player.body.apply_impulse_at_local_point((self.player.body.position - entity.body.position) * 40, (0, 0.5))
+			if not entity.isAlive or not 0 < entity.body.position.x < self.world.width or not 0 < entity.body.position.y < self.world.height:
 				self.deleteEntity(i, entity)
     
 		for i in range(steps):
 			self.space.step(1/FPS/steps) # step the simulation in 1/60 seconds
-			keepUpright(self.player)
+			keepUpright(self.player.body)
 			for entity in self.entities:
-				keepUpright(entity)
+				keepUpright(entity.body)
     
 		return True
 
@@ -108,32 +98,28 @@ class Model:
 		self._generateWorldShapes()
 		self._generateEntities()
 		print(f'World generation time: {round(time.perf_counter() - startTime, 2)} seconds')
-		self.player.position = self.player.position.x, self.world.topy(self.player.position.x) - 1
+		self.player.body.position = self.player.body.position.x, self.world.topy(self.player.body.position.x) - 1
 	
 	def _generateEntities(self) -> None:
-		px = self.player.position.x
-		self.spawnEntity(Npc(px + 1, self.world.topy(px + 1) - 1, self.world, FIRST_MESSAGE))
+		px = self.player.body.position.x
+		self.spawnEntity(Npc(px + 1, self.world.topy(px + 1) - 1, self.world, self.space, FIRST_MESSAGE))
 		for _ in range(self.world.width // RABBIT_RARITY):
 			x = random.randint(0, self.world.width - 1)
-			self.spawnEntity(Rabbit(x, self.world.topy(x) - 1, self.world))
+			self.spawnEntity(Rabbit(x, self.world.topy(x) - 1, self.world, self.space))
 		for _ in range(self.world.width // NPC_RARITY):
 			x = random.randint(0, self.world.width - 1)
-			self.spawnEntity(Npc(x, self.world.topy(x) - 1, self.world))
+			self.spawnEntity(Npc(x, self.world.topy(x) - 1, self.world, self.space))
 		for _ in range(self.world.width // DOG_RARITY):
 			x = random.randint(0, self.world.width - 1)
-			self.spawnEntity(Dog(x, self.world.topy(x) - 1, self.world))
+			self.spawnEntity(Dog(x, self.world.topy(x) - 1, self.world, self.space))
 
 	def spawnEntitiesRandom(self) -> None:
 		for _ in range(self.world.width // 10 - self.entityCounter[Rabbit]):
 			x = random.randint(0, self.world.width - 1)
-			self.spawnEntity(Rabbit(x, self.world.topy(x) - 1, self.world))
+			self.spawnEntity(Rabbit(x, self.world.topy(x) - 1, self.world, self.space))
 
 	def spawnEntity(self, entity: Entity) -> None:
 		'''Spawn a new entity into the game'''
-		entity.shape = pm.Poly.create_box(entity, (entity.width, entity.height))
-		entity.shape.mass = entity.mass
-		entity.shape.friction = entity.friction
-		self.space.add(entity, entity.shape)
 		self.entities.append(entity)
 		if type(entity) in self.entityCounter:
 			self.entityCounter[type(entity)] += 1
@@ -141,7 +127,7 @@ class Model:
 	def deleteEntity(self, i: int, entity: Entity) -> None:
 		if type(entity) in self.entityCounter:
 			self.entityCounter[type(entity)] -= 1
-		self.space.remove(entity, entity.shape)
+		self.space.remove(entity.body, entity.shape)
 		del self.entities[i]
 	
 	def placeBlock(self, x: int, y: int):
@@ -471,23 +457,3 @@ class Model:
 		shape = pm.Poly(self.worldBody, vertices)
 		shape.friction = self.world[y][x].friction
 		self.space.add(shape)
-
-	def __getstate__(self) -> tuple[World, list[list[int]], list[Liquid], list[Biome], tuple[float, float], Inventory, int, Slot, Slot]:
-		print("Saving world...")
-		return self.world, self.lightmap, self.liquids, self.biomeArray, self.player.position, self.player.inventory, self.player.health, self.player.cursorSlot, self.player.helmetSlot
-	
-	def __setstate__(self, state: tuple[World, list[list[int]], list[Liquid], list[Biome], tuple[float, float], Inventory, int, Slot, Slot]):
-		print("Loading existing save...")
-		self.world, self.lightmap, self.liquids, self.biomeArray, playerPosition, playerInventory, playerHealth, playerCursorSlot, playerHelmetSlot = state
-		self.player = Player(*playerPosition, self.world)
-		self.player.inventory = playerInventory
-		self.player.health = playerHealth
-		self.player.cursorSlot = playerCursorSlot
-		self.player.helmetSlot = playerHelmetSlot
-		self.initialise()
-		self._generateEntities()
-		for y, row in enumerate(self.world.array):
-			for x, block in enumerate(row):
-				if isinstance(block, Light):
-					self.lights.append((self.world[y][x], x, y))
-		self._generateWorldShapes()

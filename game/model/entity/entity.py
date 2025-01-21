@@ -1,6 +1,8 @@
 from math import dist
 import time
 
+from pymunk import Space
+
 from game.model.entity.hasphysics import HasPhysics
 from game.model.items.item import Item
 from game.model.world import World
@@ -21,15 +23,15 @@ class Entity(HasPhysics):
         friction: float,
         maxHealth: int,
         world: World,
+        space: Space,
     ):
-        super().__init__(x, y, mass, width, height)
+        super().__init__(x, y, mass, friction, width, height, space)
         
         self.walkForce = walkForce
         self.walkSpeed = walkSpeed
         self.jumpImpulse = jumpImpulse
         self.jumpSpeed = jumpSpeed
         self.previousJumpTime = 0
-        self.friction = friction
         self.maxHealth = maxHealth
         self.health = maxHealth
         self.world = world
@@ -48,23 +50,23 @@ class Entity(HasPhysics):
 
     def walkLeft(self) -> None:
         '''Walk the entity to the left using walkForce'''
-        if -self.velocity.x < self.walkSpeed:
-            self.apply_force_at_local_point((-self.walkForce, 0))
+        if -self.body.velocity.x < self.walkSpeed:
+            self.body.apply_force_at_local_point((-self.walkForce, 0))
 
     def walkRight(self) -> None:
         '''Walk the entity to the right using walkForce'''
-        if self.velocity.x < self.walkSpeed:
-            self.apply_force_at_local_point((self.walkForce, 0))
+        if self.body.velocity.x < self.walkSpeed:
+            self.body.apply_force_at_local_point((self.walkForce, 0))
 
     def jump(self) -> None:
         '''Jump the entity using jumpForce'''
         if self.isOnGround and time.time() - self.previousJumpTime > 0.1:
-            self.apply_impulse_at_local_point((0, -self.jumpImpulse))
+            self.body.apply_impulse_at_local_point((0, -self.jumpImpulse))
             self.previousJumpTime = time.time()
 
     def updateVerticalVelocityTime(self) -> None:
         '''update the vertical velocity time'''
-        if -0.01 < self.velocity.y < 0.01:
+        if -0.01 < self.body.velocity.y < 0.01:
             self.noVerticalVelocityTime += 1
         else:
             self.noVerticalVelocityTime = 0
@@ -88,7 +90,7 @@ class Entity(HasPhysics):
     def updateFallDamage(self) -> bool:
         '''Handle fall damage logic. returns true or false depending on whether fall damage was taken'''
         tookDamage = False
-        currentVelo = self.velocity.y
+        currentVelo = self.body.velocity.y
         if (self.lastVerticalVelocity > self.fallDamageThreshold and abs(currentVelo) < self.fallDamageThreshold * 0.5):
             excessVelo = self.lastVerticalVelocity - self.fallDamageThreshold
             damage = int(excessVelo * self.fallDamageMultiplier)
@@ -104,8 +106,8 @@ class Entity(HasPhysics):
         '''Update entity state'''      
         self.updateVerticalVelocityTime()
         if self.updateDistance is not None:
-            if dist(self.position, goal) < self.updateDistance:
-                x, y = map(int, self.position)
+            if dist(self.body.position, goal) < self.updateDistance:
+                x, y = map(int, self.body.position)
                 if 0 <= x < self.world.width - 1 and 0 <= y < self.world.height - 1:
                     reachables = {(x, y)}
                     if x > 0 and self.world[y][x - 1].isEmpty:

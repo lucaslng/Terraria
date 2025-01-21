@@ -30,7 +30,7 @@ def initGame():
 		print("Generating new world...")
 		model = Model(WORLD_WIDTH, WORLD_HEIGHT)
 	camera = FRAME.copy()
-	camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
+	camera.center = model.player.body.position[0] * BLOCK_SIZE, model.player.body.position[1] * BLOCK_SIZE
 
 	inventories = {
 			InventoryType.Player: (model.player.inventory, *InventoryType.Player.value),
@@ -183,13 +183,13 @@ def game() -> Screens:
 											inventories[inventoryType] = inventory, slotSize, inventoryx, inventoryy
 				elif event.key == userKeys.interactEntity:
 					if model.entities:
-						model.entities.sort(key=lambda e: dist(e.position, model.player.position)) # sort by position to the player
+						model.entities.sort(key=lambda e: dist(e.body.position, model.player.body.position)) # sort by position to the player
 						for i, entity in enumerate(model.entities):
-							if dist(entity.position, model.player.position) > 2:
+							if dist(entity.body.position, model.player.body.position) > 2:
 								break
 							if isinstance(entity, Rabbit) or isinstance(entity, Dog):
 								if entity.interact(model.player.damage):
-									entity.apply_impulse_at_local_point((entity.position - model.player.position) * 40, (0, 0.5))
+									entity.body.apply_impulse_at_local_point((entity.body.position - model.player.body.position) * 40, (0, 0.5))
 									if model.player.heldSlot.item and isinstance(model.player.heldSlot.item, Tool):
 										model.player.heldSlot.item.durability -= 1
 										if model.player.heldSlot.item.durability == 0:
@@ -221,7 +221,7 @@ def game() -> Screens:
 		
 		blockFacingCoord = bresenham(model.world.array, *pg.mouse.get_pos(), *FRAME.center, camera)
   
-		if blockFacingCoord and dist(map(lambda a: a + 0.5, blockFacingCoord), model.player.position) < model.player.reach:
+		if blockFacingCoord and dist(map(lambda a: a + 0.5, blockFacingCoord), model.player.body.position) < model.player.reach:
 			model.blockFacingCoord = blockFacingCoord
 		else:
 			model.blockFacingCoord = None
@@ -231,7 +231,7 @@ def game() -> Screens:
 				if 0 <= y < model.world.height and 0 <= x < model.world.width:
 					model.world[y][x].update()
 
-		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE		
+		camera.center = model.player.body.position[0] * BLOCK_SIZE, model.player.body.position[1] * BLOCK_SIZE		
 		draw(model, camera, inventories)
   
 		#player death

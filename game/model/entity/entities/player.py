@@ -1,3 +1,4 @@
+from pymunk import Space
 from game.model.entity.entity import Entity
 from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.slot import Slot
@@ -17,8 +18,8 @@ class Player(Entity, Light):
     defaultLightRadius = 0.8
     lightRadius = defaultLightRadius
     
-    def __init__(self, x: float, y: float, world: World):
-        super().__init__(x, y, 4, 1, 1, 20000, 7, 60, 20, 0.99, 20, world)
+    def __init__(self, x: float, y: float, world: World, space: Space):
+        super().__init__(x, y, 4, 1, 1, 20000, 7, 60, 20, 0.99, 20, world, space)
         
         #Fall damage
         self.lastVerticalVelo = 0
