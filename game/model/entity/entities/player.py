@@ -18,7 +18,7 @@ class Player(Entity, Light):
     lightRadius = defaultLightRadius
     
     def __init__(self, x: float, y: float, world: World):
-        super().__init__(x, y, 4, 1, 1, 20000, 7, 60, 20, 0.99, 18, world)
+        super().__init__(x, y, 4, 1, 1, 20000, 7, 60, 20, 0.99, 20, world)
         
         #Fall damage
         self.lastVerticalVelo = 0
@@ -72,12 +72,13 @@ class Player(Entity, Light):
         return False
     
     def consume(self) -> None:
-        '''eat the item in the held slot'''
-        channels.consume.play(sounds["player"]["consume"])
-        self.health = min(self.maxHealth, self.health + self.heldSlot.item.healing)
-        self.heldSlot.count -= 1
-        if not self.heldSlot.count:
-            self.heldSlot.clear()
+        '''Eat the item in the held slot'''
+        if self.health < self.maxHealth:
+            channels.consume.play(sounds["player"]["consume"])
+            self.health = min(self.maxHealth, self.health + self.heldSlot.item.healing)
+            self.heldSlot.count -= 1
+            if not self.heldSlot.count:
+                self.heldSlot.clear()
 
     def update(self) -> None:
         '''Update player state including fall damage and light radius.'''       
