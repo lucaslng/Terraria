@@ -46,7 +46,7 @@ def deathScreen(backgroundBytes: bytes) -> Screens:
                     
             if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
                 if buttons['menu'].rect.collidepoint(mouse_pos):
-                    return
+                    return Screens.MENU
                 elif buttons['quit'].rect.collidepoint(mouse_pos):
                     return Screens.QUIT
         
