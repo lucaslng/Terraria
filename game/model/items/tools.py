@@ -5,105 +5,184 @@ from game.model.items.utils.itemsenum import Items
 
 # Wood
 class WoodenPickaxe(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.WoodenPickaxe, 1, 2)
-		Tool.__init__(self, 1.5, 59, BlockType.PICKAXE)
+	
+	enum = Items.WoodenPickaxe
+	stackSize = 1
+	damage = 2
+	speed = 1.5
+	startingDurability = 59
+	blockType = BlockType.PICKAXE
 
 class WoodenAxe(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.WoodenAxe, 1, 2)
-		Tool.__init__(self, 1.5, 59, BlockType.AXE)
+
+	enum = Items.WoodenAxe
+	stackSize = 1
+	damage = 2
+	speed = 1.5
+	startingDurability = 59
+	blockType = BlockType.AXE
 
 class WoodenShovel(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.WoodenShovel, 1, 2)
-		Tool.__init__(self, 1.5, 59, BlockType.SHOVEL)
+
+	enum = Items.WoodenShovel
+	stackSize = 1
+	damage = 2
+	speed = 1.5
+	startingDurability = 59
+	blockType = BlockType.SHOVEL
 
 class WoodenSword(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.WoodenSword, 1, 4)
-		Tool.__init__(self, 1.5, 59, BlockType.SWORD)
+
+	enum = Items.WoodenSword
+	stackSize = 1
+	damage = 4
+	speed = 1.5
+	startingDurability = 59
+	blockType = BlockType.SWORD
 
 # Stone
 class StonePickaxe(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.StonePickaxe, 1, 3)
-		Tool.__init__(self, 3, 132, BlockType.PICKAXE)
+
+	enum = Items.StonePickaxe
+	stackSize = 1
+	damage = 3
+	speed = 3
+	startingDurability = 132
+	blockType = BlockType.PICKAXE
 
 class StoneAxe(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.StoneAxe, 1, 4)
-		Tool.__init__(self, 3, 131, BlockType.AXE)
+	enum = Items.StoneAxe
+	stackSize = 1
+	damage = 4
+	speed = 3
+	startingDurability = 132
+	blockType = BlockType.AXE
 
 class StoneShovel(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.StoneShovel, 1, 3)
-		Tool.__init__(self, 3, 131, BlockType.SHOVEL)
+	
+	enum = Items.StoneShovel
+	stackSize = 1
+	damage = 3
+	speed = 3
+	startingDurability = 132
+	blockType = BlockType.SHOVEL
 
 class StoneSword(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.StoneSword, 1, 5)
-		Tool.__init__(self, 3, 131, BlockType.SWORD)
+	
+	enum = Items.StoneSword
+	stackSize = 1
+	damage = 5
+	speed = 3
+	startingDurability = 132
+	blockType = BlockType.SWORD
 
 # Iron
 class IronPickaxe(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.IronPickaxe, 1, 4)
-		Tool.__init__(self, 4.5, 250, BlockType.PICKAXE)
+
+	enum = Items.IronPickaxe
+	stackSize = 1
+	damage = 4
+	speed = 4.5
+	startingDurability = 250
+	blockType = BlockType.PICKAXE
 
 class IronAxe(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.IronAxe, 1, 5)
-		Tool.__init__(self, 4.5, 250, BlockType.AXE)
+	
+	enum = Items.IronAxe
+	stackSize = 1
+	damage = 5
+	speed = 4.5
+	startingDurability = 250
+	blockType = BlockType.AXE
 
 class IronShovel(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.IronShovel, 1, 4)
-		Tool.__init__(self, 4.5, 250, BlockType.SHOVEL)
+	
+	enum = Items.IronShovel
+	stackSize = 1
+	damage = 4
+	speed = 4.5
+	startingDurability = 250
+	blockType = BlockType.SHOVEL
 
 class IronSword(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.IronSword, 1, 6)
-		Tool.__init__(self, 4.5, 250, BlockType.SWORD)
+	
+	enum = Items.IronPickaxe
+	stackSize = 1
+	damage = 6
+	speed = 4.5
+	startingDurability = 250
+	blockType = BlockType.SWORD
 
 # Gold
 class GoldPickaxe(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.GoldPickaxe, 1, 2)
-		Tool.__init__(self, 7.5, 32, BlockType.PICKAXE)
+
+	enum = Items.GoldPickaxe
+	stackSize = 1
+	damage = 2
+	speed = 7.5
+	startingDurability = 32
+	blockType = BlockType.PICKAXE
 
 class GoldAxe(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.GoldAxe, 1, 3)
-		Tool.__init__(self, 7.5, 32, BlockType.AXE)
+
+	enum = Items.GoldAxe
+	stackSize = 1
+	damage = 3
+	speed = 7.5
+	startingDurability = 32
+	blockType = BlockType.AXE
 
 class GoldShovel(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.GoldShovel, 1, 2)
-		Tool.__init__(self, 7.5, 32, BlockType.SHOVEL)
+	
+	enum = Items.GoldShovel
+	stackSize = 1
+	damage = 2
+	speed = 7.5
+	startingDurability = 32
+	blockType = BlockType.SHOVEL
 
 class GoldSword(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.GoldSword, 1, 4)
-		Tool.__init__(self, 7.5, 32, BlockType.SWORD)
+	
+	enum = Items.GoldSword
+	stackSize = 1
+	damage = 4
+	speed = 7.5
+	startingDurability = 32
+	blockType = BlockType.SWORD
 
 # Diamond
 class DiamondPickaxe(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.DiamondPickaxe, 1, 5)
-		Tool.__init__(self, 6, 1561, BlockType.PICKAXE)
+
+	enum = Items.DiamondPickaxe
+	stackSize = 1
+	damage = 5
+	speed = 6
+	startingDurability = 1561
+	blockType = BlockType.PICKAXE
 
 class DiamondAxe(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.DiamondAxe, 1, 6)
-		Tool.__init__(self, 6, 1561, BlockType.AXE)
+	
+	enum = Items.DiamondAxe
+	stackSize = 1
+	damage = 6
+	speed = 6
+	startingDurability = 1561
+	blockType = BlockType.AXE
 
 class DiamondShovel(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.DiamondShovel, 1, 6)
-		Tool.__init__(self, 6, 1561, BlockType.SHOVEL)
+	
+	enum = Items.DiamondShovel
+	stackSize = 1
+	damage = 5
+	speed = 6
+	startingDurability = 1561
+	blockType = BlockType.SHOVEL
 
 class DiamondSword(Item, Tool):
-	def __init__(self):
-		Item.__init__(self, Items.DiamondSword, 1, 7)
-		Tool.__init__(self, 6, 1561, BlockType.SWORD)
+	
+	enum = Items.DiamondSword
+	stackSize = 1
+	damage = 7
+	speed = 6
+	startingDurability = 1561
+	blockType = BlockType.SWORD

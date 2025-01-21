@@ -1,8 +1,6 @@
-from dataclasses import dataclass
 from game.model.items.utils.itemsenum import Items
 
 
-@dataclass
 class Item:
 	'''Base item class'''
 

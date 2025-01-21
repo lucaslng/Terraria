@@ -8,5 +8,6 @@ from game.model.items.utils.itemsenum import Items
 class PlanksItem(Item, Placeable, Fuel):
 	'''Grass item class'''
 
-	def __init__(self):
-		super().__init__(Items.Planks)
+	enum = Items.Planks
+	burnTime = 1
+	heatOutput = 1

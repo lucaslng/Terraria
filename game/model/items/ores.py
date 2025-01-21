@@ -6,11 +6,9 @@ from game.model.items.utils.itemsenum import Items
 class IronOreItem(Item, Placeable):
 	'''iron ore item class'''
 
-	def __init__(self):
-		super().__init__(Items.IronOre)
+	enum = Items.IronOre
 
 class GoldOreItem(Item, Placeable):
 	'''gold ore item class'''
 
-	def __init__(self):
-		super().__init__(Items.GoldOre)
+	enum = Items.GoldOre
