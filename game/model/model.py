@@ -13,6 +13,7 @@ from game.model.blocks.goldoreblock import GoldOreBlock
 from game.model.entity.entities.dog import Dog
 from game.model.entity.entities.npc import Npc
 from game.model.entity.entities.rabbit import Rabbit
+from game.model.items.bucket import Bucket
 from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.slot import Slot
 from game.model.utils.biomesenum import Biome
@@ -147,24 +148,27 @@ class Model:
 	def placeBlock(self, x: int, y: int):
 		'''place a block at coordinates (x, y)'''
 		if isinstance(self.world[y][x], AirBlock):
-			if self.player.heldSlot.item and isinstance(self.player.heldSlot.item, Placeable):
-				self.player.heldSlot.count -= 1
-				self.world[y][x] = self.player.heldSlot.item.getBlock()()
-				if not self.player.heldSlot.count:
-					self.player.heldSlot.clear()
-				if isinstance(self.world[y][x], Light):
-					self.lights.append((self.world[y][x], x, y))
-				if not self.world[y][x].isEmpty:
-					vertices = (
-					(x, y),
-					(x, y + 1),
-					(x + 1, y + 1),
-					(x + 1, y)
-					)
-					self.world[y][x].shape = pm.Poly(self.worldBody, vertices)
-					self.world[y][x].shape.friction = self.world[y][x].friction
-					self.space.add(self.world[y][x].shape)
-					self.generateLight(y, x)
+			if self.player.heldSlot.item:
+				if isinstance(self.player.heldSlot.item, Placeable):
+					self.player.heldSlot.count -= 1
+					self.world[y][x] = self.player.heldSlot.item.getBlock()()
+					if not self.player.heldSlot.count:
+						self.player.heldSlot.clear()
+					if isinstance(self.world[y][x], Light):
+						self.lights.append((self.world[y][x], x, y))
+					if not self.world[y][x].isEmpty:
+						vertices = (
+						(x, y),
+						(x, y + 1),
+						(x + 1, y + 1),
+						(x + 1, y)
+						)
+						self.world[y][x].shape = pm.Poly(self.worldBody, vertices)
+						self.world[y][x].shape.friction = self.world[y][x].friction
+						self.space.add(self.world[y][x].shape)
+						self.generateLight(y, x)
+				elif isinstance(self.player.heldSlot.item, Bucket):
+					self.player.heldSlot.item.clear()
 
 	def mineBlock(self):
 		'''mine the block the player is facing'''

@@ -1,10 +1,12 @@
 from game.model.entity.entities.player import Player
+from game.model.items.bucket import Bucket
 from game.model.items.craftingtableitem import CraftingTableItem
 from game.model.items.helmets import DiamondHelmet, GoldHelmet, IronHelmet
 from game.model.items.planksitem import PlanksItem
 from game.model.items.rabbitmeat import RabbitMeat
 from game.model.items.tools import DiamondAxe, DiamondPickaxe
 from game.model.items.torchitem import TorchItem
+from game.model.liquids.liquid import Water
 
 
 def addDefaultItems(player: Player) -> None:
@@ -17,7 +19,6 @@ def addDefaultItems(player: Player) -> None:
 		DiamondAxe(),
 		DiamondPickaxe(),
 		*[PlanksItem() for _ in range(64)],
-		IronHelmet(),
-		GoldHelmet(),
+		Bucket(liquid=Water, filledAmount=1),
 		DiamondHelmet(),
 		)

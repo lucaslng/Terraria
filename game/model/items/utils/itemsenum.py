@@ -52,3 +52,7 @@ class Items(Enum):
 	DiamondHelmet = "Diamond Helmet"
 
 	RabbitMeat = "Rabbit Meat"
+
+	BucketEmpty = "Empty Bucket"
+	BucketWater = "Water Bucket"
+	BucketMilk = "Milk Bucket"
