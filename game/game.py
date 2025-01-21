@@ -159,7 +159,7 @@ def game() -> Screens:
 				pg.mixer.set_num_channels(len(model.entities) * 2) # set extra channels just to be safe
 			elif event.type == pg.KEYDOWN:
 				if event.key == pg.K_ESCAPE:
-					return pauseMenu(model)
+					return pauseMenu(model, pg.image.tobytes(SURF, 'RGBA'))
 				elif event.key == userKeys.interact:
 					if len(inventories) > 1:
 						inventories = {InventoryType.Player: inventories[InventoryType.Player]}

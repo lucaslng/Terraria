@@ -1,24 +1,34 @@
 import pygame as pg
-from utils.constants import WIDTH, HEIGHT, SURF, FPS, FRAME
+from utils.constants import WIDTH, HEIGHT, SURF, FRAME
 from utils.screens import Screens
+from utils.clearscreen import clearScreen
+from utils.updatescreen import updateScreen
 from widgets.button import Button
 from game.utils import saving
 from game.model.model import Model
+from game.view.surfaces import pauseSurf
 
-
-def pauseMenu(model: Model) -> None | Screens:
+def pauseMenu(model: Model, backgroundBytes: bytes) -> None | Screens:
     buttonFont = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 36)
     buttonTextColour = (240, 240, 240)
     textShadow = (20, 20, 20, 160)
-
-    resumeButton = Button((WIDTH - 400) // 2, HEIGHT // 2, 400, 50, "Back to Game")
-    resetButton = Button((WIDTH - 400) // 2, (HEIGHT // 2) + 75, 400, 50, "Reset Game")
-    quitButton = Button((WIDTH - 400) // 2, (HEIGHT // 2) + 150, 400, 50, "Save and Quit")
     
-    blurScale = 0.1    #lower is blurrier
-    small_size = (int(WIDTH * blurScale), int(HEIGHT* blurScale))
-    small_surface = pg.transform.smoothscale(SURF, small_size)
-    blurred_surface = pg.transform.smoothscale(small_surface, (WIDTH, HEIGHT))
+    buttonWidth, buttonHeight = 400, 50
+    buttonX = (WIDTH - buttonWidth) // 2
+    spacing = 75
+    startY = HEIGHT // 2
+
+    resumeButton = Button(buttonX, startY, buttonWidth, buttonHeight, "Back to Game")
+    resetButton = Button(buttonX, startY + spacing, buttonWidth, buttonHeight, "Reset Game")
+    quitButton = Button(buttonX, startY + spacing * 2, buttonWidth, buttonHeight, "Save and Quit")
+
+    background = pg.image.frombytes(backgroundBytes, FRAME.size, 'RGBA')
+    background = pg.transform.smoothscale(background, (FRAME.width // 15, FRAME.height // 15))
+    background = pg.transform.smoothscale(background, FRAME.size)
+
+    overlay = pg.Surface(FRAME.size, pg.SRCALPHA)
+    overlay.fill((0, 0, 0, 100))
+    background.blit(overlay, (0, 0))
 
     buttons = {
         'resume': resumeButton,
@@ -26,8 +36,8 @@ def pauseMenu(model: Model) -> None | Screens:
         'quit': quitButton
     }
 
-    clock = pg.time.Clock()
     while True:
+        clearScreen()
         mouse_pos = pg.mouse.get_pos()
 
         for event in pg.event.get():
@@ -51,11 +61,11 @@ def pauseMenu(model: Model) -> None | Screens:
 
         for button in buttons.values():
             button.update(mouse_pos)
-
-        SURF.blit(blurred_surface, (0, 0))
+            
+        pauseSurf.blit(background, (0, 0))
+        SURF.blit(pauseSurf, (0, 0))
         
         for button in buttons.values():
             button.draw(buttonFont, buttonTextColour, textShadow)
 
-        pg.display.flip()
-        clock.tick(FPS)
+        updateScreen()

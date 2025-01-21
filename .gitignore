@@ -4,6 +4,7 @@ desktop.ini
 .vscode
 
 test.py
+userKeys.py
 __pycache__/
 
 game/saves/saveFile

@@ -15,3 +15,4 @@ minimap = Surface((200, 200), SRCALPHA)
 minimapLight = minimap.copy()
 
 deathSurf = world.copy()
+pauseSurf = world.copy()

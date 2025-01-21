@@ -231,25 +231,26 @@ class OptionsMenu:
             for category, bindings in self.keybindButtons:
                 for actionName, _, _ in bindings:
                     keyValue = getattr(defaultKeys, actionName)
-                    keyName = pg.key.name(keyValue).upper()
                     
-                    if keyName in self.specialKeys:
-                        formattedKey = f"pg.K_{keyName}"
+                    if keyValue in self.specialKeys:
+                        keyName = self.specialKeys[keyValue]
                     else:
-                        formattedKey = f"pg.K_{keyName.lower()}"
+                        #regular keys use lowercase
+                        keyName = pg.key.name(keyValue).lower()
                     
+                    formattedKey = f"pg.K_{keyName}"
                     f.write(f"{actionName} = {formattedKey}\n")
                 f.write("\n")
         
         importlib.reload(userKeys)
         self.loadKeybinds()
         
-        #Update all button texts
+        # Update all button texts
         for button in self.buttons:
             action = button['button'].action
             newKey = getattr(self.currentKeys, action)
             button['button'].key = newKey
-            button['button'].text = pg.key.name(newKey).upper()
+            button['button'].text = button['button'].getDisplayName(newKey)
 
     def handleEvents(self) -> None | Screens:
         mousePos = pg.mouse.get_pos()

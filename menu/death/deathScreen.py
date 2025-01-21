@@ -12,7 +12,7 @@ def deathScreen(backgroundBytes: bytes) -> Screens:
     
     buttonTextColour = (240, 240, 240)
     textShadow = (20, 20, 20, 160)
-    titleColor = (255, 0, 0)
+    titleColour = (255, 0, 0)
     
     background = pg.image.frombytes(backgroundBytes, FRAME.size, 'RGBA')
     background = pg.transform.smoothscale(background, (FRAME.width // 15, FRAME.height // 15))
@@ -55,7 +55,7 @@ def deathScreen(backgroundBytes: bytes) -> Screens:
         
         deathSurf.blit(background, (0, 0))
         
-        gameOverText = titleFont.render("Game Over!", True, titleColor)
+        gameOverText = titleFont.render("Game Over!", True, titleColour)
         textRect = gameOverText.get_rect(center=(WIDTH // 2, HEIGHT // 4))
         deathSurf.blit(gameOverText, textRect)
         
