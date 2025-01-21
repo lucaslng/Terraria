@@ -2,6 +2,7 @@ from typing import Type, Callable
 from dataclasses import dataclass
 from functools import partial
 
+from game.model.items.helmets import DiamondHelmet, GoldHelmet, IronHelmet
 from game.model.items.inventory.slot import Slot
 from game.model.items.item import Item
 from game.model.items.utils.itemsenum import Items
@@ -103,7 +104,7 @@ def pickaxeRecipe(slots: list[list[Slot]], topMaterial: Items, toolClass: Type[I
     return None
 
   # Verify other slots are empty
-  if any(slots[r][c].item for r, c in [(1, 0), (1, 2), (2, 0), (2, 2)]):
+  if any(slots[r][c].item for r, c in ((1, 0), (1, 2), (2, 0), (2, 2))):
     return None
 
   return toolClass(), 1
@@ -112,7 +113,7 @@ def pickaxeRecipe(slots: list[list[Slot]], topMaterial: Items, toolClass: Type[I
 def axeRecipe(slots: list[list[Slot]], topMaterial: Items, toolClass: Type[Item]) -> tuple[Item, int] | None:
 
   # Check top row material
-  if not all(slots[r][c].item and slots[r][c].item.enum == topMaterial for r, c in [(0, 1), (0, 2), (1, 2)]):
+  if not all(slots[r][c].item and slots[r][c].item.enum == topMaterial for r, c in ((0, 1), (0, 2), (1, 2))):
     return None
 
   # Check for sticks in the middle and bottom center
@@ -125,7 +126,7 @@ def axeRecipe(slots: list[list[Slot]], topMaterial: Items, toolClass: Type[Item]
     return None
 
   # Verify other slots are empty
-  if any(slots[r][c].item for r, c in [(0, 0), (1, 0), (2, 0), (2, 2)]):
+  if any(slots[r][c].item for r, c in ((0, 0), (1, 0), (2, 0), (2, 2))):
     return None
 
   return toolClass(), 1
@@ -167,8 +168,20 @@ def swordRecipe(slots: list[list[Slot]], topMaterial: Items, toolClass: Type[Ite
 
   return toolClass(), 1
 
+def helmetRecipe(slots: list[list[Slot]], topMaterial: Items, toolClass: Type[Item]) -> tuple[Item, int] | None:
 
-toolClasses = {
+  # Check top row material
+  if not all(slots[r][c].item and slots[r][c].item.enum == topMaterial for r, c in ((0, 0), (0, 1), (0, 2), (1, 0), (1, 2))):
+    return None
+
+  # Verify other slots are empty
+  if any(slots[r][c].item for r, c in ((1, 1), (2, 0), (2, 1), (2, 2))):
+    return None
+
+  return toolClass(), 1
+
+
+recipeDictionary = {
   (pickaxeRecipe, Items.Planks): WoodenPickaxe,
   (pickaxeRecipe, Items.Cobblestone): StonePickaxe,
   (pickaxeRecipe, Items.IronIngot): IronPickaxe,
@@ -189,11 +202,14 @@ toolClasses = {
   (swordRecipe, Items.IronIngot): IronSword,
   (swordRecipe, Items.GoldIngot): GoldSword,
   (swordRecipe, Items.Diamond): DiamondSword,
+  (helmetRecipe, Items.IronIngot): IronHelmet,
+  (helmetRecipe, Items.GoldIngot): GoldHelmet,
+  (helmetRecipe, Items.Diamond): DiamondHelmet,
 }
 
 
 recipes: list[Recipe] = [
     Recipe(4, woodenPlanks),  # 1 log -> 4 planks
     Recipe(4, sticks),  # 2 planks -> 4 sticks
-    *[Recipe(1, partial(toolRecipe, topMaterial=topMaterial, toolClass=toolClasses[(toolRecipe, topMaterial)])) for toolRecipe, topMaterial in toolClasses],
+    *[Recipe(1, partial(recipe, topMaterial=topMaterial, toolClass=recipeDictionary[(recipe, topMaterial)])) for recipe, topMaterial in recipeDictionary],
 ]
