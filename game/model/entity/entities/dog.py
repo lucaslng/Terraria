@@ -8,7 +8,7 @@ class Dog(Entity):
 	'''dog entity that attacks player'''
 
 	mass = 8
-	walkSpeed = 4
+	walkSpeed = 5
 	jumpImpulse = 60
 	jumpSpeed = 20
 	maxHealth = 10
