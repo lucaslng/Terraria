@@ -1,5 +1,7 @@
 from pygame import Rect
+from game.events import DRAWEXPLOSION
 from game.view.drawentities import drawEntities
+from game.view.drawexplosion import drawExplosion
 from game.view.drawliquids import drawLiquids
 from utils.constants import BLOCK_SIZE, FRAME, SURF, clock, font16
 from game.model.items.inventory.inventory import Inventory
@@ -12,8 +14,9 @@ from game.view.drawlights import drawLights, drawPlayerLight
 from game.view.drawplayer import drawPlayer
 from game.view.drawsunlight import drawSunlight
 from pygame import transform
+from pygame.event import Event
 
-def draw(model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int, int, int]]):
+def draw(events: list[Event], model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int, int, int]]):
 	'''Draw everything'''
 
 	drawBlocks(model.world, model.blockFacingCoord, camera)
@@ -23,6 +26,10 @@ def draw(model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int
 	drawPlayerLight(model.player.lightRadius)
 	drawPlayer(model.player)
 	drawEntities(model.entities, camera)
+
+	for event in events:
+		if event.type == DRAWEXPLOSION:
+			drawExplosion(event.pos, event.radius, event.width, camera)
 	
 	drawMinimap(model.world, model.lightmap, model.lights, camera, (200, 200))
 	drawHUD(model, inventories)

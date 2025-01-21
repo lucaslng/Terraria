@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
 from typing import Optional, Type
 
-from game.events import REMOVEINVENTORYTYPE
+from game.events import DRAWEXPLOSION, REMOVEINVENTORYTYPE
 from game.model.blocks.diamondoreblock import DiamondOreBlock
 from game.model.blocks.flowerblocks import AlliumBlock, CornflowerBlock, DandelionBlock, PoppyBlock
 from game.model.blocks.goldoreblock import GoldOreBlock
@@ -93,6 +93,7 @@ class Model:
 					continue
 			elif isinstance(entity, Rocket):
 				if entity.stationary:
+					pg.event.post(pg.event.Event(DRAWEXPLOSION, pos=entity.body.position, radius=0.5, width=8))
 					ex, ey = list(map(int, entity.body.position)) # source of explosion
 					for y in range(max(0, ey - 3), min(self.world.height, ey + 4)):
 						for x in range(max(0, ex - 3), min(self.world.width, ex + 4)):

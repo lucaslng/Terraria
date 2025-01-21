@@ -1,4 +1,5 @@
-from pygame import USEREVENT
+from pygame.event import custom_type
 
 
-REMOVEINVENTORYTYPE = USEREVENT
+REMOVEINVENTORYTYPE = custom_type()
+DRAWEXPLOSION = custom_type()

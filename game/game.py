@@ -149,8 +149,8 @@ def game() -> Screens:
 		elif pg.mouse.get_pressed()[2]:
 			if not getHoveredSlotSlot(inventories):
 				model.placeBlock(*conversions.pixel2Coordinate(*pg.mouse.get_pos(), camera))
-
-		for event in pg.event.get():
+		events = pg.event.get()
+		for event in events:
 			if event.type == pg.QUIT:
 				saving.save(model)
 				return Screens.QUIT
@@ -241,7 +241,7 @@ def game() -> Screens:
 					model.world[y][x].update()
 
 		camera.center = model.player.body.position[0] * BLOCK_SIZE, model.player.body.position[1] * BLOCK_SIZE		
-		draw(model, camera, inventories)
+		draw(events, model, camera, inventories)
   
 		#player death
 		if not model.update():
