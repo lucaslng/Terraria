@@ -10,7 +10,6 @@ def clearScreen():
 	surfaces.sunlight.fill(colours.CLEAR)
 	surfaces.hud.fill(colours.CLEAR)
 	surfaces.hotbar.fill(colours.WEIRD)
-	surfaces.health.fill(colours.WEIRD)
 	surfaces.minimap.fill(colours.CLEAR)
 	surfaces.minimapLight.fill(colours.CLEAR)
 	surfaces.deathSurf.fill(colours.CLEAR)

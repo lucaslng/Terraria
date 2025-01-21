@@ -2,23 +2,25 @@ from utils.constants import BLOCK_SIZE
 from game.textures.sprites import sprites
 from game.view import surfaces
 
-spacing = BLOCK_SIZE
 
 def drawHealth(health: float, maxHealth: int) -> None:
 	'''Draw player hearts on screen'''
 
-	fullHearts = int(health // 2)
-	halfHeart = int(health % 2)
-	emptyHearts = maxHealth // 2 - fullHearts - halfHeart
+	spacing = BLOCK_SIZE
+	x = y = 10
+
+	fullHearts = health // 2
+	halfHeart = health % 2
+	emptyHearts = (maxHealth - health) // 2
 
 	#Full hearts
 	for i in range(fullHearts):
-		surfaces.health.blit(sprites["full heart"], (i * spacing, 0))
+		surfaces.hud.blit(sprites["full heart"], (x + i * spacing, y))
 	
 	#Half hearts
 	if halfHeart:
-		surfaces.health.blit(sprites["half heart"], (fullHearts * spacing, 0))
+		surfaces.hud.blit(sprites["half heart"], (x + fullHearts * spacing, y))
 
 	#Empty hearts
 	for i in range(emptyHearts):
-		surfaces.health.blit(sprites["empty heart"], ((fullHearts + halfHeart + i) * spacing, 0))
+		surfaces.hud.blit(sprites["empty heart"], (x + (fullHearts + halfHeart + i) * spacing, y))

@@ -41,9 +41,8 @@ def draw(model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int
 		(surfaces.blockBreak, (0, 0)),
 		(surfaces.sunlight, (0, 0)),
 		(surfaces.hud, (0, 0)),
-		(surfaces.hotbar, (FRAME.centerx - (13.5 * BLOCK_SIZE) // 2, FRAME.height - int(2.25 * BLOCK_SIZE))),
 		(surfaces.health, (10, 10)),
-  		(fpsSurf, (WIDTH - 320, 20)),
+  	(fpsSurf, (WIDTH - 300, 20)),
 		(surfaces.minimap, (WIDTH - 220, 20)),
 		(surfaces.minimapLight, (WIDTH - 220, 20)),
 	))
