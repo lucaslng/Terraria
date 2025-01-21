@@ -52,6 +52,7 @@ class Model:
 		self.lightmap = [
 			[0 for x in range(worldWidth)] for y in range(worldHeight)
 		]
+		self.liquids: list[Liquid] = []
 		self.initialise()
 		self._generate()
 		addDefaultItems(self.player)
@@ -76,8 +77,6 @@ class Model:
 		self.space.add(self.worldBody)
 		self._generateBoundaryShapes()
 		self.blockFacingCoord: tuple[int, int] | None = None
-
-		self.liquids: list[Liquid] = []
 
 	def update(self, steps=20) -> bool:
 		'''Update the model, should be called every frame. steps increases the accuracy of the physics simulation but sacrifices performance. returns whether the player is alive'''
@@ -473,13 +472,13 @@ class Model:
 		shape.friction = self.world[y][x].friction
 		self.space.add(shape)
 
-	def __getstate__(self) -> tuple[World, list[list[int]], list[Biome], tuple[float, float], Inventory, int, Slot, Slot]:
+	def __getstate__(self) -> tuple[World, list[list[int]], list[Liquid], list[Biome], tuple[float, float], Inventory, int, Slot, Slot]:
 		print("Saving world...")
-		return self.world, self.lightmap, self.biomeArray, self.player.position, self.player.inventory, self.player.health, self.player.cursorSlot, self.player.helmetSlot
+		return self.world, self.lightmap, self.liquids, self.biomeArray, self.player.position, self.player.inventory, self.player.health, self.player.cursorSlot, self.player.helmetSlot
 	
-	def __setstate__(self, state: tuple[World, list[list[int]], list[Biome], tuple[float, float], Inventory, int, Slot, Slot]):
+	def __setstate__(self, state: tuple[World, list[list[int]], list[Liquid], list[Biome], tuple[float, float], Inventory, int, Slot, Slot]):
 		print("Loading existing save...")
-		self.world, self.lightmap, self.biomeArray, playerPosition, playerInventory, playerHealth, playerCursorSlot, playerHelmetSlot = state
+		self.world, self.lightmap, self.liquids, self.biomeArray, playerPosition, playerInventory, playerHealth, playerCursorSlot, playerHelmetSlot = state
 		self.player = Player(*playerPosition, self.world)
 		self.player.inventory = playerInventory
 		self.player.health = playerHealth
