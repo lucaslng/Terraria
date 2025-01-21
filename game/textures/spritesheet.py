@@ -5,7 +5,7 @@ class SpriteSheet:
   """sprite sheet class"""
 
   def __init__(this, imageName: str) -> None:
-    this.sheet = pg.image.load(imageName).convert()
+    this.sheet = pg.image.load(imageName).convert_alpha()
 
   def get(this, x, y, width, height, scale: int | None = None) -> pg.Surface:
     image = pg.Surface((width, height), pg.SRCALPHA)
