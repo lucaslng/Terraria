@@ -13,3 +13,5 @@ def initialize():
 	pg.mixer.music.set_volume(0.4)
 	pg.mixer.music.load('assets/music.mp3')
 	pg.mixer.music.play(loops=-1, fade_ms=1000)
+
+	with open()
