@@ -12,7 +12,7 @@ class Rabbit(Entity):
 	mass = 3
 	width = 0.8
 	height = 0.8
-	walkForce = 4
+	walkSpeed = 4
 	jumpImpulse = 40
 	jumpSpeed = 10
 	maxHealth = 3
