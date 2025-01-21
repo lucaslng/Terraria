@@ -83,6 +83,17 @@ class Model:
 					self.player.body.apply_impulse_at_local_point((self.player.body.position - entity.body.position) * 30, (0, 0.5))
 			if not entity.isAlive or not 0 < entity.body.position.x < self.world.width or not 0 < entity.body.position.y < self.world.height:
 				self.deleteEntity(i, entity)
+		
+		if isinstance(self.player.heldSlot.item, Bucket) and self.player.heldSlot.item.filledAmount < 1:
+			for l, liquid in enumerate(self.liquids):
+				for p, liquidParticle in enumerate(liquid.particles):
+					if dist(liquidParticle.body.position, self.player.body.position) < 1.5:
+						if self.player.heldSlot.item.liquid is None:
+							self.player.heldSlot.item.liquid = liquidParticle.liquid
+						if self.player.heldSlot.item.liquid == liquidParticle.liquid:
+							self.player.heldSlot.item.filledAmount += 1 / self.player.heldSlot.item.liquid.particleCount
+							del self.liquids[l].particles[p]
+					
     
 		for i in range(steps):
 			self.space.step((1/FPS)/steps) # step the simulation in 1/60 seconds

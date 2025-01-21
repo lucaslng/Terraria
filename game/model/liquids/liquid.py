@@ -1,4 +1,5 @@
 from math import sqrt
+from typing import Self, Type
 from pymunk import Body, Circle, Space
 
 
@@ -16,14 +17,18 @@ class Liquid:
 		size = 1 / length # distance from start of one particle to start of next particle
 		radius = size * self.density
 		massPerParticle = self.mass / self.particleCount
-		self.particles = [LiquidParticle(x + (i % length) * size, y + (i / length) * size, massPerParticle, self.moment, space, radius, self.elasticity, sleep) for i in range(self.particleCount)]
+		self.particles = [LiquidParticle(x + (i % length) * size, y + (i / length) * size, massPerParticle, self.moment, space, radius, self.elasticity, self.liquid(), sleep) for i in range(self.particleCount)]
+
+	def liquid(self):
+		return type(self)
 
 
 class LiquidParticle:
 	'''class for one liquid particle'''
 
-	def __init__(self, startx: float, starty: float, mass: float, moment: float, space: Space, radius: float, elasticity: float, sleep):
+	def __init__(self, startx: float, starty: float, mass: float, moment: float, space: Space, radius: float, elasticity: float, liquid: Type[Liquid], sleep: bool):
 		x, y = startx + radius / 2, starty + radius / 2
+		self.liquid = liquid
 		self.body = Body(mass, moment)
 		self.body.position = x, y
 		self.shape = Circle(self.body, radius)
