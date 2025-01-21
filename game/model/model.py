@@ -209,7 +209,6 @@ class Model:
 						self.entities.append(Rocket(*self.player.body.position, self.space))
 
 	def removeBlock(self, x: int, y: int) -> None:
-		print("hi")
 		if isinstance(self.world[y][x], InventoryBlock):
 			pg.event.post(pg.event.Event(REMOVEINVENTORYTYPE, inventoryType=[inventoryType for _, inventoryType in self.world[y][x].inventories]))
 		if hasattr(self.world[y][x], 'shape'):
