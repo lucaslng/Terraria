@@ -1,5 +1,6 @@
 from math import dist, floor
 import pygame as pg
+from game.events import REMOVEINVENTORYTYPE
 from game.model.blocks.utils.inventoryblock import InventoryBlock
 from game.model.entity.entities.dog import Dog
 from game.model.entity.entities.rabbit import Rabbit
@@ -142,11 +143,8 @@ def game() -> Screens:
 			
 			#Only mine blocks if we're not hovering over an inventory slot
 			if not hoveredSlotData:
-				inventoryTypes = model.mineBlock()
-				if inventoryTypes:
-					for inventoryType in inventoryTypes:
-						if inventoryType in inventories:
-							del inventories[inventoryType]
+				model.mineBlock()
+				
       
 		elif pg.mouse.get_pressed()[2]:
 			if not getHoveredSlotSlot(inventories):
@@ -159,6 +157,10 @@ def game() -> Screens:
 			elif event.type == 101:
 				model.spawnEntitiesRandom()
 				pg.mixer.set_num_channels(len(model.entities) * 2) # set extra channels just to be safe
+			elif event.type == REMOVEINVENTORYTYPE:
+				for inventoryType in event.inventoryType:
+					if inventoryType in inventories:
+						del inventories[inventoryType]
 			elif event.type == pg.KEYDOWN:
 				if event.key == pg.K_ESCAPE:
 					draw(model, camera, inventories)

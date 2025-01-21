@@ -1,10 +1,12 @@
 import pygame as pg
 
+from game.events import REMOVEINVENTORYTYPE
+
 
 def initialize():
 	'''initialize program'''
 	pg.init()
-	pg.event.set_allowed([pg.QUIT, pg.KEYDOWN, pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP])
+	pg.event.set_allowed([pg.QUIT, pg.KEYDOWN, pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP, REMOVEINVENTORYTYPE])
 	pg.font.init()
 	pg.mixer.init()
 	pg.mixer.set_reserved(1)

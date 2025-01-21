@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from functools import partial
 from typing import Optional, Type
 
+from game.events import REMOVEINVENTORYTYPE
 from game.model.blocks.diamondoreblock import DiamondOreBlock
 from game.model.blocks.flowerblocks import AlliumBlock, CornflowerBlock, DandelionBlock, PoppyBlock
 from game.model.blocks.goldoreblock import GoldOreBlock
@@ -18,6 +19,7 @@ from game.model.entity.entities.rabbit import Rabbit
 from game.model.entity.entitylike import EntityLike
 from game.model.entity.hasphysics import HasPhysics
 from game.model.items.bucket import Bucket
+from game.model.items.inventory.inventorytype import InventoryType
 from game.model.items.rpg import Rocket, Rpg
 from game.model.liquids.liquid import Liquid
 from game.model.utils.biomesenum import Biome
@@ -43,6 +45,7 @@ from game.model.world import World
 from game.model.entity.entity import Entity
 from utils.customqueue import Queue
 from utils.simplexnoise import SimplexNoise
+import pygame as pg
 
 
 class Model:
@@ -90,6 +93,13 @@ class Model:
 					continue
 			elif isinstance(entity, Rocket):
 				if entity.stationary:
+					ex, ey = list(map(int, entity.body.position)) # source of explosion
+					for y in range(max(0, ey - 3), min(self.world.height, ey + 4)):
+						for x in range(max(0, ex - 3), min(self.world.width, ex + 4)):
+							self.removeBlock(x, y)
+					for otherEntity in self.entities:
+						if isinstance(otherEntity, Entity) and dist(otherEntity.body.position, entity.body.position) <= 3:
+							otherEntity.takeDamage(10)
 					self.deleteEntity(i, entity)
 					continue
 			if not 0 < entity.body.position.x < self.world.width or not 0 < entity.body.position.y < self.world.height:
@@ -197,7 +207,19 @@ class Model:
 						self.player.heldSlot.item.ammo -= 1
 						self.entities.append(Rocket(*self.player.body.position, self.space))
 
-	def mineBlock(self):
+	def removeBlock(self, x: int, y: int) -> None:
+		print("hi")
+		if isinstance(self.world[y][x], InventoryBlock):
+			pg.event.post(pg.event.Event(REMOVEINVENTORYTYPE, inventoryType=[inventoryType for _, inventoryType in self.world[y][x].inventories]))
+		if hasattr(self.world[y][x], 'shape'):
+			self.space.remove(self.world[y][x].shape)
+		if isinstance(self.world[y][x], Light):
+			self.lights.remove((self.world[y][x], x, y))
+		self.world[y][x] = AirBlock()
+		if isinstance(self.world.back[y][x], AirBlock):
+			self.generateLight(y, x)
+
+	def mineBlock(self) -> None:
 		'''mine the block the player is facing'''
 		if self.blockFacingCoord:
 			x, y = self.blockFacingCoord
@@ -214,18 +236,8 @@ class Model:
 				itemType = block2Item[self.world[y][x].enum]
 				if itemType:
 					self.player.inventory.addItem(itemType())
-				
-				inventoryTypes = None
-				if isinstance(self.world[y][x], InventoryBlock):
-					inventoryTypes = [inventoryType for _, inventoryType in self.world[y][x].inventories]
-				if hasattr(self.world[y][x], 'shape'):
-					self.space.remove(self.world[y][x].shape)
-				if isinstance(self.world[y][x], Light):
-					self.lights.remove((self.world[y][x], x, y))
-				self.world[y][x] = AirBlock()
-				if isinstance(self.world.back[y][x], AirBlock):
-					self.generateLight(y, x)
-				return inventoryTypes
+				self.removeBlock(x, y)
+
 
 	def _generateWorld(self):
 		'''Generate the random world using vectorized NumPy operations'''
@@ -488,14 +500,3 @@ class Model:
 			self.world[y][x].shape = pm.Poly(self.worldBody, vertices)
 			self.world[y][x].shape.friction = self.world[y][x].friction
 			self.space.add(self.world[y][x].shape)
-
-	def generateBlockShape(self, x: int, y: int):
-		vertices = (
-						(x, y),
-						(x, y + 1),
-						(x + 1, y + 1),
-						(x + 1, y)
-					)
-		shape = pm.Poly(self.worldBody, vertices)
-		shape.friction = self.world[y][x].friction
-		self.space.add(shape)
