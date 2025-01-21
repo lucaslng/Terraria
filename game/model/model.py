@@ -47,6 +47,7 @@ class Model:
 	def __init__(self, worldWidth: int, worldHeight: int):
 		'''initialize the game'''
 		self.space = Space()
+		self.space.sleep_time_threshold = 2
 		self.world = World(worldWidth, worldHeight)
 		self.player = Player(0, 0, self.world, self.space)
 		
@@ -68,7 +69,7 @@ class Model:
 		self._generate()
 		addDefaultItems(self.player)
 
-	def update(self, steps=20) -> bool:
+	def update(self, steps=2) -> bool:
 		'''Update the model, should be called every frame. steps increases the accuracy of the physics simulation but sacrifices performance. returns whether the player is alive'''
 		self.player.update()
   
@@ -79,12 +80,23 @@ class Model:
 			entity.update(self.player.body.position)
 			if isinstance(entity, Dog) and dist(entity.body.position, self.player.body.position) < 1.5:
 				if self.player.takeDamage(1):
-					self.player.body.apply_impulse_at_local_point((self.player.body.position - entity.body.position) * 40, (0, 0.5))
+					self.player.body.apply_impulse_at_local_point((self.player.body.position - entity.body.position) * 30, (0, 0.5))
 			if not entity.isAlive or not 0 < entity.body.position.x < self.world.width or not 0 < entity.body.position.y < self.world.height:
 				self.deleteEntity(i, entity)
+		
+		if isinstance(self.player.heldSlot.item, Bucket) and self.player.heldSlot.item.filledAmount < 1:
+			for l, liquid in enumerate(self.liquids):
+				for p, liquidParticle in enumerate(liquid.particles):
+					if dist(liquidParticle.body.position, self.player.body.position) < 1.5:
+						if self.player.heldSlot.item.liquid is None:
+							self.player.heldSlot.item.liquid = liquidParticle.liquid
+						if self.player.heldSlot.item.liquid == liquidParticle.liquid:
+							self.player.heldSlot.item.filledAmount += 1 / self.player.heldSlot.item.liquid.particleCount
+							del self.liquids[l].particles[p]
+					
     
 		for i in range(steps):
-			self.space.step(1/FPS/steps) # step the simulation in 1/60 seconds
+			self.space.step((1/FPS)/steps) # step the simulation in 1/60 seconds
 			keepUpright(self.player.body)
 			for entity in self.entities:
 				keepUpright(entity.body)
@@ -220,7 +232,7 @@ class Model:
 		self.biomeArray = [Biome.FOREST if noise > 0 else Biome.PLAINS for noise in biomeNoise.noise]
 
 		# Calculate height maps using vectorized operations
-		grassHeight = np.round(self.world.height * 0.58 + 9 * grassNoiseArray).astype(int)
+		grassHeight = np.round(self.world.height * 0.35 + 9 * grassNoiseArray).astype(int)
 		stoneHeight = np.round(grassHeight + 5 + 5 * stoneNoiseArray).astype(int)
 		
 		for x in range(self.world.width):

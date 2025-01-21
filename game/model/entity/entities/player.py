@@ -18,9 +18,9 @@ class Player(Entity, Light):
     defaultLightRadius = 0.8
     lightRadius = defaultLightRadius
     mass = 4
-    walkSpeed = 7
-    jumpImpulse = 60
-    jumpSpeed = 20
+    walkSpeed = 6
+    jumpImpulse = 50
+    jumpSpeed = 18
     maxHealth = 18
     
     def __init__(self, x: float, y: float, world: World, space: Space):

@@ -192,7 +192,7 @@ def game() -> Screens:
 								break
 							if isinstance(entity, Rabbit) or isinstance(entity, Dog):
 								if entity.interact(model.player.damage):
-									entity.body.apply_impulse_at_local_point((entity.body.position - model.player.body.position) * 40, (0, 0.5))
+									entity.body.apply_impulse_at_local_point((entity.body.position - model.player.body.position) * 30, (0, 0.5))
 									if model.player.heldSlot.item and isinstance(model.player.heldSlot.item, Tool):
 										model.player.heldSlot.item.durability -= 1
 										if model.player.heldSlot.item.durability == 0:
