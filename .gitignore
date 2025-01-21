@@ -8,3 +8,4 @@ userKeys.py
 __pycache__/
 
 game/saves/saveFile
+utils/userKeys.py
