@@ -1,4 +1,5 @@
 from game.model.blocks.utils.blocktype import BlockType
+
 class Tool:
 	'''Class inherited by items which are a tool'''
 

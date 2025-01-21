@@ -5,23 +5,18 @@ from game.model.items.specialitems.smeltable import Smeltable
 
 
 class CoalItem(Item, Fuel):
-    '''coal item class'''
-    
-    enum = Items.Coal
-    def __init__(self) -> None:
-        Smeltable.__init__(self, burn_time=800, heat_output=1.2)
+	'''coal item class'''	
+	enum = Items.Coal
+	burnTime = 80.0
 
-class IronIngotItem(Item, Smeltable):
+class IronIngotItem(Item):
 	'''iron ingot item class'''
-
 	enum = Items.IronIngot
 
-class GoldIngotItem(Item, Smeltable):
+class GoldIngotItem(Item):
 	'''gold ingot item class'''
-
 	enum = Items.GoldIngot
 
 class DiamondItem(Item):
 	'''diamond item class'''
-
 	enum = Items.Diamond

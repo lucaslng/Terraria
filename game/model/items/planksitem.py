@@ -9,5 +9,4 @@ class PlanksItem(Item, Placeable, Fuel):
 	'''Grass item class'''
 
 	enum = Items.Planks
-	burnTime = 1
-	heatOutput = 1
+	burnTime = 15.0
