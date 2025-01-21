@@ -9,7 +9,6 @@ from game.model.world import World
 from utils.constants import BIG
 
 class Entity(HasPhysics):
-
     invulnerabilityDuration: int = 10 # How long entity stays invulnerable after taking damage
     fallDamageMultiplier: float = 0.8  	    #Damage per unit of excess velocity
     fallDamageThreshold: int = 15  	

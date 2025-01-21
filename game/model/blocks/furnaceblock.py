@@ -5,7 +5,28 @@ from game.model.blocks.utils.inventoryblock import InventoryBlock
 from game.model.items.item import Item
 from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.inventorytype import InventoryType
+from game.model.items.specialitems.fuel import Fuel
+from game.model.items.specialitems.smeltable import Smeltable
+from game.model.items.utils.itemsenum import Items
+from game.model.items.inventory.slot import Slot
 
 
 class FurnaceBlock(Block, InventoryBlock):
-    pass
+    '''Furnace block that can smelt items using fuel'''
+    def __init__(self):
+        self.inputSlot = Inventory(1, 1, condition=lambda other: isinstance(other.item, Smeltable) or other.item is None)           #only smeltable items
+        self.fuelSlot = Inventory(1, 1, condition=lambda other: isinstance(other.item, Fuel) or other.item is None)                 #only fuel items
+        self.outputSlot = Inventory(1, 1, condition=lambda other: other.item is None)                                               #can't put items in
+        
+        super().__init__(0.94, 3.5, BlockType.PICKAXE, Blocks.Furnace)
+        
+    @property
+    def inventories(self) -> tuple[Inventory, InventoryType]:
+        '''Provide access to all furnace inventories'''
+        return (
+            (self.inputSlot, InventoryType.FurnaceIn),
+            (self.fuelSlot, InventoryType.FuelIn),
+            (self.outputSlot, InventoryType.FurnaceOut)
+        )
+        
+    

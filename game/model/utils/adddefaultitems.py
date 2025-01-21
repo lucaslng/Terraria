@@ -2,6 +2,7 @@ from game.model.entity.entities.player import Player
 from game.model.items.bucket import Bucket
 from game.model.items.craftingtableitem import CraftingTableItem
 from game.model.items.flowers import PoppyItem
+from game.model.items.furnaceitem import FurnaceItem
 from game.model.items.helmets import DiamondHelmet, GoldHelmet, IronHelmet
 from game.model.items.planksitem import PlanksItem
 from game.model.items.rabbitmeat import RabbitMeat
@@ -23,5 +24,5 @@ def addDefaultItems(player: Player) -> None:
 		Bucket(liquid=Water, filledAmount=1),
 		Bucket(liquid=Water, filledAmount=1),
 		DiamondHelmet(),
-		PoppyItem(),
+		FurnaceItem()
 		)

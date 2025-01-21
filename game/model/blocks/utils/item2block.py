@@ -3,6 +3,7 @@ from game.model.blocks.cobblestoneblock import CobblestoneBlock
 from game.model.blocks.craftingtableblock import CraftingTableBlock
 from game.model.blocks.dirtblock import DirtBlock
 from game.model.blocks.flowerblocks import AlliumBlock, CornflowerBlock, DandelionBlock, PoppyBlock
+from game.model.blocks.furnaceblock import FurnaceBlock
 from game.model.blocks.goldoreblock import GoldOreBlock
 from game.model.blocks.grassblock import GrassBlock
 from game.model.blocks.ironoreblock import IronOreBlock
@@ -19,6 +20,7 @@ item2Block[Items.Dirt] = DirtBlock
 item2Block[Items.Grass] = GrassBlock
 item2Block[Items.Stone] = StoneBlock
 item2Block[Items.Cobblestone] = CobblestoneBlock
+item2Block[Items.Furnace] = FurnaceBlock
 item2Block[Items.CraftingTable] = CraftingTableBlock
 item2Block[Items.Torch] = TorchBlock
 item2Block[Items.Log] = LogBlock

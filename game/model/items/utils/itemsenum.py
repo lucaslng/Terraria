@@ -16,11 +16,13 @@ class Items(Enum):
 
 	Cobblestone = "Cobblestone"
 	CraftingTable = "Crafting Table"
-	Furnace = "Furnace"
 	Torch = "Torch"
 	Log = "Log"
 	Planks = "Planks"
 	Sticks = "Sticks"
+	
+	Furnace = "Furnace"
+	# FurnaceOn = "Furnace"
  
 	WoodenPickaxe = "Wooden Pickaxe"
 	WoodenAxe = "Wooden Axe"

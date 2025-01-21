@@ -167,8 +167,11 @@ def game() -> Screens:
 					else:
 						continue 
 				elif event.key == userKeys.interact:
-					if len(inventories) > 1:
-						inventories = {InventoryType.Player: inventories[InventoryType.Player]}
+					if len(inventories) > 2:
+						inventories = {
+							InventoryType.Player: (model.player.inventory, *InventoryType.Player.value),
+							InventoryType.HelmetSlot: (model.player.helmetSlot, *InventoryType.HelmetSlot.value)
+						}
 					else:
 						for r in range(3):
 							for c in range(3):

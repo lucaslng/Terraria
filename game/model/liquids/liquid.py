@@ -1,5 +1,5 @@
 from math import sqrt
-from typing import Self, Type
+from typing import Type
 from pymunk import Body, Circle, Space
 
 

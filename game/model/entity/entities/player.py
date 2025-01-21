@@ -27,9 +27,15 @@ class Player(Entity, Light):
     def __init__(self, x: float, y: float, world: World, space: Space):
         super().__init__(x, y, world, space)
         #Fall damage
+        self.lastVerticalVelo = 0
+        self.fallDamageThreshold = 15
+        self.fallDamageMultiplier = 0.8
+        self.invulnerabilityFrames = 0   
+        
         self.inventory = Inventory(4, 9)
         self.helmetSlot = Slot(condition=lambda other: isinstance(other.item, Helmet) or other.item is None)
         self.cursorSlot = Slot()
+        
         self._heldSlotIndex = 0
     
     @property

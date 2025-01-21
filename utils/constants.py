@@ -1,6 +1,7 @@
 import pygame as pg
 
 FPS = 60
+BIG = 2147483647
 
 pg.init()
 
@@ -21,9 +22,9 @@ WORLD_WIDTH = 400    #default is 1000
 
 BIG = 2147483647
 
-RABBIT_RARITY = 10 # 1 rabbit every 10 blocks on avg
-NPC_RARITY = 30 # 1 npc every 20 blocks on avg
-DOG_RARITY = 50
+RABBIT_RARITY = 10 			# 1 rabbit every 10 blocks on avg
+NPC_RARITY = 30 			# 1 npc every 20 blocks on avg
+DOG_RARITY = 50				# 1 dog every 50 blocks on avg
 
 FIRST_MESSAGE = (
 	"Welcome to TerraCraft!",
