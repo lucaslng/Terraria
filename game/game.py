@@ -26,9 +26,11 @@ from utils.updatescreen import updateScreen
 def initGame():
 	'''Initialize or reinitialize game components'''
 	model = saving.load()
+ 
 	if not model:
 		print("Generating new world...")
 		model = Model(WORLD_WIDTH, WORLD_HEIGHT)
+  
 	camera = FRAME.copy()
 	camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE
 
@@ -103,6 +105,13 @@ def game() -> Screens:
 
 	while True:
 		clearScreen()
+		draw(model, camera, inventories)
+  
+		#player death
+		if not model.update():
+			saving.clear()
+			return deathScreen(pg.image.tobytes(SURF, 'RGBA'))
+
 		pressedKeys = pg.key.get_pressed()
 		if pressedKeys[userKeys.walkLeft]:
 			model.player.walkLeft()
@@ -156,10 +165,16 @@ def game() -> Screens:
 				return Screens.QUIT
 			elif event.type == 101:
 				model.spawnEntitiesRandom()
-				pg.mixer.set_num_channels(len(model.entities) * 2) # set extra channels just to be safe
+				pg.mixer.set_num_channels(len(model.entities) * 2) 		#set extra channels just to be safe
 			elif event.type == pg.KEYDOWN:
 				if event.key == pg.K_ESCAPE:
-					return pauseMenu(model, pg.image.tobytes(SURF, 'RGBA'))
+					pause = pauseMenu(model, pg.image.tobytes(SURF, 'RGBA'))
+     
+					if pause:
+						break
+					else:
+						return pause
+				
 				elif event.key == userKeys.interact:
 					if len(inventories) > 1:
 						inventories = {InventoryType.Player: inventories[InventoryType.Player]}
@@ -226,11 +241,5 @@ def game() -> Screens:
 					model.world[y][x].update()
 
 		camera.center = model.player.position[0] * BLOCK_SIZE, model.player.position[1] * BLOCK_SIZE		
-		draw(model, camera, inventories)
-  
-		#player death
-		if not model.update():
-			saving.clear()
-			return deathScreen(pg.image.tobytes(SURF, 'RGBA'))
 
 		updateScreen()
