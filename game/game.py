@@ -5,6 +5,7 @@ from game.model.entity.entities.dog import Dog
 from game.model.entity.entities.rabbit import Rabbit
 from game.model.items.inventory.slot import Slot
 from game.model.items.inventory.inventorytype import InventoryType
+from game.model.items.rpg import Rpg
 from game.model.items.specialitems.edible import Edible
 from game.model.items.specialitems.tool import Tool
 from game.model.utils.bresenham import bresenham
@@ -203,6 +204,9 @@ def game() -> Screens:
 									model.deleteEntity(i, entity)
 							else:
 								entity.interact()
+				elif event.key == userKeys.reload:
+					if isinstance(model.player.heldSlot.item, Rpg):
+						model.player.heldSlot.item.reload()
 			elif event.type == pg.MOUSEBUTTONDOWN:
 				if event.button == 1:
 					hoveredSlotData = getHoveredSlotSlot(inventories)

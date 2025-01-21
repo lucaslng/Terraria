@@ -1,7 +1,10 @@
-from pymunk import Space
+from pymunk import Space, Vec2d
 from game.model.entity.hasphysics import HasPhysics
 from game.model.items.item import Item
 from game.model.items.utils.itemsenum import Items
+import pygame.mouse as mouse
+
+from utils.constants import FRAME
 
 
 class Rpg(Item):
@@ -11,7 +14,7 @@ class Rpg(Item):
 	magSize = 1
 
 	def __init__(self):
-		self.reload()
+		self.ammo = self.magSize
 	
 	def reload(self):
 		self.ammo = self.magSize
@@ -20,8 +23,11 @@ class Rocket(HasPhysics):
 	'''RPG rocket'''
 
 	def __init__(self, x: float, y: float, space: Space):
-		super().__init__(x, y, 2, 1, 1, 0.3, space)
-		self.body.apply_impulse_at_local_point((120, 0))
+		super().__init__(x, y, 3, 1, 1, 0.3, space)
+		direction = Vec2d(*mouse.get_pos()) - Vec2d(*FRAME.center)
+		direction = direction.normalized()
+		impulse = direction * 100
+		self.body.apply_impulse_at_local_point(impulse)
 	
 	@property
 	def stationary(self) -> bool:

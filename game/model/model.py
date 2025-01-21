@@ -110,7 +110,8 @@ class Model:
 			self.space.step((1/FPS)/steps) # step the simulation in 1/60 seconds
 			keepUpright(self.player.body)
 			for entity in self.entities:
-				keepUpright(entity.body)
+				if isinstance(entity, Entity):
+					keepUpright(entity.body)
     
 		return True
 
@@ -190,7 +191,9 @@ class Model:
 						self.liquids.append(self.player.heldSlot.item.liquid(x, y, self.space))
 						self.player.heldSlot.item.clear()
 				elif isinstance(self.player.heldSlot.item, Rpg):
-					self.entities.append(Rocket(*self.player.body.position, self.space))
+					if self.player.heldSlot.item.ammo > 0:
+						self.player.heldSlot.item.ammo -= 1
+						self.entities.append(Rocket(*self.player.body.position, self.space))
 
 	def mineBlock(self):
 		'''mine the block the player is facing'''
