@@ -112,6 +112,8 @@ class Model:
 			for entity in self.entities:
 				if isinstance(entity, Entity):
 					keepUpright(entity.body)
+				else:
+					entity.body.angle = math.atan2(-entity.body.velocity.y, entity.body.velocity.x)
     
 		return True
 

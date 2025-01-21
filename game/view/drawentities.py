@@ -1,3 +1,4 @@
+from math import degrees
 from pygame import BLEND_MULT, Rect, Surface
 from game.model.entity.entities.dog import Dog
 from game.model.entity.entities.npc import Npc
@@ -55,7 +56,9 @@ def drawDog(dog: Dog, pos: tuple[int, int]) -> None:
 		texture.drawAnimated(surfaces.world, pos, pos[0] > FRAME.centerx, hurt)
 
 def drawRocket(rocket: Rocket, pos: tuple[int, int]):
-	pg.draw.circle(surfaces.world, colours.GREEN, pos, 4)
+	texture = sprites["rocket"]
+	texture = pg.transform.rotate(texture, degrees(rocket.body.angle))
+	surfaces.world.blit(texture, texture.get_rect(center=pos))
 
 
 def drawEntities(entities: list[HasPhysics], camera: Rect):
