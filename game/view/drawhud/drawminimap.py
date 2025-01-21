@@ -1,5 +1,5 @@
 from game.model.world import World
-from utils.constants import BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT
+from utils.constants import BLOCK_SIZE
 from game.model.blocks.airblock import AirBlock
 from game.view import surfaces
 from game.textures.sprites import sprites
@@ -46,9 +46,9 @@ def drawMinimap(world: World, lightmap: list[list[int]], lights: Light, camera: 
     blocks_wide = minimapSize[0] // MINIMAP_SCALE
     blocks_high = minimapSize[1] // MINIMAP_SCALE
     startX = max(0, (centerX // BLOCK_SIZE) - (blocks_wide // 2))
-    endX = min(WORLD_WIDTH, startX + blocks_wide)
+    endX = min(world.width, startX + blocks_wide)
     startY = max(0, (centerY // BLOCK_SIZE) - (blocks_high // 2))
-    endY = min(WORLD_HEIGHT, startY + blocks_high)
+    endY = min(world.height, startY + blocks_high)
     
     lightSurf = pg.Surface(minimapSize, pg.SRCALPHA)
     

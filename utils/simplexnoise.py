@@ -1,10 +1,10 @@
 import numpy as np
-from utils.constants import BIG, WORLD_HEIGHT, WORLD_WIDTH
+from utils.constants import BIG
 
 
 class SimplexNoise:
     '''https://github.com/SRombauts/SimplexNoise/blob/master/src/SimplexNoise.cpp'''
-    def __init__(self, scale: float, dimension: int, width: int = WORLD_WIDTH, height: int = WORLD_HEIGHT):
+    def __init__(self, scale: float, dimension: int, width: int, height: int):
 
         self.rng = np.random.RandomState()
         

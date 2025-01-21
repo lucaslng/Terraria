@@ -15,11 +15,9 @@ from game.model.entity.entities.dog import Dog
 from game.model.entity.entities.npc import Npc
 from game.model.entity.entities.rabbit import Rabbit
 from game.model.items.bucket import Bucket
-from game.model.items.inventory.inventory import Inventory
-from game.model.items.inventory.slot import Slot
 from game.model.liquids.liquid import Liquid
 from game.model.utils.biomesenum import Biome
-from utils.constants import DOG_RARITY, FIRST_MESSAGE, FPS, NPC_RARITY, RABBIT_RARITY, WORLD_HEIGHT, WORLD_WIDTH
+from utils.constants import DOG_RARITY, FIRST_MESSAGE, FPS, NPC_RARITY, RABBIT_RARITY
 from game.model.blocks.airblock import AirBlock
 from game.model.blocks.coaloreblock import CoalOreBlock
 from game.model.blocks.dirtblock import DirtBlock
@@ -253,7 +251,7 @@ class Model:
 
 	def _generateTree(self, x: int, y: int) -> None:
 		'''Place a tree with base at coordinates (x, y) and a random height'''
-		if not 3 <= x < WORLD_WIDTH - 3:
+		if not 3 <= x < self.world.width - 3:
 			return
 		height = random.randint(3, 7)
 		for r in range(y - height - 1, y + 1):
@@ -290,8 +288,8 @@ class Model:
 	def _generateAllNoise(self) -> dict[Noises, SimplexNoise]:
 		totalStartTime = time.perf_counter()
 
-		def generateNoise(noiseType: Noises, scale: float, dimension: int, width: int = WORLD_WIDTH, 
-						height: int = WORLD_HEIGHT) -> tuple[Noises, SimplexNoise, float]:
+		def generateNoise(noiseType: Noises, scale: float, dimension: int, width: int = self.world.width, 
+						height: int = self.world.height) -> tuple[Noises, SimplexNoise, float]:
 			startTime = time.perf_counter()
 			
 			noise = SimplexNoise(scale=scale, dimension=dimension, width=width, height=height)
