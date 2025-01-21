@@ -106,11 +106,10 @@ class Model:
 		self._generateWorldShapes()
 		self._generateEntities()
 		print(f'World generation time: {round(time.perf_counter() - startTime, 2)} seconds')
-		px, py = self.player.position
-		self.player.position = px, self.world.topy(px) - 1
+		self.player.position = self.player.position.x, self.world.topy(self.player.position.x) - 1
 	
 	def _generateEntities(self) -> None:
-		px, py = self.player.position
+		px = self.player.position.x
 		self.spawnEntity(Npc(px + 1, self.world.topy(px + 1) - 1, self.world, FIRST_MESSAGE))
 		for _ in range(self.world.width // RABBIT_RARITY):
 			x = random.randint(0, self.world.width - 1)
