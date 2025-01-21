@@ -56,3 +56,8 @@ class Items(Enum):
 	BucketEmpty = "Empty Bucket"
 	BucketWater = "Water Bucket"
 	BucketMilk = "Milk Bucket"
+
+	Poppy = "Poppy"
+	Dandelion = "Dandelion"
+	Cornflower = "Cornflower"
+	Allium = "Allium"

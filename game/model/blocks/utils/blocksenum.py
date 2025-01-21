@@ -18,3 +18,8 @@ class Blocks(Enum):
 	CraftingTable = auto()
 	Furnace = auto()
 	Torch = auto()
+
+	Poppy = auto()
+	Dandelion = auto()
+	Cornflower = auto()
+	Allium = auto()

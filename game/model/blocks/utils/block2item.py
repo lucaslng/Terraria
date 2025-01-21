@@ -3,6 +3,7 @@ from game.model.blocks.utils.blocksenum import Blocks
 from game.model.items.cobblestoneitem import CobblestoneItem
 from game.model.items.craftingtableitem import CraftingTableItem
 from game.model.items.dirtitem import DirtItem
+from game.model.items.flowers import AlliumItem, CornflowerItem, DandelionItem, PoppyItem
 from game.model.items.ingots import CoalItem, DiamondItem
 from game.model.items.logitem import LogItem
 from game.model.items.ores import GoldOreItem, IronOreItem
@@ -25,3 +26,8 @@ block2Item[Blocks.CoalOre] = CoalItem
 block2Item[Blocks.IronOre] = IronOreItem
 block2Item[Blocks.GoldOre] = GoldOreItem
 block2Item[Blocks.DiamondOre] = DiamondItem
+
+block2Item[Blocks.Poppy] = PoppyItem
+block2Item[Blocks.Dandelion] = DandelionItem
+block2Item[Blocks.Cornflower] = CornflowerItem
+block2Item[Blocks.Allium] = AlliumItem

@@ -2,6 +2,7 @@ from collections import defaultdict
 from game.model.blocks.cobblestoneblock import CobblestoneBlock
 from game.model.blocks.craftingtableblock import CraftingTableBlock
 from game.model.blocks.dirtblock import DirtBlock
+from game.model.blocks.flowerblocks import AlliumBlock, CornflowerBlock, DandelionBlock, PoppyBlock
 from game.model.blocks.goldoreblock import GoldOreBlock
 from game.model.blocks.grassblock import GrassBlock
 from game.model.blocks.ironoreblock import IronOreBlock
@@ -25,3 +26,8 @@ item2Block[Items.Planks] = PlanksBlock
 
 item2Block[Items.IronOre] = IronOreBlock
 item2Block[Items.GoldOre] = GoldOreBlock
+
+item2Block[Items.Poppy] = PoppyBlock
+item2Block[Items.Dandelion] = DandelionBlock
+item2Block[Items.Cornflower] = CornflowerBlock
+item2Block[Items.Allium] = AlliumBlock

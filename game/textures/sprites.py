@@ -142,9 +142,18 @@ sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
     Items.DiamondSword: everythingSheet.get(304, 0, 16, 16),
     
     #Misc
-    "shears": everythingSheet.get(320, 0, 16, 16),
-    "flintAndSteel": everythingSheet.get(336, 0, 16, 16),
+    # "shears": everythingSheet.get(320, 0, 16, 16),
+    # "flintAndSteel": everythingSheet.get(336, 0, 16, 16),
     
+    # Flowers
+	Items.Poppy: everythingSheet.get(814, 0, 16, 16),
+	Blocks.Poppy: everythingSheet.get(814, 0, 16, 16, BLOCK_SIZE),
+	Items.Dandelion: everythingSheet.get(766, 0, 16, 16),
+	Blocks.Dandelion: everythingSheet.get(766, 0, 16, 16, BLOCK_SIZE),
+	Items.Cornflower: everythingSheet.get(798, 0, 16, 16),
+	Blocks.Cornflower: everythingSheet.get(798, 0, 16, 16, BLOCK_SIZE),
+	Items.Allium: everythingSheet.get(782, 0, 16, 16),
+	Blocks.Allium: everythingSheet.get(782, 0, 16, 16, BLOCK_SIZE),
     
     #---ARMOUR---
 	Items.GoldHelmet: everythingSheet.get(670, 0, 16, 16),

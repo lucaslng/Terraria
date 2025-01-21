@@ -130,11 +130,17 @@ class Model:
 		self.space.remove(entity.body, entity.shape)
 		del self.entities[i]
 	
-	def placeBlock(self, x: int, y: int):
+	def placeBlock(self, x: int, y: int) -> None:
 		'''place a block at coordinates (x, y)'''
+		if not (0 <= x < self.world.width and 0 <= y < self.world.height):
+			return
 		if isinstance(self.world[y][x], AirBlock):
 			if self.player.heldSlot.item:
 				if isinstance(self.player.heldSlot.item, Placeable):
+					if self.player.heldSlot.item.getBlock().isFragile:
+						if isinstance(self.world.back[y][x], AirBlock):
+							if not y + 1 == self.world.height and self.world[y + 1][x].isEmpty:
+								return
 					self.player.heldSlot.count -= 1
 					self.world[y][x] = self.player.heldSlot.item.getBlock()()
 					if not self.player.heldSlot.count:

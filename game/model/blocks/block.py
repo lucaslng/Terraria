@@ -12,6 +12,7 @@ class Block:
 	blockType: BlockType
 	enum: Blocks
 
+	isFragile = False
 	isEmpty = False
 	amountBroken = 0
 
