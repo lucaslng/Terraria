@@ -13,9 +13,9 @@ from game.model.items.inventory.slot import Slot
 class FurnaceBlock(Block, InventoryBlock):
     '''Furnace block that can smelt items using fuel'''
     def __init__(self):
-        self.inputSlot = Slot()
-        self.fuelSlot = Slot(condition=lambda other: isinstance(other.item, Smeltable) or other.item is None)
-        self.outputSlot = Slot(condition=lambda other: other.item is None)
+        self.inputSlot = Inventory(1, 1)
+        self.fuelSlot = Inventory(1, 1, condition=lambda other: isinstance(other.item, Smeltable) or other.item is None)
+        self.outputSlot = Inventory(1, 1, condition=lambda other: other.item is None)
         
         self.currentBurnTime = 0            # How much burn time is left
         self.currentSmeltTime = 0           # Progress of current smelting operation

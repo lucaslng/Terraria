@@ -9,6 +9,6 @@ class InventoryType(Enum):
 	CraftingIn = (BLOCK_SIZE * 2, FRAME.centerx - BLOCK_SIZE * 7, int(FRAME.height * 0.4 - BLOCK_SIZE * 3))
 	CraftingOut = (BLOCK_SIZE * 2, FRAME.centerx + BLOCK_SIZE, int(FRAME.height * 0.4 - BLOCK_SIZE))
 	
-	FurnaceIn = (BLOCK_SIZE * 2, FRAME.centerx - BLOCK_SIZE * 2, int(FRAME.height * 0.4 - BLOCK_SIZE))
+	FurnaceIn = (BLOCK_SIZE * 2, FRAME.centerx - BLOCK_SIZE * 2, int(FRAME.height * 0.4 - BLOCK_SIZE) - 50)
 	FuelIn = (BLOCK_SIZE * 2, FRAME.centerx - BLOCK_SIZE * 2, int(FRAME.height * 0.4))
 	FurnaceOut = (BLOCK_SIZE * 2, FRAME.centerx + BLOCK_SIZE * 2, int(FRAME.height * 0.4 - BLOCK_SIZE))

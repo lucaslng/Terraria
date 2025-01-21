@@ -6,47 +6,35 @@ from pymunk import Space
 from game.model.entity.hasphysics import HasPhysics
 from game.model.items.item import Item
 from game.model.world import World
+from utils.constants import BIG
 
 class Entity(HasPhysics):
-    '''Base class for all entities'''
-    def __init__(
-        self,
-        x: float,
-        y: float,
-        mass: float,
-        width: float,
-        height: float,
-        walkForce: float,
-        walkSpeed: float,
-        jumpImpulse: float,
-        jumpSpeed: float,
-        friction: float,
-        maxHealth: int,
-        world: World,
-        space: Space,
-    ):
-        super().__init__(x, y, mass, friction, width, height, space)
-        
-        self.walkForce = walkForce
-        self.walkSpeed = walkSpeed
-        self.jumpImpulse = jumpImpulse
-        self.jumpSpeed = jumpSpeed
-        self.previousJumpTime = 0
-        self.maxHealth = maxHealth
-        self.health = maxHealth
-        self.world = world
-        self.minyvelo = 100
-        self.updateDistance: int | None = None
-        self.pathFindToPlayer = True
-        self.droppedItem: Item | None = None
+    invulnerabilityDuration: int = 10 # How long entity stays invulnerable after taking damage
+    fallDamageMultiplier: float = 0.8  	    #Damage per unit of excess velocity
+    fallDamageThreshold: int = 15  	
+    mass: float	    #Minimum velocity to start taking damage
+    width: float = 1
+    height: float = 1
+    walkForce: float = 20000
+    walkSpeed: float
+    jumpImpulse: float
+    jumpSpeed: float
+    friction: float = 0.99
+    maxHealth: int
+    miniyvelo: int = 100
+    updateDistance: int | None = None
+    pathFindToPlayer: bool = True
+    droppedItem: Item | None = None
 
+    '''Base class for all entities'''
+    def __init__(self, x: float, y: float, world: World, space: Space):
+        super().__init__(x, y, self.mass, self.friction, self.width, self.height, space)
+        self.world = world
         self.lastVerticalVelocity = 0
-        self.fallDamageThreshold = 15  		    #Minimum velocity to start taking damage
-        self.fallDamageMultiplier = 0.8  	    #Damage per unit of excess velocity
         self.invulnerabilityFrames = 0
-        self.invulnerabilityDuration = 10    #How long entity stays invulnerable after taking damage
-        
         self.noVerticalVelocityTime = 0
+        self.health = self.maxHealth
+        self.previousJumpTime = 0
 
     def walkLeft(self) -> None:
         '''Walk the entity to the left using walkForce'''

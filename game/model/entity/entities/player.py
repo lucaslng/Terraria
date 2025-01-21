@@ -17,10 +17,14 @@ class Player(Entity, Light):
     reach = 4
     defaultLightRadius = 0.8
     lightRadius = defaultLightRadius
+    mass = 4
+    walkSpeed = 7
+    jumpImpulse = 60
+    jumpSpeed = 20
+    maxHealth = 18
     
     def __init__(self, x: float, y: float, world: World, space: Space):
-        super().__init__(x, y, 4, 1, 1, 20000, 7, 60, 20, 0.99, 20, world, space)
-        
+        super().__init__(x, y, world, space)
         #Fall damage
         self.lastVerticalVelo = 0
         self.fallDamageThreshold = 15

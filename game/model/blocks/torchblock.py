@@ -12,4 +12,4 @@ class TorchBlock(Block, Light):
 	isFragile = True
 
 	def __init__(self):
-		super().__init__(0, 1, BlockType.NONE, Blocks.Torch)
+		super().__init__(0, 0.1, BlockType.NONE, Blocks.Torch)

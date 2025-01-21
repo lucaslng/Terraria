@@ -42,8 +42,9 @@ def draw(model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int
 		(surfaces.sunlight, (0, 0)),
 		(surfaces.hud, (0, 0)),
 		(surfaces.hotbar, (FRAME.centerx - (13.5 * BLOCK_SIZE) // 2, FRAME.height - int(2.25 * BLOCK_SIZE))),
-  	(fpsSurf, (FRAME.width - 300, 20)),
+  		(fpsSurf, (FRAME.width - 300, 20)),
 		(surfaces.minimap, (FRAME.width - 220, 20)),
 		(surfaces.minimapLight, (FRAME.width - 220, 20)),
 	))
+ 
 	SURF.blit(surfaces.everything, (0, 0))

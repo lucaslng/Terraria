@@ -41,7 +41,7 @@ sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
         catSheet.get(40, 16, 16, 16, BLOCK_SIZE),
         catSheet.get(72, 16, 16, 16, BLOCK_SIZE),
         catSheet.get(104, 16, 16, 16, BLOCK_SIZE),
-		duration=25
+		duration=50,
         ),
     },
 	

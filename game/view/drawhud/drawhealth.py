@@ -9,9 +9,9 @@ def drawHealth(health: float, maxHealth: int) -> None:
 	spacing = BLOCK_SIZE
 	x = y = 10
 
-	fullHearts = health // 2
-	halfHeart = health % 2
-	emptyHearts = (maxHealth - health) // 2
+	fullHearts = int(health // 2)
+	halfHeart = int(health % 2)
+	emptyHearts = maxHealth // 2 - fullHearts - halfHeart
 
 	#Full hearts
 	for i in range(fullHearts):
