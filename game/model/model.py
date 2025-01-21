@@ -301,7 +301,7 @@ class Model:
 			return noiseType, noise, generationTime
 
 		noiseParameters = (
-			(Noises.BIOME, 300, 1),
+			(Noises.BIOME, 200, 1),
 			(Noises.GRASSHEIGHT, 19, 1),
 			(Noises.STONEHEIGHT, 30, 1),
 			(Noises.CAVES, 9, 2),
