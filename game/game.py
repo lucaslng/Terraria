@@ -1,5 +1,6 @@
 from math import dist, floor
 import pygame as pg
+from game.events import REMOVEINVENTORYTYPE
 from game.model.blocks.utils.inventoryblock import InventoryBlock
 from game.model.entity.entities.dog import Dog
 from game.model.entity.entities.rabbit import Rabbit
@@ -142,26 +143,27 @@ def game() -> Screens:
 			
 			#Only mine blocks if we're not hovering over an inventory slot
 			if not hoveredSlotData:
-				inventoryTypes = model.mineBlock()
-				if inventoryTypes:
-					for inventoryType in inventoryTypes:
-						if inventoryType in inventories:
-							del inventories[inventoryType]
+				model.mineBlock()
+				
       
 		elif pg.mouse.get_pressed()[2]:
 			if not getHoveredSlotSlot(inventories):
 				model.placeBlock(*conversions.pixel2Coordinate(*pg.mouse.get_pos(), camera))
-
-		for event in pg.event.get():
+		events = pg.event.get()
+		for event in events:
 			if event.type == pg.QUIT:
 				saving.save(model)
 				return Screens.QUIT
 			elif event.type == 101:
 				model.spawnEntitiesRandom()
 				pg.mixer.set_num_channels(len(model.entities) * 2) # set extra channels just to be safe
+			elif event.type == REMOVEINVENTORYTYPE:
+				for inventoryType in event.inventoryType:
+					if inventoryType in inventories:
+						del inventories[inventoryType]
 			elif event.type == pg.KEYDOWN:
 				if event.key == pg.K_ESCAPE:
-					draw(model, camera, inventories)
+					draw(events, model, camera, inventories)
 					pause = pauseMenu(model, pg.image.tobytes(surfaces.everything, 'RGB'))   
 					if pause:
 						return pause
@@ -239,7 +241,7 @@ def game() -> Screens:
 					model.world[y][x].update()
 
 		camera.center = model.player.body.position[0] * BLOCK_SIZE, model.player.body.position[1] * BLOCK_SIZE		
-		draw(model, camera, inventories)
+		draw(events, model, camera, inventories)
   
 		#player death
 		if not model.update():

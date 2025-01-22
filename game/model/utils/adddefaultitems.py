@@ -27,6 +27,6 @@ def addDefaultItems(player: Player) -> None:
 		Rpg(),
 		DiamondHelmet(),
 		FurnaceItem(),
-		CoalItem(),
+		*[CoalItem() for _ in range(64)],
 		*[IronOreItem() for _ in range(8)]
 		)
