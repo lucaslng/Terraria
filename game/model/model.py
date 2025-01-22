@@ -19,7 +19,6 @@ from game.model.entity.entities.rabbit import Rabbit
 from game.model.entity.entitylike import EntityLike
 from game.model.entity.hasphysics import HasPhysics
 from game.model.items.bucket import Bucket
-from game.model.items.inventory.inventorytype import InventoryType
 from game.model.items.rpg import Rocket, Rpg
 from game.model.liquids.liquid import Liquid
 from game.model.utils.biomesenum import Biome
