@@ -8,6 +8,7 @@ from utils.constants import BLOCK_SIZE
 
 
 def drawExplosion(pos: Vec2d, radius: float, width: int, camera: Rect):
+	'''Draws the explosion circle, uses an event to call itself in the next frame'''
 	ppos = conversions.coordinate2Pixel(*pos, camera)
 	pg.draw.circle(surfaces.world, (200, 200, 200), ppos, radius * BLOCK_SIZE, width)
 	if width > 0:
