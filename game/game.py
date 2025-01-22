@@ -228,7 +228,7 @@ def game() -> Screens:
 						if pg.time.get_ticks() - leftMousePressedTime > 150:
 							swapSlot(hoveredSlotData)
 		
-		blockFacingCoord = bresenham(model.world.array, *pg.mouse.get_pos(), *FRAME.center, camera)
+		blockFacingCoord = bresenham(model.world.array, *FRAME.center, *pg.mouse.get_pos(), camera)
   
 		if blockFacingCoord and dist(map(lambda a: a + 0.5, blockFacingCoord), model.player.body.position) < model.player.reach:
 			model.blockFacingCoord = blockFacingCoord

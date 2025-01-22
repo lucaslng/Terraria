@@ -1,15 +1,11 @@
-from typing import Optional
 from game.model.blocks.block import Block
 from game.model.blocks.utils.blocksenum import Blocks
 from game.model.blocks.utils.blocktype import BlockType
 from game.model.blocks.utils.inventoryblock import InventoryBlock
-from game.model.items.item import Item
 from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.inventorytype import InventoryType
 from game.model.items.specialitems.fuel import Fuel
 from game.model.items.specialitems.smeltable import Smeltable
-from game.model.items.utils.itemsenum import Items
-from game.model.items.inventory.slot import Slot
 from utils.constants import clock
 
 
@@ -21,9 +17,9 @@ class FurnaceBlock(Block, InventoryBlock):
         self.furnaceOutInventory = Inventory(1, 1, condition=lambda other: other.item is None)                                               #can't put items in
         
         self.isBurning = False
-        self._burnTimeRemaining = 0.0
-        self._smeltingProgress = 0.0
-        self._smeltingTime = 10.0               # default smelting time in seconds
+        self.burnTimeRemaining = 0.0
+        self.smeltingProgress = 0.0
+        self.smeltingTime = 10.0               # default smelting time in seconds
         
         super().__init__(0.94, 3.5, BlockType.PICKAXE, Blocks.Furnace)
         
@@ -34,11 +30,6 @@ class FurnaceBlock(Block, InventoryBlock):
             (self.fuelInInventory, InventoryType.FuelIn),
             (self.furnaceOutInventory, InventoryType.FurnaceOut)
         )
-    
-    @property
-    def smeltingProgress(self) -> float:
-        '''Get current smelting progress (0-1)'''
-        return self._smeltingProgress
     
     def _canStartSmelting(self) -> bool:
         inputSlot = self.furnaceInInventory.array[0][0]
@@ -63,7 +54,7 @@ class FurnaceBlock(Block, InventoryBlock):
         if fuelSlot.item is None:
             return False
             
-        self._burnTimeRemaining = fuelSlot.item.burnTime
+        self.burnTimeRemaining = fuelSlot.item.burnTime
         
         fuelSlot.count -= 1
         if fuelSlot.count <= 0:
@@ -96,22 +87,22 @@ class FurnaceBlock(Block, InventoryBlock):
         dt = clock.get_time() / 1000.0
         
         if not self._canStartSmelting():
-            self._smeltingProgress = 0.0
+            self.smeltingProgress = 0.0
             self.isBurning = False
             return
             
-        if self._burnTimeRemaining <= 0:
+        if self.burnTimeRemaining <= 0:
             if not self._consumeFuel():
                 self.isBurning = False
                 return
                 
-        if self._burnTimeRemaining > 0:
-            self._burnTimeRemaining = max(0.0, self._burnTimeRemaining - dt)
+        if self.burnTimeRemaining > 0:
+            self.burnTimeRemaining = max(0.0, self.burnTimeRemaining - dt)
             
         if self.isBurning:
-            self._smeltingProgress += dt / self._smeltingTime
+            self.smeltingProgress += dt / self.smeltingTime
             
-            if self._smeltingProgress >= 1.0:
+            if self.smeltingProgress >= 1.0:
                 self._completeSmelting()
     
     @property
