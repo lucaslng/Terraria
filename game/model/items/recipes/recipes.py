@@ -6,6 +6,7 @@ from game.model.items.bucket import Bucket
 from game.model.items.helmets import DiamondHelmet, GoldHelmet, IronHelmet
 from game.model.items.inventory.slot import Slot
 from game.model.items.item import Item
+from game.model.items.rpg import Rpg
 from game.model.items.utils.itemsenum import Items
 from game.model.items.tools import (
     DiamondAxe,
@@ -240,6 +241,15 @@ def bucket(slots: list[list[Slot]]) -> tuple[Item, int] | None:
         return Bucket(), 1
         
     return None
+
+def rocketLauncher(slots: list[list[Slot]]) -> tuple[Item, int] | None:
+  goldPattern = [(0, i) for i in range(3)] + [(2, i) for i in range(2)]
+  centerRowAir = [(1, i) for i in range(2)]
+
+  if all(slots[r][c].item and slots[r][c].item.enum == Items.GoldIngot for r, c in goldPattern) and slots[1][2].item and slots[1][2].item.enum == Items.Diamond and slots[2][2].item and slots[2][2].item.enum == Items.Sticks and all(not slots[r][c].item for r, c in centerRowAir):
+    return Rpg(), 1
+
+
         
 
 recipes: list[Recipe] = [
@@ -248,5 +258,6 @@ recipes: list[Recipe] = [
     Recipe(1, furnace),             # 8 cobblestone -> 1 furnace
     Recipe(4, torches),             # 1 coal + 1 stick -> 4 torches
     Recipe(1, bucket),              # 3 iron ingots -> 1 bucket
+    Recipe(1, rocketLauncher),
     *[Recipe(1, partial(recipe, topMaterial=topMaterial, toolClass=recipeDictionary[(recipe, topMaterial)])) for recipe, topMaterial in recipeDictionary],
 ]
