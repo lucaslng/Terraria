@@ -81,7 +81,7 @@ class FurnaceBlock(Block, InventoryBlock):
             output_slot.item = result_item
             output_slot.count = 1
             
-        self._smeltingProgress = 0.0
+        self.smeltingProgress = 0.0
     
     def update(self) -> None:
         dt = clock.get_time() / 1000.0
