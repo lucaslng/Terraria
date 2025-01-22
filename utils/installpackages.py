@@ -21,9 +21,11 @@ if not _checkPythonVersion():
 _requiredLibraries = {"pygame", "numpy", "pymunk", "dill"}
 for package in _requiredLibraries:
     if not _isPackageInstalled(package):
+        print(f'{package} is not installed, installing...')
         try:
             #Runs python -m pip install <package>
             subprocess.check_call([sys.executable, '-m', 'pip', 'install', package], 
                                stdout=subprocess.DEVNULL)
+            print(f'Succesfully installed {package}')
         except subprocess.CalledProcessError as e:
             print(f"Failed to install {package}: {e}.")
