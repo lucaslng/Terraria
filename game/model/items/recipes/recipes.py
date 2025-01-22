@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from functools import partial
 
 from game.model.blocks.furnaceblock import FurnaceBlock
+from game.model.items.bucket import Bucket
 from game.model.items.helmets import DiamondHelmet, GoldHelmet, IronHelmet
 from game.model.items.inventory.slot import Slot
 from game.model.items.item import Item
@@ -225,6 +226,21 @@ def furnace(slots: list[list[Slot]]) -> tuple[Item, int] | None:
         return None
 
     return FurnaceBlock(), 1
+  
+def bucket(slots: list[list[Slot]]) -> tuple[Item, int] | None:
+    topPatternIngots = ((0, 0), (0, 2), (1, 1))
+    topPatternAir = ((0, 1), (1, 0), (1, 2), (2, 0), (2, 1), (2, 2))
+    
+    bottomPatternIngots = ((1, 0), (1, 2), (2, 1))
+    bottomPatternAir = ((0, 0), (0, 1), (0, 2), (1, 1), (2, 0), (2, 2))
+    
+    pattern1Valid = (all(slots[r][c].item and slots[r][c].item.enum == Items.IronIngot for r, c in topPatternIngots) and all(not slots[r][c].item for r, c in topPatternAir))
+    pattern2Valid = (all(slots[r][c].item and slots[r][c].item.enum == Items.IronIngot for r, c in bottomPatternIngots) and all(not slots[r][c].item for r, c in bottomPatternAir))
+    
+    if pattern1Valid or pattern2Valid:
+        return Bucket(), 1
+        
+    return None
         
 
 recipes: list[Recipe] = [
@@ -232,5 +248,6 @@ recipes: list[Recipe] = [
     Recipe(4, sticks),              # 2 planks -> 4 sticks
     Recipe(1, furnace),             # 8 cobblestone -> 1 furnace
     Recipe(4, torches),             # 1 coal + 1 stick -> 4 torches
+    Recipe(1, bucket),              # 3 iron ingots -> 1 bucket
     *[Recipe(1, partial(recipe, topMaterial=topMaterial, toolClass=recipeDictionary[(recipe, topMaterial)])) for recipe, topMaterial in recipeDictionary],
 ]

@@ -138,7 +138,6 @@ def game() -> Screens:
 				model.player.consume()
 		
 		if pg.mouse.get_pressed()[0]:
-			#Check if the cursor is hovering over any inventory slot
 			hoveredSlotData = getHoveredSlotSlot(inventories)
 			
 			#Only mine blocks if we're not hovering over an inventory slot
@@ -149,6 +148,7 @@ def game() -> Screens:
 		elif pg.mouse.get_pressed()[2]:
 			if not getHoveredSlotSlot(inventories):
 				model.placeBlock(*conversions.pixel2Coordinate(*pg.mouse.get_pos(), camera))
+    
 		events = pg.event.get()
 		for event in events:
 			if event.type == pg.QUIT:
@@ -247,4 +247,5 @@ def game() -> Screens:
 		if not model.update():
 			saving.clear()
 			return deathScreen(pg.image.tobytes(surfaces.everything, 'RGB'))
+
 		updateScreen()

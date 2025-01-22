@@ -91,7 +91,6 @@ class FurnaceBlock(Block, InventoryBlock):
             output_slot.count = 1
             
         self._smeltingProgress = 0.0
-        self.isBurning = False
     
     def update(self) -> None:
         dt = clock.get_time() / 1000.0
