@@ -17,7 +17,7 @@ from menu.death.deathScreen import deathScreen
 from menu.pause.pause import pauseMenu
 from sound import channels
 import utils.userKeys as userKeys
-from utils.constants import BLOCK_SIZE, FRAME, WORLD_HEIGHT, WORLD_WIDTH
+from utils.constants import BIG, BLOCK_SIZE, FRAME, WORLD_HEIGHT, WORLD_WIDTH
 from game.view.draw import draw
 from game.model.model import Model
 from utils.screens import Screens
@@ -176,17 +176,20 @@ def game() -> Screens:
 							InventoryType.HelmetSlot: (model.player.helmetSlot, *InventoryType.HelmetSlot.value)
 						}
 					else:
+						nearest = None # interact with the nearest inventory block
 						for r in range(3):
 							for c in range(3):
 								x = floor(model.player.body.position.x) - 1 + c
 								y = floor(model.player.body.position.y) - 1 + r
 								if isinstance(model.world[y][x], InventoryBlock):
-									for inventory, inventoryType in model.world[y][x].inventories:
-										if inventoryType in inventories:
-											del inventories[inventoryType]
-										else:
-											slotSize, inventoryx, inventoryy = inventoryType.value
-											inventories[inventoryType] = inventory, slotSize, inventoryx, inventoryy
+									nearest = min(nearest, (x, y), key=lambda p: BIG if p is None else dist((p[0] + 0.5, p[1] + 0.5), model.player.body.position))
+						if nearest:
+							for inventory, inventoryType in model.world[nearest[1]][nearest[0]].inventories:
+								if inventoryType in inventories:
+									del inventories[inventoryType]
+								else:
+									slotSize, inventoryx, inventoryy = inventoryType.value
+									inventories[inventoryType] = inventory, slotSize, inventoryx, inventoryy
 				elif event.key == userKeys.interactEntity:
 					if model.entities:
 						model.entities.sort(key=lambda e: dist(e.body.position, model.player.body.position)) # sort by position to the player

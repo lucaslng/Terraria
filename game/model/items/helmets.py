@@ -9,7 +9,7 @@ class GoldHelmet(Item, Helmet):
 	enum = Items.GoldHelmet
 	stackSize = 1
 	multiplier = 0.9
-	durability = 77
+	startingDurability = 77
 
 class IronHelmet(Item, Helmet):
 	'''Iron helmet item'''

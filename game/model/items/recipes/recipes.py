@@ -2,7 +2,6 @@ from typing import Type, Callable
 from dataclasses import dataclass
 from functools import partial
 
-from game.model.blocks.furnaceblock import FurnaceBlock
 from game.model.items.bucket import Bucket
 from game.model.items.helmets import DiamondHelmet, GoldHelmet, IronHelmet
 from game.model.items.inventory.slot import Slot
@@ -224,8 +223,8 @@ def furnace(slots: list[list[Slot]]) -> tuple[Item, int] | None:
     
     if slots[1][1].item:
         return None
-
-    return FurnaceBlock(), 1
+    from game.model.items.furnaceitem import FurnaceItem
+    return FurnaceItem(), 1
   
 def bucket(slots: list[list[Slot]]) -> tuple[Item, int] | None:
     topPatternIngots = ((0, 0), (0, 2), (1, 1))
