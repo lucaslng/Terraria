@@ -1,15 +1,11 @@
-from typing import Optional
 from game.model.blocks.block import Block
 from game.model.blocks.utils.blocksenum import Blocks
 from game.model.blocks.utils.blocktype import BlockType
 from game.model.blocks.utils.inventoryblock import InventoryBlock
-from game.model.items.item import Item
 from game.model.items.inventory.inventory import Inventory
 from game.model.items.inventory.inventorytype import InventoryType
 from game.model.items.specialitems.fuel import Fuel
 from game.model.items.specialitems.smeltable import Smeltable
-from game.model.items.utils.itemsenum import Items
-from game.model.items.inventory.slot import Slot
 from utils.constants import clock
 
 
