@@ -16,9 +16,9 @@ from utils.constants import clock
 class FurnaceBlock(Block, InventoryBlock):
     '''Furnace block that can smelt items using fuel'''
     def __init__(self):
-        self.inputSlot = Inventory(1, 1, condition=lambda other: isinstance(other.item, Smeltable) or other.item is None)           #only smeltable items
-        self.fuelSlot = Inventory(1, 1, condition=lambda other: isinstance(other.item, Fuel) or other.item is None)                 #only fuel items
-        self.outputSlot = Inventory(1, 1, condition=lambda other: other.item is None)                                               #can't put items in
+        self.furnaceInInventory = Inventory(1, 1, condition=lambda other: isinstance(other.item, Smeltable) or other.item is None)           #only smeltable items
+        self.fuelInInventory = Inventory(1, 1, condition=lambda other: isinstance(other.item, Fuel) or other.item is None)                 #only fuel items
+        self.furnaceOutInventory = Inventory(1, 1, condition=lambda other: other.item is None)                                               #can't put items in
         
         self._isBurning = False
         self._burnTimeRemaining = 0.0
@@ -30,9 +30,9 @@ class FurnaceBlock(Block, InventoryBlock):
     @property
     def inventories(self) -> tuple[Inventory, InventoryType]:
         return (
-            (self.inputSlot, InventoryType.FurnaceIn),
-            (self.fuelSlot, InventoryType.FuelIn),
-            (self.outputSlot, InventoryType.FurnaceOut)
+            (self.furnaceInInventory, InventoryType.FurnaceIn),
+            (self.fuelInInventory, InventoryType.FuelIn),
+            (self.furnaceOutInventory, InventoryType.FurnaceOut)
         )
         
     @property
@@ -46,41 +46,41 @@ class FurnaceBlock(Block, InventoryBlock):
         return self._smeltingProgress
     
     def _canStartSmelting(self) -> bool:
-        input_slot = self.inputSlot.array[0][0]
-        output_slot = self.outputSlot.array[0][0]
+        inputSlot = self.furnaceInInventory.array[0][0]
+        outputSlot = self.furnaceOutInventory.array[0][0]
         
-        if input_slot.item is None:
+        if inputSlot.item is None:
             return False
             
         #Check output slot
-        if output_slot.item is not None:
-            result_item = input_slot.item.resultItem
-            if output_slot.item != result_item:
+        if outputSlot.item is not None:
+            result_item = inputSlot.item.resultItem
+            if outputSlot.item != result_item:
                 return False
-            if output_slot.count >= result_item.stackSize:
+            if outputSlot.count >= result_item.stackSize:
                 return False
                 
         return True
     
     def _consumeFuel(self) -> bool:
-        fuel_slot = self.fuelSlot.array[0][0]
+        fuelSlot = self.fuelInInventory.array[0][0]
         
-        if fuel_slot.item is None:
+        if fuelSlot.item is None:
             return False
             
-        self._burnTimeRemaining = fuel_slot.item.burnTime
+        self._burnTimeRemaining = fuelSlot.item.burnTime
         
-        fuel_slot.count -= 1
-        if fuel_slot.count <= 0:
-            fuel_slot.clear()
+        fuelSlot.count -= 1
+        if fuelSlot.count <= 0:
+            fuelSlot.clear()
             self._isBurning = False
             
         self._isBurning = True
         return True
     
     def _completeSmelting(self) -> None:
-        input_slot = self.inputSlot.array[0][0]
-        output_slot = self.outputSlot.array[0][0]
+        input_slot = self.furnaceInInventory.array[0][0]
+        output_slot = self.furnaceOutInventory.array[0][0]
         
         result_item = input_slot.item.resultItem
         

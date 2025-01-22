@@ -64,16 +64,26 @@ class CraftingTableBlock(Block, InventoryBlock):
                 self._lastRecipe = None
                 self._lastConsumptionMap = None
                 
-        if outputSlot.item is None:
+        if outputSlot.item is None or outputSlot.count == 0:
             if self._lastRecipe:
                 self._consumeMaterials()
 
             for recipe in recipes:
                 result = recipe(self.craftingInInventory.array)
                 if result:
-                    item, count = result
+                    item, totalCount = result
+                    maxStackSize = item.stackSize
+                    outputCount = min(totalCount, maxStackSize)     #output at most the stack size
+                    
                     outputSlot.item = item
-                    outputSlot.count = count
-                    self._lastRecipe = recipe
-                    self._lastConsumptionMap = self._calculateConsumtion((recipe, result))
+                    outputSlot.count = outputCount
+                    
+                    remainingCount = totalCount - outputCount
+                    if remainingCount > 0:
+                        #Store the remaining back into the crafting inventory
+                        self._lastRecipe = recipe
+                        self._lastConsumptionMap = self._calculateConsumtion((recipe, (item, remainingCount)))
+                    else:
+                        self._lastRecipe = recipe
+                        self._lastConsumptionMap = self._calculateConsumtion((recipe, result))
                     return
