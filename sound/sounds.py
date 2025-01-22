@@ -32,9 +32,9 @@ sounds = {
 		),
 		"growl":
 		(
-			soundFactory('dog/growl/growl1.ogg'),
-			soundFactory('dog/growl/growl2.ogg'),
-			soundFactory('dog/growl/growl3.ogg'),
+			soundFactory('dog/growl/growl1.ogg', 0.4),
+			soundFactory('dog/growl/growl2.ogg', 0.4),
+			soundFactory('dog/growl/growl3.ogg', 0.4),
 		)
 	}
 }
