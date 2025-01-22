@@ -54,21 +54,12 @@ class Recipe:
 
 
 def pickaxeRecipe(slots: list[list[Slot]], topMaterial: Items, toolClass: Type[Item]) -> tuple[Item, int] | None:
-    """
-    Generic recipe function for pickaxes
-
-    items: The crafting grid slots
-    topMaterial: The Items enum value for the required top row material
-    toolClass: The class of the tool to create (WoodenPickaxe, StonePickaxe, etc.)
-
-    Returns: A tuple of (created item, count) or None if recipe doesn't match
-    """
-
-    # Check top row material
+    '''Generic function for pickaxes'''
+    #Check top row material
     if not all(slots[0][i].item and slots[0][i].item.enum == topMaterial for i in range(3)):
         return None
 
-    # Check for sticks in the middle and bottom center
+    #Check for sticks in the middle and bottom center
     if not (
         slots[1][1].item
         and slots[1][1].item.enum == Items.Sticks
@@ -77,81 +68,78 @@ def pickaxeRecipe(slots: list[list[Slot]], topMaterial: Items, toolClass: Type[I
     ):
       return None
 
-    # Verify other slots are empty
+    #Verify other slots are empty
     if any(slots[r][c].item for r, c in ((1, 0), (1, 2), (2, 0), (2, 2))):
         return None
 
     return toolClass(), 1
 
-
 def axeRecipe(slots: list[list[Slot]], topMaterial: Items, toolClass: Type[Item]) -> tuple[Item, int] | None:
-  # Check top row material
-  if not all(slots[r][c].item and slots[r][c].item.enum == topMaterial for r, c in ((0, 1), (0, 2), (1, 2))):
+    #Right-side axe
+    rightValid = all(
+        slots[r][c].item and slots[r][c].item.enum == topMaterial
+        for r, c in ((0, 1), (0, 2), (1, 2))
+    ) and all(
+        slots[r][1].item and slots[r][1].item.enum == Items.Sticks
+        for r in (1, 2)
+    ) and not any(
+        slots[r][c].item for r, c in ((0, 0), (1, 0), (2, 0), (2, 2))
+    )
+
+    #Left-side axe recipe
+    leftValid = all(
+        slots[r][c].item and slots[r][c].item.enum == topMaterial
+        for r, c in ((0, 1), (0, 0), (1, 0))
+    ) and all(
+        slots[r][1].item and slots[r][1].item.enum == Items.Sticks
+        for r in (1, 2)
+    ) and not any(
+        slots[r][c].item for r, c in ((0, 2), (1, 2), (2, 2), (2, 0))
+    )
+
+    if rightValid or leftValid:
+        return toolClass(), 1
+
     return None
 
-  # Check for sticks in the middle and bottom center
-  if not (
-      slots[1][1].item
-      and slots[1][1].item.enum == Items.Sticks
-      and slots[2][1].item
-      and slots[2][1].item.enum == Items.Sticks
-  ):
-    return None
-
-  # Verify other slots are empty
-  if any(slots[r][c].item for r, c in ((0, 0), (1, 0), (2, 0), (2, 2))):
-    return None
-
-  return toolClass(), 1
 
 def shovelRecipe(slots: list[list[Slot]], topMaterial: Items, toolClass: Type[Item]) -> tuple[Item, int] | None:
+    if not (slots[0][1].item and slots[0][1].item.enum == topMaterial):
+      return None
 
-  # Check top row material
-  if not (slots[0][1].item and slots[0][1].item.enum == topMaterial):
-    return None
+    if not (
+        slots[1][1].item
+        and slots[1][1].item.enum == Items.Sticks
+        and slots[2][1].item
+        and slots[2][1].item.enum == Items.Sticks
+    ):
+      return None
 
-  # Check for sticks in the middle and bottom center
-  if not (
-      slots[1][1].item
-      and slots[1][1].item.enum == Items.Sticks
-      and slots[2][1].item
-      and slots[2][1].item.enum == Items.Sticks
-  ):
-    return None
+    if any(slots[r][c].item for r in range(3) for c in range(0, 3, 2)):
+      return None
 
-  # Verify other slots are empty
-  if any(slots[r][c].item for r in range(3) for c in range(0, 3, 2)):
-    return None
-
-  return toolClass(), 1
+    return toolClass(), 1
 
 def swordRecipe(slots: list[list[Slot]], topMaterial: Items, toolClass: Type[Item]) -> tuple[Item, int] | None:
+    if not all(slots[r][1].item and slots[r][1].item.enum == topMaterial for r in range(2)):
+      return None
 
-  # Check top row material
-  if not all(slots[r][1].item and slots[r][1].item.enum == topMaterial for r in range(2)):
-    return None
+    if not (slots[2][1].item and slots[2][1].item.enum == Items.Sticks):
+      return None
 
-  # Check for sticks in the bottom center
-  if not (slots[2][1].item and slots[2][1].item.enum == Items.Sticks):
-    return None
+    if any(slots[r][c].item for r in range(3) for c in range(0, 3, 2)):
+      return None
 
-  # Verify other slots are empty
-  if any(slots[r][c].item for r in range(3) for c in range(0, 3, 2)):
-    return None
-
-  return toolClass(), 1
+    return toolClass(), 1
 
 def helmetRecipe(slots: list[list[Slot]], topMaterial: Items, toolClass: Type[Item]) -> tuple[Item, int] | None:
+    if not all(slots[r][c].item and slots[r][c].item.enum == topMaterial for r, c in ((0, 0), (0, 1), (0, 2), (1, 0), (1, 2))):
+      return None
 
-  # Check top row material
-  if not all(slots[r][c].item and slots[r][c].item.enum == topMaterial for r, c in ((0, 0), (0, 1), (0, 2), (1, 0), (1, 2))):
-    return None
+    if any(slots[r][c].item for r, c in ((1, 1), (2, 0), (2, 1), (2, 2))):
+      return None
 
-  # Verify other slots are empty
-  if any(slots[r][c].item for r, c in ((1, 1), (2, 0), (2, 1), (2, 2))):
-    return None
-
-  return toolClass(), 1
+    return toolClass(), 1
 
 
 recipeDictionary = {
@@ -190,52 +178,49 @@ def woodenPlanks(slots: list[list[Slot]]) -> tuple[Item, int] | None:
 
 
 def sticks(slots: list[list[Slot]]) -> tuple[Item, int] | None:
-  '''Sticks recipe'''
-  filledSlots = 0
+    '''Sticks recipe'''
+    filledSlots = 0
 
-  for row in slots:
-    for slot in row:
-      if slot.item:
-        if slot.item.enum != Items.Planks:
-          return
-        filledSlots += 1
+    for row in slots:
+      for slot in row:
+        if slot.item:
+          if slot.item.enum != Items.Planks:
+            return
+          filledSlots += 1
 
-  if filledSlots == 2:
+    if filledSlots == 2:
+      for r in range(2):
+        for c, slot in enumerate(slots[r]):
+          slotBelow = slots[r + 1][c]
+          if slot.item and slotBelow.item:
+            from game.model.items.sticksitem import SticksItem
+
+            return SticksItem(), min(slot.count, slotBelow.count) * 4
+
+def torches(slots: list[list[Slot]]) -> tuple[Item, int] | None:
+    filledSlots, _ = getFilledSlots(slots)
+    if filledSlots != 2:
+      return None
     for r in range(2):
       for c, slot in enumerate(slots[r]):
         slotBelow = slots[r + 1][c]
         if slot.item and slotBelow.item:
-          from game.model.items.sticksitem import SticksItem
-
-          return SticksItem(), min(slot.count, slotBelow.count) * 4
-
-def torches(slots: list[list[Slot]]) -> tuple[Item, int] | None:
-  filledSlots, _ = getFilledSlots(slots)
-  if filledSlots != 2:
-    return None
-  for r in range(2):
-    for c, slot in enumerate(slots[r]):
-      slotBelow = slots[r + 1][c]
-      if slot.item and slotBelow.item:
-        if slot.item.enum == Items.Coal and slotBelow.item.enum == Items.Sticks:
-          from game.model.items.torchitem import TorchItem
-          return TorchItem(), min(slot.count, slotBelow.count) * 4
+          if slot.item.enum == Items.Coal and slotBelow.item.enum == Items.Sticks:
+            from game.model.items.torchitem import TorchItem
+            return TorchItem(), min(slot.count, slotBelow.count) * 4
         
 def furnace(slots: list[list[Slot]]) -> tuple[Item, int] | None:
-    #check and bottom row
     if not all(slots[0][i].item and slots[0][i].item.enum == Items.Cobblestone for i in range(3)):
-        return
+        return None
     if not all(slots[2][i].item and slots[2][i].item.enum == Items.Cobblestone for i in range(3)):
-        return
+        return None
     
-    #check sides
     if not (slots[1][0].item and slots[1][0].item.enum == Items.Cobblestone
             and slots[1][2].item and slots[1][2].item.enum == Items.Cobblestone
             and slots[2][0].item and slots[2][0].item.enum == Items.Cobblestone
             and slots[2][2].item and slots[2][2].item.enum == Items.Cobblestone):
-      return
+      return None
     
-    #check if the middle slot is empty
     if slots[1][1].item:
         return None
 
