@@ -208,6 +208,18 @@ def sticks(slots: list[list[Slot]]) -> tuple[Item, int] | None:
           from game.model.items.sticksitem import SticksItem
 
           return SticksItem(), min(slot.count, slotBelow.count) * 4
+
+def torches(slots: list[list[Slot]]) -> tuple[Item, int] | None:
+  filledSlots, _ = getFilledSlots(slots)
+  if filledSlots != 2:
+    return None
+  for r in range(2):
+    for c, slot in enumerate(slots[r]):
+      slotBelow = slots[r + 1][c]
+      if slot.item and slotBelow.item:
+        if slot.item.enum == Items.Coal and slotBelow.item.enum == Items.Sticks:
+          from game.model.items.torchitem import TorchItem
+          return TorchItem(), min(slot.count, slotBelow.count) * 4
         
 def furnace(slots: list[list[Slot]]) -> tuple[Item, int] | None:
     #check and bottom row
@@ -234,5 +246,6 @@ recipes: list[Recipe] = [
     Recipe(4, woodenPlanks),        # 1 log -> 4 planks
     Recipe(4, sticks),              # 2 planks -> 4 sticks
     Recipe(1, furnace),             # 8 cobblestone -> 1 furnace
+    Recipe(4, torches),             # 1 coal + 1 stick -> 4 torches
     *[Recipe(1, partial(recipe, topMaterial=topMaterial, toolClass=recipeDictionary[(recipe, topMaterial)])) for recipe, topMaterial in recipeDictionary],
 ]
