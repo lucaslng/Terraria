@@ -98,7 +98,7 @@ sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
  
     #Furnace
     Blocks.Furnace: everythingSheet.get(622, 0, 16, 16, BLOCK_SIZE),
-    "furnaceOn": everythingSheet.get(638, 0, 16, 16, BLOCK_SIZE),
+    Blocks.FurnaceBurning: everythingSheet.get(638, 0, 16, 16, BLOCK_SIZE),
     Items.Furnace: everythingSheet.get(622, 0, 16, 16),
 
     #Misc

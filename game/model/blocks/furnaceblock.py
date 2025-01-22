@@ -20,7 +20,7 @@ class FurnaceBlock(Block, InventoryBlock):
         self.fuelInInventory = Inventory(1, 1, condition=lambda other: isinstance(other.item, Fuel) or other.item is None)                 #only fuel items
         self.furnaceOutInventory = Inventory(1, 1, condition=lambda other: other.item is None)                                               #can't put items in
         
-        self._isBurning = False
+        self.isBurning = False
         self._burnTimeRemaining = 0.0
         self._smeltingProgress = 0.0
         self._smeltingTime = 10.0               # default smelting time in seconds
@@ -34,11 +34,6 @@ class FurnaceBlock(Block, InventoryBlock):
             (self.fuelInInventory, InventoryType.FuelIn),
             (self.furnaceOutInventory, InventoryType.FurnaceOut)
         )
-        
-    @property
-    def isBurning(self) -> bool:
-        '''Check if the furnace is currently burning fuel'''
-        return self._isBurning
     
     @property
     def smeltingProgress(self) -> float:
@@ -73,9 +68,9 @@ class FurnaceBlock(Block, InventoryBlock):
         fuelSlot.count -= 1
         if fuelSlot.count <= 0:
             fuelSlot.clear()
-            self._isBurning = False
+            self.isBurning = False
             
-        self._isBurning = True
+        self.isBurning = True
         return True
     
     def _completeSmelting(self) -> None:
@@ -87,7 +82,7 @@ class FurnaceBlock(Block, InventoryBlock):
         input_slot.count -= 1
         if input_slot.count <= 0:
             input_slot.clear()
-            self._isBurning = False
+            self.isBurning = False
         
         if output_slot.item is not None:
             output_slot.count += 1
@@ -96,26 +91,37 @@ class FurnaceBlock(Block, InventoryBlock):
             output_slot.count = 1
             
         self._smeltingProgress = 0.0
-        self._isBurning = False
+        self.isBurning = False
     
     def update(self) -> None:
         dt = clock.get_time() / 1000.0
         
         if not self._canStartSmelting():
             self._smeltingProgress = 0.0
-            self._isBurning = False
+            self.isBurning = False
             return
             
         if self._burnTimeRemaining <= 0:
             if not self._consumeFuel():
-                self._isBurning = False
+                self.isBurning = False
                 return
                 
         if self._burnTimeRemaining > 0:
             self._burnTimeRemaining = max(0.0, self._burnTimeRemaining - dt)
             
-        if self._isBurning:
+        if self.isBurning:
             self._smeltingProgress += dt / self._smeltingTime
             
             if self._smeltingProgress >= 1.0:
                 self._completeSmelting()
+    
+    @property
+    def enum(self) -> Blocks:
+        if self.isBurning:
+            return Blocks.FurnaceBurning
+        else:
+            return Blocks.Furnace
+    
+    @enum.setter
+    def enum(self, _):
+        pass
