@@ -25,6 +25,25 @@ _messageGroups = (
 		"Meoww",
 		"Meowww",
 	),
+	(
+		"Craft a furnace using 8 cobblestone in a box",
+		"You can smelt ores with coal!",
+		"Use the ingots to craft better tools and helmets!",
+	),
+	(
+		"Make sticks using two planks in a column!",
+	),
+	(
+		"Kill rabbits for food!",
+		"Yum!",
+	),
+	(
+		"Dogs are our greatest enemy",
+		"Be careful!",
+	),
+	(
+		"Make torches using coal and sticks!",
+	),
 )
 
 class Npc(Entity):
