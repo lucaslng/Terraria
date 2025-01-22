@@ -4,6 +4,8 @@ from game.model.items.item import Item
 from game.model.items.utils.itemsenum import Items
 import pygame.mouse as mouse
 
+from sound import channels
+from sound.sounds import sounds
 from utils.constants import FRAME
 
 
@@ -17,7 +19,9 @@ class Rpg(Item):
 		self.ammo = self.magSize
 	
 	def reload(self):
-		self.ammo = self.magSize
+		if self.ammo < self.magSize and not channels.reload.get_busy():
+			self.ammo = self.magSize
+			channels.reload.play(sounds["rpg"]["reload"])
 
 class Rocket(HasPhysics):
 	'''RPG rocket'''

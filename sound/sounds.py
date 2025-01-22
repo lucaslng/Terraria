@@ -8,6 +8,11 @@ def soundFactory(fileName: str, volume: float=0.6) -> Sound:
 	return sound
 
 sounds = {
+	"rpg":
+	{
+		"reload": soundFactory('rpg/reload.mp3', 0.55),
+		"explosion": soundFactory('rpg/explosion.mp3', 0.55),
+	},
 	"player":
 	{
 		"hurt": soundFactory('player/hurt.mp3'),

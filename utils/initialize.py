@@ -9,7 +9,7 @@ def initialize():
 	pg.event.set_allowed([pg.QUIT, pg.KEYDOWN, pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP, REMOVEINVENTORYTYPE, DRAWEXPLOSION])
 	pg.font.init()
 	pg.mixer.init()
-	pg.mixer.set_reserved(1)
+	pg.mixer.set_reserved(2)
 	pg.mixer.set_num_channels(1000)
 	pg.time.set_timer(101, 5000)
 	

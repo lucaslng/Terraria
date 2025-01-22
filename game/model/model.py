@@ -22,6 +22,7 @@ from game.model.items.bucket import Bucket
 from game.model.items.rpg import Rocket, Rpg
 from game.model.liquids.liquid import Liquid
 from game.model.utils.biomesenum import Biome
+from sound.sounds import sounds
 from utils.constants import DOG_RARITY, FIRST_MESSAGE, FPS, NPC_RARITY, RABBIT_RARITY
 from game.model.blocks.airblock import AirBlock
 from game.model.blocks.coaloreblock import CoalOreBlock
@@ -93,6 +94,7 @@ class Model:
 			elif isinstance(entity, Rocket):
 				if entity.stationary:
 					pg.event.post(pg.event.Event(DRAWEXPLOSION, pos=entity.body.position, radius=0.5, width=8))
+					sounds["rpg"]["explosion"].play()
 					ex, ey = list(map(int, entity.body.position)) # source of explosion
 					for y in range(max(0, ey - 3), min(self.world.height, ey + 4)):
 						for x in range(max(0, ex - 3), min(self.world.width, ex + 4)):
