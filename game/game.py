@@ -31,6 +31,7 @@ def initGame():
 	if not model:
 		print("Generating new world...")
 		model = Model(WORLD_WIDTH, WORLD_HEIGHT)
+  
 	camera = FRAME.copy()
 	camera.center = model.player.body.position[0] * BLOCK_SIZE, model.player.body.position[1] * BLOCK_SIZE
 
@@ -156,7 +157,7 @@ def game() -> Screens:
 				return Screens.QUIT
 			elif event.type == 101:
 				model.spawnEntitiesRandom()
-				pg.mixer.set_num_channels(len(model.entities) * 2) # set extra channels just to be safe
+				pg.mixer.set_num_channels(len(model.entities) * 2) 			# set extra channels just to be safe
 			elif event.type == REMOVEINVENTORYTYPE:
 				for inventoryType in event.inventoryType:
 					if inventoryType in inventories:
@@ -176,13 +177,14 @@ def game() -> Screens:
 							InventoryType.HelmetSlot: (model.player.helmetSlot, *InventoryType.HelmetSlot.value)
 						}
 					else:
-						nearest = None # interact with the nearest inventory block
+						nearest = None 				# interact with the nearest inventory block
 						for r in range(3):
 							for c in range(3):
 								x = floor(model.player.body.position.x) - 1 + c
 								y = floor(model.player.body.position.y) - 1 + r
-								if isinstance(model.world[y][x], InventoryBlock):
-									nearest = min(nearest, (x, y), key=lambda p: BIG if p is None else dist((p[0] + 0.5, p[1] + 0.5), model.player.body.position))
+								if 0 <= y < model.world.height and 0 <= x < model.world.width:
+									if isinstance(model.world[y][x], InventoryBlock):
+										nearest = min(nearest, (x, y), key=lambda p: BIG if p is None else dist((p[0] + 0.5, p[1] + 0.5), model.player.body.position))
 						if nearest:
 							for inventory, inventoryType in model.world[nearest[1]][nearest[0]].inventories:
 								if inventoryType in inventories:
