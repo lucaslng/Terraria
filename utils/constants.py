@@ -10,7 +10,7 @@ SURF.set_alpha(None)
 FRAME = SURF.get_rect()
 
 clock = pg.time.Clock()
-pg.display.set_caption("Terraria")
+pg.display.set_caption("TerraCraft")
 
 font12 = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 12)
 font16 = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 16)
