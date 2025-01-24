@@ -7,5 +7,5 @@ The game requires the following Python packages:
 - **dill**
 
 ### Installation
-These dependencies are automatically installed when main.py via:  
+These dependencies are automatically installed when main.py is run via:  
 `utils/installpackages.py`
