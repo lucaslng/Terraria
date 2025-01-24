@@ -2,7 +2,9 @@ import subprocess
 import sys
 import importlib.util
 
-#currently most backward tested version (3.10.12)
+'''
+Minimum version should be 3.10 but 3.10.12 is the most backward tested version
+'''
 requiredPythonVersion = (3, 10, 12)
 
 def _checkPythonVersion():
