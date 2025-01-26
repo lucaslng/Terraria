@@ -134,7 +134,7 @@ class Model:
 	def _generate(self):
 		print(f"\nWorld width: {self.world_width}")
 		print("World Generation Time")
-		print(f"{"Task":<20} | Time (seconds)")
+		print(f"{'Task':<20} | Time (seconds)")
 		print("-" * 37)
 		startTime = time.perf_counter()
 		self._generateWorld()
@@ -142,7 +142,7 @@ class Model:
 		self._generateEntities()
 		
 		print("-" * 37)
-		print(f"{"Total":<20} | {round(time.perf_counter() - startTime, 4)}s")
+		print(f"{'Total':<20} | {round(time.perf_counter() - startTime, 4)}s")
 		self.player.body.position = self.world.width * 0.5, self.world.top_y(self.world.width * 0.5) - 1
 	
 	def _generateEntities(self) -> None:
@@ -254,13 +254,13 @@ class Model:
 
 		start = time.perf_counter()
 		self._placeTerrain(noises[Noises.BIOME], noises[Noises.GRASSHEIGHT], noises[Noises.STONEHEIGHT], noises[Noises.CAVES])
-		print(f"{"Terrain":<20} | {round(time.perf_counter() - start, 4)}s")
+		print(f"{'Terrain':<20} | {round(time.perf_counter() - start, 4)}s")
 		
 		self._placeOres(noises[Noises.COAL], noises[Noises.IRON], noises[Noises.GOLD], noises[Noises.DIAMOND])
 		
 		start = time.perf_counter()
 		self.generateLight()
-		print(f"{"Light":<20} | {round(time.perf_counter() - start, 4)}s")
+		print(f"{'Light':<20} | {round(time.perf_counter() - start, 4)}s")
     
 	def _placeTerrain(self, biomeNoise: SimplexNoise, grassNoise: SimplexNoise, stoneNoise: SimplexNoise, caveNoise: SimplexNoise) -> None:
 		'''Place the dirt, stone, and cut out caves'''
@@ -370,7 +370,7 @@ class Model:
 				noises[noiseType] = noiseObj
 		
 		totalTime = time.perf_counter() - total_start_time
-		print(f"{"SimplexNoise":<20} | {totalTime:.4f}s")
+		print(f"{'SimplexNoise':<20} | {totalTime:.4f}s")
 
 		return noises
  
