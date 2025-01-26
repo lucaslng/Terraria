@@ -19,7 +19,7 @@ from pygame.event import Event
 def draw(events: list[Event], model: Model, camera: Rect, inventories: dict[str, tuple[Inventory, int, int, int]]):
 	'''Draw everything'''
 
-	drawBlocks(model.world, model.blockFacingCoord, camera)
+	drawBlocks(model.world, model.block_facing_coord, camera)
 	drawLiquids(model.liquids, camera)
 	drawSunlight(model.lightmap, camera)
 	drawLights(model.lights, camera)

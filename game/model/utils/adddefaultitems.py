@@ -18,7 +18,7 @@ from game.model.items.torchitem import TorchItem
 from game.model.liquids.liquid import Water
 
 
-def addDefaultItems(player: Player) -> None:
+def add_default_items(player: Player) -> None:
 	'''Add default items to the player's inventory'''
 	
 	player.inventory.addItems(

@@ -236,9 +236,9 @@ def game() -> Screens:
 		blockFacingCoord = bresenham(model.world.array, *FRAME.center, *pg.mouse.get_pos(), camera)
   
 		if blockFacingCoord and dist(map(lambda a: a + 0.5, blockFacingCoord), model.player.body.position) < model.player.reach:
-			model.blockFacingCoord = blockFacingCoord
+			model.block_facing_coord = blockFacingCoord
 		else:
-			model.blockFacingCoord = None
+			model.block_facing_coord = None
 		
 		for y in range(camera.top // BLOCK_SIZE, camera.bottom // BLOCK_SIZE + 1):
 			for x in range(camera.left // BLOCK_SIZE, camera.right // BLOCK_SIZE + 1):
