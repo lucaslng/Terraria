@@ -1,4 +1,6 @@
 from collections import defaultdict
+
+from game.model.blocks.chestblock import ChestBlock
 from game.model.blocks.cobblestoneblock import CobblestoneBlock
 from game.model.blocks.craftingtableblock import CraftingTableBlock
 from game.model.blocks.dirtblock import DirtBlock
@@ -21,6 +23,7 @@ item2Block[Items.Grass] = GrassBlock
 item2Block[Items.Stone] = StoneBlock
 item2Block[Items.Cobblestone] = CobblestoneBlock
 item2Block[Items.Furnace] = FurnaceBlock
+item2Block[Items.Chest] = ChestBlock
 item2Block[Items.CraftingTable] = CraftingTableBlock
 item2Block[Items.Torch] = TorchBlock
 item2Block[Items.Log] = LogBlock

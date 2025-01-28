@@ -103,6 +103,7 @@ def game() -> Screens:
 			#Put split portion in cursor
 			model.player.cursorSlot.item = sourceSlot.item
 			model.player.cursorSlot.count = splitAmount
+   
 
 	while True:
 		clearScreen()

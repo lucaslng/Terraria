@@ -1,5 +1,4 @@
 import pygame as pg
-
 from game.events import DRAWEXPLOSION, REMOVEINVENTORYTYPE
 
 

@@ -22,7 +22,7 @@ class Items(Enum):
 	Sticks = "Sticks"
 	
 	Furnace = "Furnace"
-	# FurnaceOn = "Furnace"
+	Chest = "Chest"
  
 	WoodenPickaxe = "Wooden Pickaxe"
 	WoodenAxe = "Wooden Axe"

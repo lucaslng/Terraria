@@ -12,3 +12,5 @@ class InventoryType(Enum):
 	FurnaceIn = (BLOCK_SIZE * 2, FRAME.centerx - BLOCK_SIZE * 2, int(FRAME.height * 0.4 - BLOCK_SIZE) - 50)
 	FuelIn = (BLOCK_SIZE * 2, FRAME.centerx - BLOCK_SIZE * 2, int(FRAME.height * 0.4))
 	FurnaceOut = (BLOCK_SIZE * 2, FRAME.centerx + BLOCK_SIZE * 2, int(FRAME.height * 0.4 - BLOCK_SIZE))
+ 
+	Chest = (BLOCK_SIZE * 2, FRAME.centerx - BLOCK_SIZE * 9, int(FRAME.height * 0.4 - BLOCK_SIZE))

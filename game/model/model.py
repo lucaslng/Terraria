@@ -1,12 +1,11 @@
 from math import dist
+import pygame as pg
 import math
 import random
 import pymunk as pm
 import numpy as np
 import time
 from pymunk import Space
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from functools import partial
 from typing import Optional, Type
 
 from game.events import DRAWEXPLOSION, REMOVEINVENTORYTYPE
@@ -45,7 +44,6 @@ from game.model.world import World
 from game.model.entity.entity import Entity
 from utils.customqueue import Queue
 from utils.simplexnoise import SimplexNoise
-import pygame as pg
 
 
 class Model:
@@ -131,7 +129,7 @@ class Model:
     
 		return True
 
-	def _generate(self):
+	def _generate(self) -> None:
 		print(f"\nWorld width: {self.world_width}")
 		print("World Generation Time")
 		print(f"{'Task':<20} | Time (seconds)")
@@ -247,9 +245,9 @@ class Model:
 				if itemType:
 					self.player.inventory.addItem(itemType())
 				self.removeBlock(x, y)
+  
     
-    
-	def _generateWorld(self):
+	def _generateWorld(self) -> None:
 		noises = self._generateAllNoise()
 
 		start = time.perf_counter()
@@ -328,7 +326,7 @@ class Model:
 		self.world[y - height - 1][x + 1] = LeavesBlock()
 		self.world[y + 1][x] = DirtBlock()
 
-	def _placeOres(self, coalNoise: SimplexNoise, ironNoise: SimplexNoise, goldNoise: SimplexNoise, diamondNoise: SimplexNoise):
+	def _placeOres(self, coalNoise: SimplexNoise, ironNoise: SimplexNoise, goldNoise: SimplexNoise, diamondNoise: SimplexNoise) -> None:
 		'''Place ores'''
 		for y in range(self.world.height):
 			for x in range(self.world.width):
@@ -341,15 +339,11 @@ class Model:
 						self.world[y][x] = GoldOreBlock()
 					elif diamondNoise[y][x] > 0.46 and y > self.world.height * 0.85:
 						self.world[y][x] = DiamondOreBlock()				
-
+ 
 	def _generateAllNoise(self) -> dict[Noises, SimplexNoise]:
 		total_start_time = time.perf_counter()
 
-		def generateNoise(noiseType: Noises, scale: float, dimension: int, width: int = self.world.width, height: int = self.world.height) -> tuple[Noises, SimplexNoise, float]:     
-			noise = SimplexNoise(scale=scale, dimension=dimension, width=width, height=height)
-			return noiseType, noise
-
-		noiseParameters = (
+		noise_parameters = [
 			(Noises.BIOME, 200, 1),
 			(Noises.GRASSHEIGHT, 19, 1),
 			(Noises.STONEHEIGHT, 30, 1),
@@ -358,22 +352,23 @@ class Model:
 			(Noises.IRON, 3.2, 2),
 			(Noises.GOLD, 2.5, 2),
 			(Noises.DIAMOND, 1.2, 2),
-		)
+		]
 
-		with ThreadPoolExecutor() as executor:
-			futures = [executor.submit(partial(generateNoise, *parameter)) for parameter in noiseParameters]			
+		noises = {}
 
-			noises = {}
-			
-			for future in as_completed(futures):
-				noiseType, noiseObj = future.result()
-				noises[noiseType] = noiseObj
+		for noise_type, scale, dimension in noise_parameters:
+			noises[noise_type] = SimplexNoise(
+				scale=scale, 
+				dimension=dimension, 
+				width=self.world.width, 
+				height=self.world.height
+			)
 		
 		totalTime = time.perf_counter() - total_start_time
 		print(f"{'SimplexNoise':<20} | {totalTime:.4f}s")
 
 		return noises
- 
+
 	def generateLight(self, originr: Optional[int] = None, originc: Optional[int] = None) -> None:
 		startr = max(0, (0 if originr is None else originr - 6))
 		startc = max(0, (0 if originc is None else originc - 6))

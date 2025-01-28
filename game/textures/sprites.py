@@ -100,6 +100,10 @@ sprites: dict[str | Blocks | Items, dict[str, Animation] | Surface] = {
     Blocks.Furnace: everythingSheet.get(622, 0, 16, 16, BLOCK_SIZE),
     Blocks.FurnaceBurning: everythingSheet.get(638, 0, 16, 16, BLOCK_SIZE),
     Items.Furnace: everythingSheet.get(622, 0, 16, 16),
+    
+    #Chest
+    Blocks.Chest: everythingSheet.get(862, 0, 16, 16, BLOCK_SIZE),
+    Items.Chest: everythingSheet.get(862, 0, 16, 16),
 
     #Misc
     Blocks.Torch: everythingSheet.get(576, 0, 16, 16, BLOCK_SIZE),

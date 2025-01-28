@@ -1,5 +1,6 @@
 from game.model.entity.entities.player import Player
 from game.model.items.bucket import Bucket
+from game.model.items.chestitem import ChestItem
 from game.model.items.cobblestoneitem import CobblestoneItem
 from game.model.items.craftingtableitem import CraftingTableItem
 from game.model.items.dirtitem import DirtItem
@@ -43,7 +44,8 @@ def add_default_items(player: Player) -> None:
 		*[DiamondItem() for _ in range(64)],
 		*[IronIngotItem() for _ in range(64)],
 		*[CobblestoneItem() for _ in range(64)],
-		*[PoppyItem() for _ in range(64)],
+		ChestItem(),
+		# *[PoppyItem() for _ in range(64)],
 		# *[CornflowerItem() for _ in range(64)],
 		# *[DandelionItem() for _ in range(64)],
 		# *[AlliumItem() for _ in range(64)],

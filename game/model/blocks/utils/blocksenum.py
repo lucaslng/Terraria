@@ -16,9 +16,12 @@ class Blocks(Enum):
 	GoldOre = auto()
 	DiamondOre = auto()
 	CraftingTable = auto()
+	Torch = auto()
+ 
 	Furnace = auto()
 	FurnaceBurning = auto()
-	Torch = auto()
+ 
+	Chest = auto()
 
 	Poppy = auto()
 	Dandelion = auto()

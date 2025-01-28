@@ -1,6 +1,6 @@
 '''
 TerraCraft
-A game where you explore the world and defend yourself against monsters!
+A game where you explore the world and defend yourself against monsaters!
 By Lucas Leung and Ryan Cheung
 20th January 2025
 '''

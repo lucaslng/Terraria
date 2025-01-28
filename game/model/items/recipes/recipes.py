@@ -227,6 +227,23 @@ def furnace(slots: list[list[Slot]]) -> tuple[Item, int] | None:
     from game.model.items.furnaceitem import FurnaceItem
     return FurnaceItem(), 1
   
+def chest(slots: list[list[Slot]]) -> tuple[Item, int] | None:
+    if not all(slots[0][i].item and slots[0][i].item.enum == Items.Planks for i in range(3)):
+        return None
+    if not all(slots[2][i].item and slots[2][i].item.enum == Items.Planks for i in range(3)):
+        return None
+    
+    if not (slots[1][0].item and slots[1][0].item.enum == Items.Planks
+            and slots[1][2].item and slots[1][2].item.enum == Items.Planks
+            and slots[2][0].item and slots[2][0].item.enum == Items.Planks
+            and slots[2][2].item and slots[2][2].item.enum == Items.Planks):
+      return None
+    
+    if slots[1][1].item:
+        return None
+    from game.model.items.chestitem import ChestItem
+    return ChestItem(), 1
+  
 def bucket(slots: list[list[Slot]]) -> tuple[Item, int] | None:
     topPatternIngots = ((0, 0), (0, 2), (1, 1))
     topPatternAir = ((0, 1), (1, 0), (1, 2), (2, 0), (2, 1), (2, 2))
@@ -259,5 +276,6 @@ recipes: list[Recipe] = [
     Recipe(4, torches),             # 1 coal + 1 stick -> 4 torches
     Recipe(1, bucket),              # 3 iron ingots -> 1 bucket
     Recipe(1, rocketLauncher),
+    Recipe(1, chest),               # 8 planks -> 1 chest
     *[Recipe(1, partial(recipe, topMaterial=topMaterial, toolClass=recipeDictionary[(recipe, topMaterial)])) for recipe, topMaterial in recipeDictionary],
 ]

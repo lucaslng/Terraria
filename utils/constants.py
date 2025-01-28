@@ -2,7 +2,7 @@ import pygame as pg
 
 FPS = 60
 BIG = 2147483647
-
+    
 pg.init()
 
 SURF = pg.display.set_mode((1280, 720))
@@ -19,7 +19,7 @@ BLOCK_SIZE = 32
 BLOCK_RECT = pg.rect.Rect(0, 0, BLOCK_SIZE, BLOCK_SIZE)
 
 WORLD_HEIGHT = 200
-WORLD_WIDTH = 500
+WORLD_WIDTH = 400
 
 RABBIT_RARITY = 10 			# 1 rabbit every 10 blocks on avg
 NPC_RARITY = 30 			# 1 npc every 20 blocks on avg
