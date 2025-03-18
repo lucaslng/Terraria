@@ -1,11 +1,10 @@
 ## Dependencies
 
-The game requires the following Python packages:  
+Requires the following Python libraries:  
 - **Pygame**
 - **Numpy**
 - **Pymunk**  
 - **Dill**
 
-### Installation
-These dependencies are automatically installed when main.py is run via:  
+Automatically installed when main.py is run via:  
 `utils/installpackages.py`
