@@ -18,12 +18,16 @@ font16 = pg.font.Font("assets/MinecraftRegular-Bmg3.otf", 16)
 BLOCK_SIZE = 32
 BLOCK_RECT = pg.rect.Rect(0, 0, BLOCK_SIZE, BLOCK_SIZE)
 
-WORLD_HEIGHT = 200
-WORLD_WIDTH = 400
+WORLD_HEIGHT = 300
+WORLD_WIDTH = 10000
 
 RABBIT_RARITY = 10 			# 1 rabbit every 10 blocks on avg
 NPC_RARITY = 30 			# 1 npc every 20 blocks on avg
 DOG_RARITY = 50				# 1 dog every 50 blocks on avg
+
+ENTITY_WAKE_RADIUS = 60   # blocks — entities outside this sleep
+CHUNK_SIZE        = 16   # blocks per chunk (width)
+CHUNK_LOAD_RADIUS = 6    # chunks either side of player to keep loaded (~192 blocks)
 
 FIRST_MESSAGE = (
 	"Welcome to TerraCraft!",

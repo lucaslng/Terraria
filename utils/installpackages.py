@@ -17,7 +17,7 @@ def _isPackageInstalled(name: str):
 
 if not _checkPythonVersion():
     print(f"Error: Python {'.'.join(map(str, requiredPythonVersion))} or newer is required. "
-          f"Current version is {sys.version.split()[0]}")
+        f"Current version is {sys.version.split()[0]}")
     sys.exit(1)
 
 _requiredLibraries = {"pygame", "numpy", "pymunk", "dill"}
@@ -27,7 +27,7 @@ for package in _requiredLibraries:
         try:
             #Runs python -m pip install <package>
             subprocess.check_call([sys.executable, '-m', 'pip', 'install', package], 
-                               stdout=subprocess.DEVNULL)
+                                stdout=subprocess.DEVNULL)
             print(f'Succesfully installed {package}')
         except subprocess.CalledProcessError as e:
             print(f"Failed to install {package}: {e}.")

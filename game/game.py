@@ -31,7 +31,7 @@ def initGame():
 	if not model:
 		print("Generating new world...")
 		model = Model(WORLD_WIDTH, WORLD_HEIGHT)
-  
+
 	camera = FRAME.copy()
 	camera.center = model.player.body.position[0] * BLOCK_SIZE, model.player.body.position[1] * BLOCK_SIZE
 
@@ -79,13 +79,13 @@ def game() -> Screens:
 				else:
 					inventoryOrSlot[r][c].item, model.player.cursorSlot.item = model.player.cursorSlot.item, inventoryOrSlot[r][c].item
 					inventoryOrSlot[r][c].count, model.player.cursorSlot.count = model.player.cursorSlot.count, inventoryOrSlot[r][c].count
-   
+
 	def handleStackSplit(hoveredSlotData: tuple[InventoryType, int, int]) -> None:
 		if hoveredSlotData is None:
 			return
 
 		hoveredSlotName, r, c = hoveredSlotData
-  
+
 		#Split if cursor is empty and clicked slot has items
 		if (model.player.cursorSlot.item is None and 
 			inventories[hoveredSlotName][0][r][c].item is not None):
@@ -103,11 +103,11 @@ def game() -> Screens:
 			#Put split portion in cursor
 			model.player.cursorSlot.item = sourceSlot.item
 			model.player.cursorSlot.count = splitAmount
-   
+
 
 	while True:
 		clearScreen()
-  
+
 		pressedKeys = pg.key.get_pressed()
 		if pressedKeys[userKeys.walkLeft]:
 			model.player.walkLeft()
@@ -115,7 +115,7 @@ def game() -> Screens:
 			model.player.walkRight()
 		if pressedKeys[userKeys.jump]:
 			model.player.jump()
-   
+
 		if pressedKeys[userKeys.slot1]:
 			model.player.heldSlotIndex = 0
 		if pressedKeys[userKeys.slot2]:
@@ -146,7 +146,7 @@ def game() -> Screens:
 			if not hoveredSlotData:
 				model.mineBlock()
 				
-      
+
 		elif pg.mouse.get_pressed()[2]:
 			if not getHoveredSlotSlot(inventories):
 				model.placeBlock(*conversions.pixel2Coordinate(*pg.mouse.get_pos(), camera))
@@ -158,7 +158,9 @@ def game() -> Screens:
 				return Screens.QUIT
 			elif event.type == 101:
 				model.spawnEntitiesRandom()
-				pg.mixer.set_num_channels(len(model.entities) * 2) 			# set extra channels just to be safe
+				pg.mixer.set_num_channels(
+					max(16, len([e for e in model.entities if not e.body.is_sleeping]) * 2)
+				)
 			elif event.type == REMOVEINVENTORYTYPE:
 				for inventoryType in event.inventoryType:
 					if inventoryType in inventories:
